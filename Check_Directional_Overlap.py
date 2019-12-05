@@ -41,7 +41,7 @@ def create_ray_spectrum(image,origin, radius=50,spacing=(0.975,0.975,5)):
                 temp_image[temp_image == 2] = 1
             else:
                 temp_image[temp_image == 2] = 3
-    np.save(os.path.join('.','saved.npy'),temp_image)
+    np.save(os.path.join('..','saved.npy'),temp_image)
     return temp_image
 
 
@@ -50,7 +50,7 @@ This should have two parts... first, check the recurrence image for what directi
 the recurrence occurred
 Then, look at the post-treatment image and see if there was 5 mm margin existing in that direction
 '''
-new_images = np.load(os.path.join('.', 'saved.npy'))
+# new_images = np.load(os.path.join('..', 'saved.npy'))
 images_path = r'K:\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
 excel_file = os.path.join('..','Data','Post_treatment_and_Recurrence_info.xlsx')
 data = pd.read_excel(excel_file)
