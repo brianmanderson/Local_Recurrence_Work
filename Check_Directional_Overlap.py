@@ -74,6 +74,4 @@ for index in range(len(MRNs)):
     new_mask = create_ray_spectrum(recurrence,centroid_of_ablation,100, spacing=spacing)
     print(time.time()-start)
     break
-
-    xxx = 1
 xxx = 1
