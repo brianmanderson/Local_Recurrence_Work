@@ -85,10 +85,8 @@ def create_ray_spectrum(image,origin, radius=50,spacing=(0.975,0.975,5)):
 
 
 def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
-    array_of_points = np.where(image==1)
-    z = array_of_points[0]
-    x = array_of_points[1]
-    y = array_of_points[2]
+    array_of_points = np.transpose(np.asarray(np.where(image==1)),axes=(1,0))
+    differences = array_of_points - origin
     xxx = 1
     return None
 
@@ -114,7 +112,7 @@ for index in range(len(MRNs)):
     liver = mask[...,1]
     mask[liver == 0] = 0  # Bring everything to be within the liver
     # centroid_of_recurrence = center_of_mass(mask[...,2])
-    centroid_of_ablation = center_of_mass(mask[...,3])
+    centroid_of_ablation = np.asarray(center_of_mass(mask[...,3]))
     recurrence = recurrence_reader.mask[...,2]
     spacing = recurrence_reader.annotation_handle.GetSpacing()
     create_distance_field(recurrence,origin=centroid_of_ablation, spacing=spacing)
