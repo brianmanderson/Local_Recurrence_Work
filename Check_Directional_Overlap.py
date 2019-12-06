@@ -8,58 +8,60 @@ import SimpleITK as sitk
 import time
 
 
-def cartesian_to_polar(xyz):
+def cartesian_to_polar(zxy):
     '''
-    :param x: x_values in single array
-    :param y: y_values in a single array
-    :param z: z_values in a single array
-    :return: polar coordinates in the form of: radius, rotation away from the z axis, and rotation from the y axis
+    :param xyz: array of xyz cooridnates
+    :return: polar coordinates in the form of: radius, rotation away from the z axis (phi), and rotation from the y axis (theta)
     '''
     # xyz = np.stack([x, y, z], axis=-1)
-    input_shape = xyz.shape
+    input_shape = zxy.shape
     reshape = False
     if len(input_shape) > 2:
         reshape = True
-        xyz = np.reshape(xyz,[np.prod(xyz.shape[:-1]),3])
-    polar_points = np.empty(xyz.shape)
+        xyz = np.reshape(zxy,[np.prod(zxy.shape[:-1]),3])
+    polar_points = np.empty(zxy.shape)
     # ptsnew = np.hstack((xyz, np.empty(xyz.shape)))
-    xy = xyz[:,0]**2 + xyz[:,1]**2
-    polar_points[:,0] = np.sqrt(xy + xyz[:,2]**2)
-    polar_points[:,1] = np.arctan2(np.sqrt(xy), xyz[:,2]) # for elevation angle defined from Z-axis down
+    xy = zxy[:,2]**2 + zxy[:,1]**2
+    polar_points[:,0] = np.sqrt(xy + zxy[:,0]**2)
+    polar_points[:,1] = np.arctan2(np.sqrt(xy), zxy[:,0])  # for elevation angle defined from Z-axis down
     #ptsnew[:,4] = np.arctan2(xyz[:,2], np.sqrt(xy)) # for elevation angle defined from XY-plane up
-    polar_points[:,2] = np.arctan2(xyz[:,1], xyz[:,0])
+    polar_points[:,2] = np.arctan2(zxy[:,1], zxy[:,2])
+    # polar_points[:, 2][polar_points[:, 2] < 0] += 2 * np.pi  # Make them all 0 to 2 pi for theta
     if reshape:
         polar_points = np.reshape(polar_points,input_shape)
     return polar_points
 
 
-def polar_to_cartesian(polar_xyz):
+def polar_to_cartesian(polar):
     '''
-    :param polar_xyz: in the form of radius, elevation away from z axis, and elevation from y axis
-    :return: x, y, and z intensities
+    :param polar: in the form of radius, elevation away from z axis, and elevation from x axis
+    :return: z, x, y intensities as differences from the origin
     '''
-    cartesian_points = np.empty(polar_xyz.shape)
-    from_y = polar_xyz[:,2]
-    xy_plane = np.sin(polar_xyz[:,1])*polar_xyz[:,0]
-    cartesian_points[:,2] = np.cos(polar_xyz[:,1])*polar_xyz[:,0]
-    cartesian_points[:,0] = np.sin(from_y)*xy_plane
-    cartesian_points[:,1] = np.cos(from_y)*xy_plane
+    cartesian_points = np.empty(polar.shape)
+    from_x = polar[:,2]
+    xy_plane = np.sin(polar[:,1])*polar[:,0]
+    cartesian_points[:,0] = np.cos(polar[:,1])*polar[:,0]
+    cartesian_points[:,1] = np.cos(from_x)*xy_plane
+    cartesian_points[:,2] = np.sin(from_x)*xy_plane
     return cartesian_points
 
 
-def create_ray_spectrum(image,origin, radius=50,spacing=(0.975,0.975,5)):
+def create_ray_spectrum(image,origin, radius=50,spacing=(0.975,0.975,5),theta_range=range(0,360,1),
+                        phi_range=range(0,180,1)):
     '''
     :param image:
     :param origin:
     :param radius: in mm
     :param spacing: spacing in [x, y, z] coorindates
+    :param theta_range: array of values in theta range
+    :param phi_range: array of values in the phi range
     :return:
     '''
     temp_image = np.zeros(image.shape)
-    for degree_theta in range(0, 360, 1):
+    for degree_theta in theta_range:
         print(degree_theta)
         theta_rad = np.deg2rad(degree_theta)
-        for degree_phi in range(0,180,1):
+        for degree_phi in phi_range:
             phi_rad = np.deg2rad(degree_phi)
             keep = False
             for rad in range(1, radius):
@@ -86,15 +88,26 @@ def create_ray_spectrum(image,origin, radius=50,spacing=(0.975,0.975,5)):
 
 def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
     array_of_points = np.transpose(np.asarray(np.where(image==1)),axes=(1,0))
-    differences = array_of_points - origin
-    xxx = 1
-    return None
+    spacing_aranged = np.asarray([spacing[2],spacing[0],spacing[1]])
+    differences = (array_of_points - origin)*spacing_aranged
+    polar_coordinates = cartesian_to_polar(differences)
+    return polar_coordinates
 
 '''
 This should have two parts... first, check the recurrence image for what direction
 the recurrence occurred
 Then, look at the post-treatment image and see if there was 5 mm margin existing in that direction
 '''
+k = np.zeros([1,50,50])
+k[:,8:10,8:10] = 1
+origin = np.asarray([0,25,25])
+array_of_points = np.transpose(np.asarray(np.where(k==1)),axes=(1,0))
+k[0,25,25] = 1
+differences = (array_of_points - origin)
+polar_coordinates = cartesian_to_polar(differences)
+card = polar_to_cartesian(polar_coordinates)
+polar_coordinates[:,(1,2)] = np.rad2deg(polar_coordinates[:,(1,2)])
+xxx = 1
 new_images = np.load(os.path.join('..', 'saved.npy'))
 images_path = r'K:\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
 excel_file = os.path.join('..','Data','Post_treatment_and_Recurrence_info.xlsx')
@@ -115,9 +128,11 @@ for index in range(len(MRNs)):
     centroid_of_ablation = np.asarray(center_of_mass(mask[...,3]))
     recurrence = recurrence_reader.mask[...,2]
     spacing = recurrence_reader.annotation_handle.GetSpacing()
-    create_distance_field(recurrence,origin=centroid_of_ablation, spacing=spacing)
+    polar_coods = create_distance_field(recurrence,origin=centroid_of_ablation, spacing=spacing)
     start = time.time()
-    new_mask = create_ray_spectrum(recurrence,centroid_of_ablation,100, spacing=spacing)
+    new_mask = create_ray_spectrum(recurrence,origin=centroid_of_ablation,radius=np.max(polar_coods), spacing=spacing,
+                                   theta_range=np.unique(np.round(np.rad2deg(polar_coods[:,2])),2),
+                                   phi_range=np.unique(np.round(np.rad2deg(polar_coods[:,1])),2))
     print(time.time()-start)
     break
 xxx = 1
