@@ -1,0 +1,15 @@
+The goal is to find if a relationship exists between the recurrence on follow-up imaging and the minimum ablation margin
+
+Problems: Large time changes exist between post-treatment and recurrence imaging, ablation shrinkage makes
+biomechanical modeling and mapping highly biased
+
+Potential solution: perfrom a rigid registration between the post-treatment liver and recurrence liver, focused on liver roi
+Identify spherical coordinates between centroid of ablation and recurrence on recurrence imaging
+Identify if minimum ablation 5mm outside of ablation zone is within spherical coorindates located above
+
+Recurrence image should have four ROIs of interest:
+Ablation, GTV_Exp_5mm_outside_Ablation, Ablation_Recurrence, recurrence
+
+Use Ablation_Recurrence and recurrence to find angles of interest
+
+see if GTV_Exp_5mm_outside_Ablation to Ablation is within these coordinates

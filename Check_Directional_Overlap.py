@@ -82,7 +82,7 @@ def create_ray_spectrum(image,origin, radius=50,spacing=(0.975,0.975,5),theta_ra
                 temp_image[temp_image == 2] = 1
             else:
                 temp_image[temp_image == 2] = 3
-    np.save(os.path.join('..','saved.npy'),temp_image)
+    np.save(os.path.join('..','saved2.npy'),temp_image)
     return temp_image
 
 
@@ -93,22 +93,13 @@ def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
     polar_coordinates = cartesian_to_polar(differences)
     return polar_coordinates
 
+
 '''
 This should have two parts... first, check the recurrence image for what direction
 the recurrence occurred
 Then, look at the post-treatment image and see if there was 5 mm margin existing in that direction
 '''
-k = np.zeros([1,50,50])
-k[:,8:10,8:10] = 1
-origin = np.asarray([0,25,25])
-array_of_points = np.transpose(np.asarray(np.where(k==1)),axes=(1,0))
-k[0,25,25] = 1
-differences = (array_of_points - origin)
-polar_coordinates = cartesian_to_polar(differences)
-card = polar_to_cartesian(polar_coordinates)
-polar_coordinates[:,(1,2)] = np.rad2deg(polar_coordinates[:,(1,2)])
-xxx = 1
-new_images = np.load(os.path.join('..', 'saved.npy'))
+new_images = np.load(os.path.join('..', 'saved2.npy'))
 images_path = r'K:\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
 excel_file = os.path.join('..','Data','Post_treatment_and_Recurrence_info.xlsx')
 data = pd.read_excel(excel_file)
@@ -128,11 +119,17 @@ for index in range(len(MRNs)):
     centroid_of_ablation = np.asarray(center_of_mass(mask[...,3]))
     recurrence = recurrence_reader.mask[...,2]
     spacing = recurrence_reader.annotation_handle.GetSpacing()
-    polar_coods = create_distance_field(recurrence,origin=centroid_of_ablation, spacing=spacing)
+    polar_cords = create_distance_field(recurrence,origin=centroid_of_ablation, spacing=spacing)
+    max_radius = np.max(polar_cords[:,0])
     start = time.time()
-    new_mask = create_ray_spectrum(recurrence,origin=centroid_of_ablation,radius=np.max(polar_coods), spacing=spacing,
-                                   theta_range=np.unique(np.round(np.rad2deg(polar_coods[:,2])),2),
-                                   phi_range=np.unique(np.round(np.rad2deg(polar_coods[:,1])),2))
+    zz, xx, yy = np.mgrid[0:recurrence.shape[0],0:recurrence.shape[1],0:recurrence.shape[2]]
+    circle = np.sqrt(((zz - centroid_of_ablation[0])*spacing[-1]) ** 2 + ((xx - centroid_of_ablation[1]) * spacing[0]) ** 2 + \
+             ((yy - centroid_of_ablation[2])*spacing[2]) ** 2)
+    out = np.zeros(recurrence.shape)
+    out[circle<max_radius] = 1
+    new_mask = create_ray_spectrum(recurrence,origin=centroid_of_ablation,radius=int(np.max(polar_coods)+1), spacing=spacing,
+                                   theta_range=np.unique(np.round(np.rad2deg(polar_coods[:,2]))),
+                                   phi_range=np.unique(np.round(np.rad2deg(polar_coods[:,1]))))
     print(time.time()-start)
     break
 xxx = 1
