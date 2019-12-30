@@ -26,7 +26,7 @@ def cartesian_to_polar(zxy):
     polar_points[:,0] = np.sqrt(xy + zxy[:,0]**2)
     polar_points[:,1] = np.arctan2(np.sqrt(xy), zxy[:,0])  # for elevation angle defined from Z-axis down
     #ptsnew[:,4] = np.arctan2(xyz[:,2], np.sqrt(xy)) # for elevation angle defined from XY-plane up
-    polar_points[:,2] = np.arctan2(zxy[:,1], zxy[:,2])
+    polar_points[:,2] = np.arctan2(zxy[:,2], zxy[:,1])
     polar_points[:, 2][polar_points[:, 2] < 0] += 2 * np.pi  # Make them all 0 to 2 pi for theta
     if reshape:
         polar_points = np.reshape(polar_points,input_shape)
@@ -101,8 +101,11 @@ def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
     image_2 = np.zeros(image.shape)
     k = polar_to_cartesian(polar_coordinates)
     k += origin
-    k = round(k)
-    image_2[k] = 1
+    k = k.astype('int')
+    z = k[:,0]
+    x = k[:,1]
+    y = k[:,2]
+    image_2[z,x,y] = 1
     return polar_coordinates
 
 
