@@ -103,7 +103,7 @@ def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
 
 def main():
     recurrence = np.zeros([10,200,200])
-    recurrence[5,20:60,20:60] = 1
+    recurrence[1,20:60,20:60] = 1
     ablation = np.zeros([10,200,200])
     ablation[5,125:180,100:150] = 1
     centroid_of_ablation = np.asarray(center_of_mass(ablation))
