@@ -12,7 +12,6 @@ This should have two parts... first, check the recurrence image for what directi
 the recurrence occurred
 Then, look at the post-treatment image and see if there was 5 mm margin existing in that direction
 '''
-new_images = np.load(os.path.join('..', 'saved2.npy'))
 images_path = r'K:\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
 excel_file = os.path.join('..','Data','Post_treatment_and_Recurrence_info.xlsx')
 output_file = os.path.join('..','Data','Post_treatment_and_Recurrence_info_output.xlsx')

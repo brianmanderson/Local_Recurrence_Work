@@ -72,20 +72,26 @@ def define_cone(polar_cords, centroid_of_ablation_recurrence,liver_recurrence, s
     cone_cords = create_distance_field(np.ones(liver_recurrence.shape),origin=centroid_of_ablation_recurrence,spacing=spacing)
     cone_cords = np.round(cone_cords,3).astype('float16')
     output = np.zeros(cone_cords.shape[0])
+    min_phi, max_phi, min_theta, max_theta = min(polar_cords[..., 0]), max(polar_cords[..., 0]), min(
+        polar_cords[..., 1]), max(polar_cords[..., 1])
     if min_max:
-        min_phi, max_phi, min_theta, max_theta = min(polar_cords[..., 0]), max(polar_cords[..., 0]), min(
-            polar_cords[..., 1]), max(polar_cords[..., 1])
         vals = np.where((cone_cords[:, 1] >= min_phi) & (cone_cords[:, 1] <= max_phi) & (cone_cords[:, 2] >= min_theta)
                         & (cone_cords[:, 2] <= max_theta))
+        del cone_cords
         output[vals[0]] = 1
     else:
-        vals = np.where(cone_cords[:, 0] < margin)
+        vals = np.where((cone_cords[:, 0] < margin) & (cone_cords[:, 1] >= min_phi) & (cone_cords[:, 1] <= max_phi))
         cone_cords_reduced = cone_cords[vals[0]][:,1:]
+        del cone_cords
         difference = cone_cords_reduced[:,None] - polar_cords
         min_dif = np.min(difference**2,axis=1) # find the minimum difference for each point against the ablation region
+        del difference
         total_dif = np.sqrt(np.sum(min_dif,axis=1))
+        del min_dif
         dif_vals = np.where(total_dif<margin_degree) # Allow 2 degrees of wiggle
         output[vals[0][dif_vals[0]]] = 1
+        del dif_vals
+    del vals
     output = np.reshape(output,liver_recurrence.shape) # This is now a cone including the recurrence site
     return output
 
