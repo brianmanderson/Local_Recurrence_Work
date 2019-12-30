@@ -57,7 +57,7 @@ def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
 
 
 def define_cone(polar_cords, centroid_of_ablation_recurrence,liver_recurrence, spacing, margin=100, min_max=False,
-                margin_degree=np.deg2rad(1)):
+                margin_degree=np.deg2rad(1.5)):
     '''
     :param polar_cords: polar coordinates from ablation_recurrence centroid to recurrence
     :param centroid_of_ablation_recurrence: centroid of ablation recurrence
