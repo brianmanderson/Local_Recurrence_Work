@@ -44,6 +44,8 @@ for index in range(len(MRNs)):
     We now have the min/max phi/theta for pointing the recurrence_ablation site to the recurrence
     
     Now, we take those coordinates and see if, with the ablation to minimum ablation site overlap
+    
+    Note: This will turn a star shape into a square which encompasses the star!
     '''
     cone_cords = create_distance_field(np.ones(liver.shape),origin=centroid_of_ablation_recurrence,spacing=spacing)
     cone_cords = np.round(cone_cords,4)
