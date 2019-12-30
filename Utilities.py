@@ -56,6 +56,40 @@ def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
     return polar_coordinates
 
 
+def define_cone(polar_cords, centroid_of_ablation_recurrence,liver_recurrence, spacing, margin=100, min_max=False,
+                margin_degree=np.deg2rad(1)):
+    '''
+    :param polar_cords: polar coordinates from ablation_recurrence centroid to recurrence
+    :param centroid_of_ablation_recurrence: centroid of ablation recurrence
+    :param liver_recurrence: shape used to make output
+    :param margin: how far would you like to look
+    :param margin_degree: degrees of wiggle allowed, recommend at least 0.5 degrees
+    :return:
+    '''
+    polar_cords = polar_cords.astype('float16')
+    if polar_cords.shape[1] == 3:
+        polar_cords = polar_cords[:,1:]
+    cone_cords = create_distance_field(np.ones(liver_recurrence.shape),origin=centroid_of_ablation_recurrence,spacing=spacing)
+    cone_cords = np.round(cone_cords,3).astype('float16')
+    output = np.zeros(cone_cords.shape[0])
+    if min_max:
+        min_phi, max_phi, min_theta, max_theta = min(polar_cords[..., 0]), max(polar_cords[..., 0]), min(
+            polar_cords[..., 1]), max(polar_cords[..., 1])
+        vals = np.where((cone_cords[:, 1] >= min_phi) & (cone_cords[:, 1] <= max_phi) & (cone_cords[:, 2] >= min_theta)
+                        & (cone_cords[:, 2] <= max_theta))
+        output[vals[0]] = 1
+    else:
+        vals = np.where(cone_cords[:, 0] < margin)
+        cone_cords_reduced = cone_cords[vals[0]][:,1:]
+        difference = cone_cords_reduced[:,None] - polar_cords
+        min_dif = np.min(difference**2,axis=1) # find the minimum difference for each point against the ablation region
+        total_dif = np.sqrt(np.sum(min_dif,axis=1))
+        dif_vals = np.where(total_dif<margin_degree) # Allow 2 degrees of wiggle
+        output[vals[0][dif_vals[0]]] = 1
+    output = np.reshape(output,liver_recurrence.shape) # This is now a cone including the recurrence site
+    return output
+
+
 def main():
     pass
 

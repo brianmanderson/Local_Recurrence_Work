@@ -7,7 +7,6 @@ from scipy.ndimage.measurements import center_of_mass
 from Utilities import *
 
 
-
 '''
 This should have two parts... first, check the recurrence image for what direction
 the recurrence occurred
@@ -28,7 +27,7 @@ for index in range(len(MRNs)):
     if os.path.exists(os.path.join(status_path,MRN+'.txt')):
         continue
     recurrence_path = os.path.join(images_path,MRN,Recurrence)
-    recurrence_reader = Dicom_to_Imagestack(arg_max=False,Contour_Names=['Liver_recurrence','recurrence','Ablation_Recurrence',
+    recurrence_reader = Dicom_to_Imagestack(arg_max=False,Contour_Names=['Liver_Recurrence','Recurrence','Ablation_Recurrence',
                                                                          'Liver_Ablation','Ablation','GTV_Exp_5mm_outside_Ablation'])
     recurrence_reader.Make_Contour_From_directory(recurrence_path)
 
@@ -41,10 +40,9 @@ for index in range(len(MRNs)):
     centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_recurrence))
     spacing = recurrence_reader.annotation_handle.GetSpacing()
     polar_cords = create_distance_field(recurrence,origin=centroid_of_ablation_recurrence, spacing=spacing)
-    polar_cords = np.round(polar_cords,4)
+    polar_cords = np.round(polar_cords,3).astype('float16')
 
-    min_phi, max_phi, min_theta, max_theta = min(polar_cords[...,1]), max(polar_cords[...,1]), min(polar_cords[...,2]),\
-                                             max(polar_cords[...,2])
+    polar_cords = polar_cords[:, 1:]
     '''
     We now have the min/max phi/theta for pointing the recurrence_ablation site to the recurrence
     
@@ -52,13 +50,10 @@ for index in range(len(MRNs)):
     
     Note: This will turn a star shape into a square which encompasses the star!
     '''
-    cone_cords = create_distance_field(np.ones(liver_recurrence.shape),origin=centroid_of_ablation_recurrence,spacing=spacing)
-    cone_cords = np.round(cone_cords,4)
-    output = np.zeros(cone_cords.shape[0])
-    vals = np.where((cone_cords[:,1]>=min_phi)&(cone_cords[:,1]<=max_phi)&(cone_cords[:,2]>=min_theta)&(cone_cords[:,2]<=max_theta))
-    output[vals[0]] = 1
-    output_recurrence = np.reshape(output,liver_recurrence.shape) # This is now a cone including the recurrence site
-    output_recurrence = np.expand_dims(output_recurrence, axis=-1)
+
+
+    output = define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing)
+    output_recurrence = np.expand_dims(output, axis=-1)
     output_recurrence = np.repeat(output_recurrence,repeats=3,axis=-1)
 
     liver_ablation = mask[...,4]
@@ -67,12 +62,7 @@ for index in range(len(MRNs)):
     ablation[liver_ablation==0] == 0
     min_ablation_margin[liver_ablation==0] = 0
     centroid_of_ablation = np.asarray(center_of_mass(ablation))
-    cone_cords = create_distance_field(np.ones(liver_ablation.shape),origin=centroid_of_ablation,spacing=spacing)
-    cone_cords = np.round(cone_cords,4)
-    output = np.zeros(cone_cords.shape[0])
-    vals = np.where((cone_cords[:,1]>=min_phi)&(cone_cords[:,1]<=max_phi)&(cone_cords[:,2]>=min_theta)&(cone_cords[:,2]<=max_theta))
-    output[vals[0]] = 1
-    output = np.reshape(output,liver_ablation.shape) # This is now a cone including the recurrence site
+    output = define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing=spacing)
     overlap = np.where((output==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
     if overlap:
         data['Overlap?'][index] = 1.0
