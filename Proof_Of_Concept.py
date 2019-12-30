@@ -1,9 +1,10 @@
 __author__ = 'Brian M Anderson'
-# Created on 12/5/2019
+# Created on 12/30/2019
 import os
 import pandas as pd
 from Dicom_RT_and_Images_to_Mask.Image_Array_And_Mask_From_Dicom_RT import Dicom_to_Imagestack, plot_scroll_Image, plt, np
 from scipy.ndimage.measurements import center_of_mass
+import SimpleITK as sitk
 import time
 
 
@@ -100,32 +101,14 @@ def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
     return polar_coordinates
 
 
-'''
-This should have two parts... first, check the recurrence image for what direction
-the recurrence occurred
-Then, look at the post-treatment image and see if there was 5 mm margin existing in that direction
-'''
-new_images = np.load(os.path.join('..', 'saved2.npy'))
-images_path = r'K:\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
-excel_file = os.path.join('..','Data','Post_treatment_and_Recurrence_info.xlsx')
-data = pd.read_excel(excel_file)
-MRNs = data['MRN']
-for index in range(len(MRNs)):
-    index = 1
-    MRN = str(data['MRN'][index])
-    Secondary = data['Secondary'][index]
-    Recurrence = data['Recurrence'][index]
-    recurrence_path = os.path.join(images_path,MRN,Recurrence)
-    recurrence_reader = Dicom_to_Imagestack(arg_max=False,Contour_Names=['Liver','recurrence','Ablation_Recurrence',
-                                                                         'Ablation','GTV_Exp_5mm_outside_Ablation'])
-    recurrence_reader.Make_Contour_From_directory(recurrence_path)
-
-    mask = recurrence_reader.mask
-    liver = mask[...,1]
-    # centroid_of_recurrence = center_of_mass(mask[...,2])
-    centroid_of_ablation = np.asarray(center_of_mass(mask[...,3]))
-    recurrence = recurrence_reader.mask[...,2]
-    spacing = recurrence_reader.annotation_handle.GetSpacing()
+def main():
+    recurrence = np.zeros([10,200,200])
+    recurrence[5,20:60,20:60] = 1
+    ablation = np.zeros([10,200,200])
+    ablation[5,125:180,100:150] = 1
+    centroid_of_ablation = np.asarray(center_of_mass(ablation))
+    liver = np.zeros(recurrence.shape)
+    spacing = (5,.97,.97)
     polar_cords = create_distance_field(recurrence,origin=centroid_of_ablation, spacing=spacing)
     polar_cords = np.round(polar_cords,4)
     min_phi, max_phi, min_theta, max_theta = min(polar_cords[...,1]), max(polar_cords[...,1]), min(polar_cords[...,2]),\
@@ -134,15 +117,12 @@ for index in range(len(MRNs)):
     cone_cords = np.round(cone_cords,4)
     output = np.zeros(cone_cords.shape[0])
     vals = np.where((cone_cords[:,1]>=min_phi)&(cone_cords[:,1]<=max_phi)&(cone_cords[:,2]>=min_theta)&(cone_cords[:,2]<=max_theta))
-    output[vals[0]] = 1
+    output[vals[0]] = 3
     output = np.reshape(output,liver.shape)
-    max_radius = np.max(polar_cords[:,0])
-    start = time.time()
-    zz, xx, yy = np.mgrid[0:recurrence.shape[0],0:recurrence.shape[1],0:recurrence.shape[2]]
-    circle = np.sqrt(((zz - centroid_of_ablation[0])*spacing[-1]) ** 2 + ((xx - centroid_of_ablation[1]) * spacing[0]) ** 2 + \
-             ((yy - centroid_of_ablation[2])*spacing[2]) ** 2)
-    out = np.zeros(recurrence.shape)
-    out[circle<max_radius] = 1
-    print(time.time()-start)
-    break
-xxx = 1
+    output[recurrence==1] = 1
+    output[np.where((ablation==1)&(output!=3))] = 2
+    xxx = 1
+
+
+if __name__ == '__main__':
+    main()
