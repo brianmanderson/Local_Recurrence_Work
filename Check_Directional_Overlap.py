@@ -4,7 +4,6 @@ import os
 import pandas as pd
 from Dicom_RT_and_Images_to_Mask.Image_Array_And_Mask_From_Dicom_RT import Dicom_to_Imagestack, plot_scroll_Image, plt, np
 from scipy.ndimage.measurements import center_of_mass
-import time
 from Utilities import *
 
 
@@ -17,12 +16,17 @@ Then, look at the post-treatment image and see if there was 5 mm margin existing
 new_images = np.load(os.path.join('..', 'saved2.npy'))
 images_path = r'K:\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
 excel_file = os.path.join('..','Data','Post_treatment_and_Recurrence_info.xlsx')
+output_file = os.path.join('..','Data','Post_treatment_and_Recurrence_info_output.xlsx')
+status_path = os.path.join('..','Data','Status')
+if not os.path.exists(status_path):
+    os.makedirs(status_path)
 data = pd.read_excel(excel_file)
 MRNs = data['MRN']
 for index in range(len(MRNs)):
     MRN = str(data['MRN'][index])
-    Secondary = data['Secondary'][index]
     Recurrence = data['Recurrence'][index]
+    if os.path.exists(os.path.join(status_path,MRN+'.txt')):
+        continue
     recurrence_path = os.path.join(images_path,MRN,Recurrence)
     recurrence_reader = Dicom_to_Imagestack(arg_max=False,Contour_Names=['Liver','recurrence','Ablation_Recurrence',
                                                                          'Ablation','GTV_Exp_5mm_outside_Ablation'])
@@ -54,8 +58,7 @@ for index in range(len(MRNs)):
     output[vals[0]] = 1
     output_recurrence = np.reshape(output,liver.shape) # This is now a cone including the recurrence site
     output_recurrence = np.expand_dims(output_recurrence, axis=-1)
-    output_recurrence = np.repeat(output_recurrence,repeats=2,axis=-1)
-    recurrence_reader.with_annotations(output_recurrence,output_dir=os.path.join('.'),ROI_Names=['cone'])
+    output_recurrence = np.repeat(output_recurrence,repeats=3,axis=-1)
 
     ablation = mask[...,4]
     min_ablation_margin = mask[...,5]
@@ -67,6 +70,13 @@ for index in range(len(MRNs)):
     output[vals[0]] = 1
     output = np.reshape(output,liver.shape) # This is now a cone including the recurrence site
     overlap = np.where((output==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
-
-    break
-xxx = 1
+    if overlap:
+        data['Overlap?'][index] = 1.0
+    else:
+        data['Overlap?'][index] = 0.0
+    data.to_excel(output_file)
+    output_recurrence[...,-1] = output
+    recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path,'new_RT'),
+                                       ROI_Names=['cone_recurrence', 'cone_projected'])
+    fid = open(os.path.join(status_path,MRN+'.txt'),'w+')
+    fid.close()
