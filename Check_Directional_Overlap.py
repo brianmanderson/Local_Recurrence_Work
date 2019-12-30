@@ -51,7 +51,8 @@ for index in range(len(MRNs)):
     '''
 
 
-    output = define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing, margin=100)
+    output = define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing, margin=50, min_max=False)
+    cone = np.where(output==1)
     output_recurrence = np.expand_dims(output, axis=-1)
     output_recurrence = np.repeat(output_recurrence,repeats=3,axis=-1)
 
@@ -61,7 +62,14 @@ for index in range(len(MRNs)):
     ablation[liver_ablation==0] == 0
     min_ablation_margin[liver_ablation==0] = 0
     centroid_of_ablation = np.asarray(center_of_mass(ablation))
-    output = define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing=spacing, margin=100)
+    centroid_dif = centroid_of_ablation - centroid_of_ablation_recurrence # difference in centers
+    z, x, y = (cone[0] + centroid_dif[0]).astype('int'), (cone[1] + centroid_dif[1]).astype('int'), (cone[2] + centroid_dif[2]).astype('int')
+    indexes = np.where((z<0) | (z>=liver_ablation.shape[0]) | (x<0) | (y<0) | (x>=512) | (y>=512))
+    if indexes:
+        indexes = indexes[0]
+        z, x, y = np.delete(z,indexes), np.delete(x,indexes), np.delete(y,indexes)
+    output = np.zeros(output.shape)
+    output[z,x,y] = 1
     overlap = np.where((output==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
     if overlap:
         data['Overlap?'][index] = 1.0
@@ -71,5 +79,6 @@ for index in range(len(MRNs)):
     output_recurrence[...,-1] = output
     recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path,'new_RT'),
                                        ROI_Names=['cone_recurrence', 'cone_projected'])
+    break
     fid = open(os.path.join(status_path,MRN+'.txt'),'w+')
     fid.close()

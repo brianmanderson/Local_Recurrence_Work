@@ -62,7 +62,7 @@ def define_cone(polar_cords, centroid_of_ablation_recurrence,liver_recurrence, s
     :param polar_cords: polar coordinates from ablation_recurrence centroid to recurrence
     :param centroid_of_ablation_recurrence: centroid of ablation recurrence
     :param liver_recurrence: shape used to make output
-    :param margin: how far would you like to look
+    :param margin: how far would you like to look, in mm
     :param margin_degree: degrees of wiggle allowed, recommend at least 0.5 degrees
     :return:
     '''
@@ -80,7 +80,7 @@ def define_cone(polar_cords, centroid_of_ablation_recurrence,liver_recurrence, s
         del cone_cords
         output[vals[0]] = 1
     else:
-        vals = np.where((cone_cords[:, 0] < margin) & (cone_cords[:, 1] >= min_phi) & (cone_cords[:, 1] <= max_phi))
+        vals = np.where(cone_cords[:, 0] < margin)
         cone_cords_reduced = cone_cords[vals[0]][:,1:]
         del cone_cords
         difference = cone_cords_reduced[:,None] - polar_cords
