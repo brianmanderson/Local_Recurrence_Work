@@ -76,9 +76,9 @@ for index in range(len(MRNs)):
         data['Overlap?'][index] = 1.0
     else:
         data['Overlap?'][index] = 0.0
-    data.to_excel(output_file)
     output_recurrence[...,-1] = output
     recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path,'new_RT'),
                                        ROI_Names=['cone_recurrence', 'cone_projected'])
+    data.to_excel(output_file)
     fid = open(os.path.join(status_path,MRN+'.txt'),'w+')
     fid.close()
