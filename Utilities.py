@@ -74,9 +74,9 @@ def define_cone(polar_cords_base, centroid_of_ablation_recurrence,liver_recurren
     cone_cords_base = np.round(cone_cords_base,3).astype('float16')
     output = np.zeros(cone_cords_base.shape[0])
     positive_polar_indexes = polar_cords_base[:,1] >= 0
-    negative_polar_indexes = ~polar_cords_base[:,1] <= 0
+    negative_polar_indexes = polar_cords_base[:,1] <= 0
     positive_cord_indexes = cone_cords_base[:,2] >= 0
-    negative_cord_indexes = ~cone_cords_base[:,2] <= 0
+    negative_cord_indexes = cone_cords_base[:,2] <= 0
     for polar_indxes, cord_indexes in zip([positive_polar_indexes, negative_polar_indexes],
                                           [positive_cord_indexes,negative_cord_indexes]):
         polar_cords = polar_cords_base[polar_indxes]

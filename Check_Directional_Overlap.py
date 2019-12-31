@@ -51,7 +51,7 @@ for index in range(len(MRNs)):
     '''
 
 
-    output = define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing, margin=75, min_max=True)
+    output = define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing, margin=75, min_max=False)
     cone = np.where(output==1)
     output_recurrence = np.expand_dims(output, axis=-1)
     output_recurrence = np.repeat(output_recurrence,repeats=3,axis=-1)
@@ -70,7 +70,7 @@ for index in range(len(MRNs)):
     #     z, x, y = np.delete(z,indexes), np.delete(x,indexes), np.delete(y,indexes)
     # output = np.zeros(output.shape)
     # output[z,x,y] = 1
-    output = define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing, margin=75,min_max=True)
+    output = define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing, margin=75,min_max=False)
     overlap = np.where((output==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
     if overlap:
         data['Overlap?'][index] = 1.0
