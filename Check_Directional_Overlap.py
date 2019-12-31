@@ -51,7 +51,7 @@ for index in range(len(MRNs)):
     '''
 
 
-    output = define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing, margin=50, min_max=True)
+    output = define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing, margin=50, min_max=False)
     cone = np.where(output==1)
     output_recurrence = np.expand_dims(output, axis=-1)
     output_recurrence = np.repeat(output_recurrence,repeats=3,axis=-1)
