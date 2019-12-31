@@ -64,7 +64,7 @@ def define_cone(polar_cords_base, centroid_of_ablation_recurrence,liver_recurren
     :param centroid_of_ablation_recurrence: centroid of ablation recurrence
     :param liver_recurrence: shape used to make output
     :param margin: how far would you like to look, in mm
-    :param margin_degree: degrees of wiggle allowed, recommend at least 0.5 degrees
+    :param margin_degree: degrees of wiggle allowed, recommend at least 1.5 degrees
     :return:
     '''
     polar_cords_base = polar_cords_base.astype('float16')
