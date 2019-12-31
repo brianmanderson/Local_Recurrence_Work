@@ -57,14 +57,14 @@ def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
 
 
 def define_cone(polar_cords_base, centroid_of_ablation_recurrence,liver_recurrence, spacing, margin=100, min_max=False,
-                margin_rad=np.deg2rad(1.5)):
+                margin_rad=np.deg2rad(5)):
     '''
     :param polar_cords_base: polar coordinates from ablation_recurrence centroid to recurrence, come in [phi, theta]
     where theta ranges from 0 to pi and -0 to -pi
     :param centroid_of_ablation_recurrence: centroid of ablation recurrence
     :param liver_recurrence: shape used to make output
     :param margin: how far would you like to look, in mm
-    :param margin_rad: degrees of wiggle allowed, recommend at least 1.5 degrees (in radians)
+    :param margin_rad: degrees of wiggle allowed, recommend 5 degrees (in radians)
     :return:
     '''
     polar_cords_base = polar_cords_base.astype('float16')
