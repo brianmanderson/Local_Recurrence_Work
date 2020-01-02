@@ -72,7 +72,6 @@ for index in range(len(MRNs)):
         centroid_of_ablation = np.asarray(center_of_mass(ablation))
         output_recurrence[..., -1] += define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing, margin=75,min_max=True)
         output_recurrence[output_recurrence>0] = 1
-    # small change
     overlap = np.where((output_recurrence[...,-1]==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
     if overlap:
         data['Overlap?'][index] = 1.0
