@@ -83,30 +83,29 @@ def define_cone(polar_cords_base, centroid_of_ablation_recurrence,liver_recurren
         cone_cords = cone_cords_base[cord_indexes]
         if not np.any(polar_cords) or not np.any(cone_cords):
             continue
-        mask = np.zeros(output[cord_indexes].shape)
         min_phi, max_phi, min_theta, max_theta = min(polar_cords[..., 0]), max(polar_cords[..., 0]), min(
             polar_cords[..., 1]), max(polar_cords[..., 1])
         min_phi, max_phi, min_theta, max_theta = min_phi - margin_rad, max_phi + margin_rad, min_theta - margin_rad, \
                                                  max_theta + margin_rad
         if min_max:
+            mask = np.zeros(output[cord_indexes].shape)
             vals = np.where(
                 (cone_cords[:, 1] >= min_phi) & (cone_cords[:, 1] <= max_phi) & (cone_cords[:, 2] >= min_theta)
                 & (cone_cords[:, 2] <= max_theta))
             mask[vals[0]] = 1
             output[cord_indexes] = mask
         else:
+            mask = np.zeros(output[cord_indexes].shape)
             vals = np.where((cone_cords[:, 1] >= min_phi) & (cone_cords[:, 1] <= max_phi) & (cone_cords[:,0] < margin) &
                             (cone_cords[:, 2] >= min_theta) & (cone_cords[:, 2] <= max_theta))
             cone_cords_reduced = cone_cords[vals[0]][:,1:]
             del cone_cords
-            difference = cone_cords_reduced[:,None] - polar_cords
+            difference = np.abs(cone_cords_reduced[:,None] - polar_cords)
             del polar_cords
-            min_dif = np.min(difference**2,axis=1) # find the minimum difference for each point against the ablation region
-            del difference
-            total_dif = np.sqrt(np.sum(min_dif,axis=1))
-            del min_dif
-            dif_vals = np.where(total_dif<=margin_rad) # Allow wiggle
-            mask = np.zeros(output[cord_indexes].shape)
+            min_dif_indexes = np.argmin(np.sum(difference,axis=2),axis=1)
+            min_dif = difference[np.arange(difference.shape[0]),min_dif_indexes,:]
+            del min_dif_indexes
+            dif_vals = np.where((min_dif[:,0]<=margin_rad)&(min_dif[:,1]<=margin_rad)) # Allow wiggle
             mask[vals[0][dif_vals[0]]] = 1
             output[cord_indexes] = mask
             del dif_vals
