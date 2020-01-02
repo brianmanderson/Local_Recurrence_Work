@@ -66,12 +66,14 @@ for index in range(len(MRNs)):
         
         Note: This will turn a star shape into a square which encompasses the star!
         '''
-        output_recurrence[...,1] += define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing, margin=75, min_max=True)
+        output_recurrence[...,1] += define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing,
+                                                margin=75, min_max=False)
         '''
         Now, define it on the centroid of mapped ablation
         '''
         centroid_of_ablation = np.asarray(center_of_mass(ablation))
-        output_recurrence[..., -1] += define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing, margin=75,min_max=True)
+        output_recurrence[..., -1] += define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing,
+                                                  margin=75,min_max=False)
         output_recurrence[output_recurrence>0] = 1
     overlap = np.where((output_recurrence[...,-1]==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
     if overlap:
