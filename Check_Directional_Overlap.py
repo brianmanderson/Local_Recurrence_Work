@@ -23,6 +23,7 @@ data = pd.read_excel(excel_file)
 MRNs = data['MRN']
 for index in range(len(MRNs)):
     MRN = str(data['MRN'][index])
+    print(MRN)
     Recurrence = data['Recurrence'][index]
     if os.path.exists(os.path.join(status_path,MRN+'.txt')):
         continue
