@@ -51,6 +51,6 @@ for index in range(len(MRNs)):
         Note: This will turn a star shape into a square which encompasses the star!
         '''
         output_recurrence[..., 1] += define_cone(polar_cords, centroid_of_ablation_recurrence, cross_base,
-                                                 spacing, margin=75, min_max=False, margin_rad=np.deg2rad(1))
+                                                 spacing, margin=75, min_max=False, margin_rad=np.deg2rad(5))
     recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path, 'new_RT'),
                                        ROI_Names=['cone_cross_fixed'])
