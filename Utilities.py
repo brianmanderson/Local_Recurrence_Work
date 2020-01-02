@@ -105,7 +105,7 @@ def define_cone(polar_cords_base, centroid_of_ablation_recurrence,liver_recurren
             del difference
             total_dif = np.sqrt(np.sum(min_dif,axis=1))
             del min_dif
-            dif_vals = np.where(total_dif<margin_rad) # Allow wiggle
+            dif_vals = np.where(total_dif<=margin_rad) # Allow wiggle
             mask = np.zeros(output[cord_indexes].shape)
             mask[vals[0][dif_vals[0]]] = 1
             output[cord_indexes] = mask
