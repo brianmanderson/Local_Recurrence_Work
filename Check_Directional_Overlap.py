@@ -34,45 +34,49 @@ for index in range(len(MRNs)):
     mask = recurrence_reader.mask
     liver_recurrence = mask[...,1]
     ablation_recurrence = mask[...,3]
-    recurrence = mask[...,2]
+    recurrence_base = mask[...,2]
     ablation_recurrence[liver_recurrence==0] = 0
-    recurrence[liver_recurrence==0] = 0
-    labels = morphology.label(recurrence, neighbors=4) # Could have multiple recurrence sites
-    for label in range(1,np.max(labels)+1):
+    recurrence_base[liver_recurrence==0] = 0
+
+    liver_ablation = mask[..., 4]
+    ablation = mask[..., 5]
+    min_ablation_margin = mask[..., 6]
+    ablation[liver_ablation == 0] == 0
+    min_ablation_margin[liver_ablation == 0] = 0
+
+
     centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_recurrence))
     spacing = recurrence_reader.annotation_handle.GetSpacing()
-    polar_cords = create_distance_field(recurrence,origin=centroid_of_ablation_recurrence, spacing=spacing)
-    polar_cords = np.round(polar_cords,3).astype('float16')
-
-    polar_cords = polar_cords[:, 1:]
-    '''
-    We now have the min/max phi/theta for pointing the recurrence_ablation site to the recurrence
-    
-    Now, we take those coordinates and see if, with the ablation to minimum ablation site overlap
-    
-    Note: This will turn a star shape into a square which encompasses the star!
-    '''
-    output = define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing, margin=75, min_max=True)
-    cone = np.where(output==1)
+    labels = morphology.label(recurrence_base, neighbors=4) # Could have multiple recurrence sites
+    output = np.zeros(recurrence_base.shape)
     output_recurrence = np.expand_dims(output, axis=-1)
-    output_recurrence = np.repeat(output_recurrence,repeats=3,axis=-1)
+    output_recurrence = np.repeat(output_recurrence, repeats=3, axis=-1)
+    for label_value in range(1, np.max(labels) + 1):
+        recurrence = np.zeros(recurrence_base.shape)
+        recurrence[labels==label_value] = 1
+        polar_cords = create_distance_field(recurrence,origin=centroid_of_ablation_recurrence, spacing=spacing)
+        polar_cords = np.round(polar_cords,3).astype('float16')
 
-    '''
-    Now, define it on the centroid of mapped ablation
-    '''
-    liver_ablation = mask[...,4]
-    ablation = mask[...,5]
-    min_ablation_margin = mask[...,6]
-    ablation[liver_ablation==0] == 0
-    min_ablation_margin[liver_ablation==0] = 0
-    centroid_of_ablation = np.asarray(center_of_mass(ablation))
-    output = define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing, margin=75,min_max=True)
-    overlap = np.where((output==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
+        polar_cords = polar_cords[:, 1:]
+        '''
+        We now have the min/max phi/theta for pointing the recurrence_ablation site to the recurrence
+        
+        Now, we take those coordinates and see if, with the ablation to minimum ablation site overlap
+        
+        Note: This will turn a star shape into a square which encompasses the star!
+        '''
+        output_recurrence[...,1] += define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing, margin=75, min_max=True)
+        '''
+        Now, define it on the centroid of mapped ablation
+        '''
+        centroid_of_ablation = np.asarray(center_of_mass(ablation))
+        output_recurrence[..., -1] += define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing, margin=75,min_max=True)
+        output_recurrence[output_recurrence>0] = 1
+    overlap = np.where((output_recurrence[...,-1]==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
     if overlap:
         data['Overlap?'][index] = 1.0
     else:
         data['Overlap?'][index] = 0.0
-    output_recurrence[...,-1] = output
     recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path,'new_RT'),
                                        ROI_Names=['cone_recurrence', 'cone_projected'])
     data.to_excel(output_file)
