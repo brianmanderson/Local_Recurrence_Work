@@ -1,8 +1,7 @@
 __author__ = 'Brian M Anderson'
 # Created on 12/30/2019
-from Dicom_RT_and_Images_to_Mask.Image_Array_And_Mask_From_Dicom_RT import Dicom_to_Imagestack, plot_scroll_Image, plt, np
 from scipy.ndimage.measurements import center_of_mass
-from Utilities import *
+from Ray_Tracing.Utilities import *
 
 
 def main():
