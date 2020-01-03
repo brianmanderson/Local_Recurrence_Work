@@ -2,7 +2,7 @@
 
 This is work done to create a pseudo-raytrace to identify if the 5mm minimum ablation margin is occuring in the same region as the local recurrence.
 
-The 'Proof_Of_Concept_Cross' takes two rois, defined as 'Test_Ablation' and 'Test_Cross', shown in the 'Picture_With_Cross_Explanation' as the yellow cylinder and blue cross.
+The 'Proof_Of_Concept_Cross' takes two rois, defined as 'Test_Ablation' and 'Test_Cross', shown in the 'Picture_With_Cross_Explanation' as the green sphere and blue cross.
 The min_max picture shows a very fast approach that only looks at the minimum/maximum phi/theta in spherical coorindates to draw a cone of influence.
 The not min_max picture show a slightly slower approach to identify fine edges.
 
