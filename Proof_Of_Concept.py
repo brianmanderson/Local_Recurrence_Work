@@ -1,7 +1,7 @@
 __author__ = 'Brian M Anderson'
 # Created on 12/30/2019
 from scipy.ndimage.measurements import center_of_mass
-from Utilities import *
+from Ray_Tracing.Utilities import *
 
 
 def main():

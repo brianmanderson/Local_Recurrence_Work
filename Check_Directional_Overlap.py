@@ -3,7 +3,7 @@ __author__ = 'Brian M Anderson'
 import os
 import pandas as pd
 from scipy.ndimage.measurements import center_of_mass
-from Utilities import *
+from Ray_Tracing.Utilities import *
 
 
 '''
