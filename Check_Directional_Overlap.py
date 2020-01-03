@@ -48,9 +48,6 @@ for index in range(len(MRNs)):
     centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_recurrence))
     centroid_of_ablation = np.asarray(center_of_mass(ablation))
     spacing = recurrence_reader.annotation_handle.GetSpacing()
-    output = np.zeros(recurrence_base.shape)
-    output_recurrence = np.expand_dims(output, axis=-1)
-    output_recurrence = np.repeat(output_recurrence, repeats=3, axis=-1)
     output_recurrence = create_output_ray(centroid_of_ablation_recurrence,ref_binary_image=recurrence_base,
                                           spacing=spacing, min_max=True, target_centroid=centroid_of_ablation)
     overlap = np.where((output_recurrence[...,-1]==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
