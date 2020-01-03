@@ -1,6 +1,7 @@
 __author__ = 'Brian M Anderson'
 # Created on 12/30/2019
 from Dicom_RT_and_Images_to_Mask.Image_Array_And_Mask_From_Dicom_RT import Dicom_to_Imagestack, plot_scroll_Image, plt, np
+from skimage import morphology
 
 
 def cartesian_to_polar(zxy):
@@ -54,6 +55,28 @@ def create_distance_field(image,origin, spacing=(0.975,0.975,5.0)):
     differences = (array_of_points - origin)*spacing_aranged
     polar_coordinates = cartesian_to_polar(differences)
     return polar_coordinates
+
+
+def create_output_ray(centroid, target_binary_image, spacing, margin=50, min_max=True, margin_rad=np.deg2rad(5)):
+    labels = morphology.label(target_binary_image, neighbors=4)  # Could have multiple recurrence sites
+    output = np.zeros(target_binary_image.shape)
+    for label_value in range(1, np.max(labels) + 1):
+        recurrence = np.zeros(target_binary_image.shape)
+        recurrence[labels == label_value] = 1
+        polar_cords = create_distance_field(recurrence, origin=centroid, spacing=spacing)
+        polar_cords = np.round(polar_cords, 3).astype('float16')
+
+        polar_cords = polar_cords[:, 1:]
+        '''
+        We now have the min/max phi/theta for pointing the recurrence_ablation site to the recurrence
+
+        Now, we take those coordinates and see if, with the ablation to minimum ablation site overlap
+
+        Note: This will turn a star shape into a square which encompasses the star!
+        '''
+        output += define_cone(polar_cords, centroid, target_binary_image, spacing, margin=margin, min_max=min_max,
+                              margin_rad=margin_rad)
+    return output
 
 
 def define_cone(polar_cords_base, centroid_of_ablation_recurrence,liver_recurrence, spacing, margin=100, min_max=False,
