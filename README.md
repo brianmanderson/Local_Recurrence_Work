@@ -11,6 +11,11 @@ It is recommended to use a margin_rad of at least 5 degrees.
 
 
     import numpy as np
+    import os
+    import pandas as pd
+    from scipy.ndimage.measurements import center_of_mass
+    from Ray_Tracing.Utilities import *
+    
     recurrence_path = os.path.join(images_path, MRN, Recurrence)
     recurrence_reader = Dicom_to_Imagestack(arg_max=False, Contour_Names=['Test_Ablation','Test_Cross'])
     recurrence_reader.Make_Contour_From_directory(recurrence_path)
