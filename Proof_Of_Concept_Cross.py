@@ -3,7 +3,7 @@ __author__ = 'Brian M Anderson'
 import os
 import pandas as pd
 from scipy.ndimage.measurements import center_of_mass
-from Ray_Tracing.Utilities import *
+from Utilities import *
 
 
 images_path = r'K:\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
