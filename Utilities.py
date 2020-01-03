@@ -61,6 +61,7 @@ def create_output_ray(centroid, target_binary_image, spacing, margin=50, min_max
     labels = morphology.label(target_binary_image, neighbors=4)  # Could have multiple recurrence sites
     output = np.zeros(target_binary_image.shape)
     for label_value in range(1, np.max(labels) + 1):
+        print('Iterating for mask values {} of {}'.format(label_value,np.max(labels)))
         recurrence = np.zeros(target_binary_image.shape)
         recurrence[labels == label_value] = 1
         polar_cords = create_distance_field(recurrence, origin=centroid, spacing=spacing)
