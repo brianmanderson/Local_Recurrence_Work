@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from scipy.ndimage.measurements import center_of_mass
 from Ray_Tracing.Utilities import *
+from Dicom_RT_and_Images_to_Mask.Image_Array_And_Mask_From_Dicom_RT import Dicom_to_Imagestack
 
 
 images_path = r'K:\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
