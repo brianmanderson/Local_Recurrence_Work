@@ -5,7 +5,6 @@ import pandas as pd
 from Dicom_RT_and_Images_to_Mask.Image_Array_And_Mask_From_Dicom_RT import Dicom_to_Imagestack, plot_scroll_Image, plt, np
 from scipy.ndimage.measurements import center_of_mass
 from Utilities import *
-from skimage import morphology
 
 
 '''
@@ -47,34 +46,13 @@ for index in range(len(MRNs)):
 
 
     centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_recurrence))
+    centroid_of_ablation = np.asarray(center_of_mass(ablation))
     spacing = recurrence_reader.annotation_handle.GetSpacing()
-    labels = morphology.label(recurrence_base, neighbors=4) # Could have multiple recurrence sites
     output = np.zeros(recurrence_base.shape)
     output_recurrence = np.expand_dims(output, axis=-1)
     output_recurrence = np.repeat(output_recurrence, repeats=3, axis=-1)
-    for label_value in range(1, np.max(labels) + 1):
-        recurrence = np.zeros(recurrence_base.shape)
-        recurrence[labels==label_value] = 1
-        polar_cords = create_distance_field(recurrence,origin=centroid_of_ablation_recurrence, spacing=spacing)
-        polar_cords = np.round(polar_cords,3).astype('float16')
-
-        polar_cords = polar_cords[:, 1:]
-        '''
-        We now have the min/max phi/theta for pointing the recurrence_ablation site to the recurrence
-        
-        Now, we take those coordinates and see if, with the ablation to minimum ablation site overlap
-        
-        Note: This will turn a star shape into a square which encompasses the star!
-        '''
-        output_recurrence[...,1] += define_cone(polar_cords, centroid_of_ablation_recurrence, liver_recurrence, spacing,
-                                                margin=75, min_max=False)
-        '''
-        Now, define it on the centroid of mapped ablation
-        '''
-        centroid_of_ablation = np.asarray(center_of_mass(ablation))
-        output_recurrence[..., -1] += define_cone(polar_cords, centroid_of_ablation, liver_recurrence, spacing,
-                                                  margin=75,min_max=False)
-        output_recurrence[output_recurrence>0] = 1
+    output_recurrence = create_output_ray(centroid_of_ablation_recurrence,ref_binary_image=recurrence_base,
+                                          spacing=spacing, min_max=True, target_centroid=centroid_of_ablation)
     overlap = np.where((output_recurrence[...,-1]==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
     if overlap:
         data['Overlap?'][index] = 1.0

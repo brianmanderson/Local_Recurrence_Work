@@ -31,7 +31,7 @@ for index in range(len(MRNs)):
 
     centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_base))
     spacing = recurrence_reader.annotation_handle.GetSpacing()
-    output = create_output_ray(centroid_of_ablation_recurrence, spacing=spacing, target_binary_image=cross_base,
+    _, output = create_output_ray(centroid_of_ablation_recurrence, spacing=spacing, ref_binary_image=cross_base,
                       margin_rad=np.deg2rad(5), margin=50, min_max=False)
     output = np.expand_dims(output, axis=-1)
     output = np.repeat(output, repeats=2, axis=-1)
