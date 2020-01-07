@@ -14,13 +14,12 @@ status_path = os.path.join('..', 'Data', 'Status')
 if not os.path.exists(status_path):
     os.makedirs(status_path)
 data = pd.read_excel(excel_file)
-MRNs = data['MRN']
-for index in range(len(MRNs)):
+MRNs = [data['MRN'].array[-1]]
+for MRN in MRNs:
+    index = list(data['MRN'].array).index(MRN)
     MRN = str(data['MRN'][index])
     print(MRN)
     Recurrence = data['Recurrence'][index]
-    if os.path.exists(os.path.join(status_path, MRN + '.txt')):
-        continue
     recurrence_path = os.path.join(images_path, MRN, Recurrence)
     recurrence_reader = Dicom_to_Imagestack(arg_max=False, Contour_Names=['Test_Ablation','Test_Cross'])
     recurrence_reader.Make_Contour_From_directory(recurrence_path)
@@ -32,6 +31,6 @@ for index in range(len(MRNs)):
     centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_base))
     spacing = recurrence_reader.annotation_handle.GetSpacing()
     output = create_output_ray(centroid_of_ablation_recurrence, spacing=spacing, ref_binary_image=cross_base,
-                      margin_rad=np.deg2rad(5), margin=50, min_max=False)
+                      margin_rad=np.deg2rad(2), margin=50, min_max=False)
     recurrence_reader.with_annotations(output, output_dir=os.path.join(recurrence_path, 'new_RT'),
                                        ROI_Names=['cone_cross_fixed'])
