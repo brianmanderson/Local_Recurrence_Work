@@ -13,7 +13,7 @@ MRN = patient.PatientID
 
 
 path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
-check_path = os.path.join(path,patient.PatientID,exam.Name,'new_RS')
+check_path = os.path.join(path,patient.PatientID,exam.Name,'new_RT')
 pi = patient_db.QueryPatientsFromPath(Path=check_path, SearchCriterias={'PatientID': MRN})[0]
 studies = patient_db.QueryStudiesFromPath(Path=check_path,SearchCriterias=pi)
 series = []
