@@ -1,18 +1,16 @@
 __author__ = 'Brian M Anderson'
 # Created on 2/3/2020
 
-__author__ = 'Brian M Anderson'
-
-# Created on 2/3/2020
-
 from connect import *
 
 case = get_current("Case")
 examination = get_current("Examination")
 
-liver_roi = r"Liver_Recurrence"
-ablation_roi = r"Ablation_Recurrence"
+liver_roi = r"Liver_Ablation"
+ablation_roi = r"Ablation"
 vasc_base = r"Liver_Vasculature"
+
+expansion = 5  # cm
 
 rois_in_case = []
 for name in case.PatientModel.RegionsOfInterest:
@@ -42,9 +40,9 @@ if not case.PatientModel.StructureSets[examination.Name].RoiGeometries[cof_roi].
 if not case.PatientModel.StructureSets[examination.Name].RoiGeometries[exp_roi].HasContours():
     case.PatientModel.RegionsOfInterest[exp_roi].CreateAlgebraGeometry(Examination=examination, Algorithm="Auto",
                                    ExpressionA={'Operation': "Union", 'SourceRoiNames': [cof_roi],
-                                                'MarginSettings': {'Type': "Expand", 'Superior': 5, 'Inferior': 5,
-                                                                   'Anterior': 5, 'Posterior': 5, 'Right': 5,
-                                                                   'Left': 5}},
+                                                'MarginSettings': {'Type': "Expand", 'Superior': expansion, 'Inferior': expansion,
+                                                                   'Anterior': expansion, 'Posterior': expansion, 'Right': expansion,
+                                                                   'Left': expansion}},
                                    ExpressionB={'Operation': "Union", 'SourceRoiNames': [liver_roi],
                                                 'MarginSettings': {'Type': "Expand", 'Superior': 0, 'Inferior': 0,
                                                                    'Anterior': 0, 'Posterior': 0, 'Right': 0,
