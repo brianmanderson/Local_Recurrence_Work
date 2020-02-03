@@ -10,6 +10,10 @@ liver_roi = r"Liver_Ablation"
 ablation_roi = r"Ablation"
 vasc_base = r"Liver_Vasculature"
 
+if case.PatientModel.StructureSets[examination.Name].RoiGeometries['Recurrence'].HasContours():
+    liver_roi = r"Liver_Recurrence"
+    ablation_roi = r"Ablation_Recurrence"
+
 expansion = 5  # cm
 
 rois_in_case = []
@@ -37,22 +41,20 @@ if not case.PatientModel.StructureSets[examination.Name].RoiGeometries[cof_roi].
     output = {'x':center.x,'y':center.y,'z':center.z}
     case.PatientModel.RegionsOfInterest[cof_roi].CreateSphereGeometry(Radius=0.1,Examination=examination, Center=output)
 
-if not case.PatientModel.StructureSets[examination.Name].RoiGeometries[exp_roi].HasContours():
-    case.PatientModel.RegionsOfInterest[exp_roi].CreateAlgebraGeometry(Examination=examination, Algorithm="Auto",
-                                   ExpressionA={'Operation': "Union", 'SourceRoiNames': [cof_roi],
-                                                'MarginSettings': {'Type': "Expand", 'Superior': expansion, 'Inferior': expansion,
-                                                                   'Anterior': expansion, 'Posterior': expansion, 'Right': expansion,
-                                                                   'Left': expansion}},
-                                   ExpressionB={'Operation': "Union", 'SourceRoiNames': [liver_roi],
-                                                'MarginSettings': {'Type': "Expand", 'Superior': 0, 'Inferior': 0,
-                                                                   'Anterior': 0, 'Posterior': 0, 'Right': 0,
-                                                                   'Left': 0}}, ResultOperation="Intersection",
-                                   ResultMarginSettings={'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0,
-                                                         'Posterior': 0, 'Right': 0, 'Left': 0})
+case.PatientModel.RegionsOfInterest[exp_roi].CreateAlgebraGeometry(Examination=examination, Algorithm="Auto",
+                               ExpressionA={'Operation': "Union", 'SourceRoiNames': [cof_roi],
+                                            'MarginSettings': {'Type': "Expand", 'Superior': expansion, 'Inferior': expansion,
+                                                               'Anterior': expansion, 'Posterior': expansion, 'Right': expansion,
+                                                               'Left': expansion}},
+                               ExpressionB={'Operation': "Union", 'SourceRoiNames': [liver_roi],
+                                            'MarginSettings': {'Type': "Expand", 'Superior': 0, 'Inferior': 0,
+                                                               'Anterior': 0, 'Posterior': 0, 'Right': 0,
+                                                               'Left': 0}}, ResultOperation="Intersection",
+                               ResultMarginSettings={'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0,
+                                                     'Posterior': 0, 'Right': 0, 'Left': 0})
 
-if not case.PatientModel.StructureSets[examination.Name].RoiGeometries[vasc_roi].HasContours():
-    case.PatientModel.RegionsOfInterest[vasc_roi].CreateAlgebraGeometry(Examination=examination, Algorithm="Auto",
-                                                                        ExpressionA={ 'Operation': "Union", 'SourceRoiNames': [vasc_base], 'MarginSettings': { 'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0, 'Posterior': 0, 'Right': 0, 'Left': 0 } },
-                                                                        ExpressionB={ 'Operation': "Union", 'SourceRoiNames': [exp_roi], 'MarginSettings': { 'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0, 'Posterior': 0, 'Right': 0, 'Left': 0 } },
-                                                                        ResultOperation="Intersection",
-                                                                        ResultMarginSettings={ 'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0, 'Posterior': 0, 'Right': 0, 'Left': 0 })
+case.PatientModel.RegionsOfInterest[vasc_roi].CreateAlgebraGeometry(Examination=examination, Algorithm="Auto",
+                                                                    ExpressionA={ 'Operation': "Union", 'SourceRoiNames': [vasc_base], 'MarginSettings': { 'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0, 'Posterior': 0, 'Right': 0, 'Left': 0 } },
+                                                                    ExpressionB={ 'Operation': "Union", 'SourceRoiNames': [exp_roi], 'MarginSettings': { 'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0, 'Posterior': 0, 'Right': 0, 'Left': 0 } },
+                                                                    ResultOperation="Intersection",
+                                                                    ResultMarginSettings={'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0, 'Posterior': 0, 'Right': 0, 'Left': 0 })
