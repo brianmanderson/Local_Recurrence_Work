@@ -13,3 +13,7 @@ Ablation, GTV_Exp_5mm_outside_Ablation, Ablation_Recurrence, recurrence
 Use Ablation_Recurrence and recurrence to find angles of interest
 
 see if GTV_Exp_5mm_outside_Ablation to Ablation is within these coordinates
+
+
+For registration, to be most consistent, we will register the vasculature within a 5 cm expansion about the center of
+the ablation region on the post-treatment and recurrence image

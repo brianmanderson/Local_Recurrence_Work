@@ -23,8 +23,8 @@ for index in range(len(MRNs)):
     MRN = str(data['MRN'][index])
     print(MRN)
     Recurrence = data['Recurrence'][index]
-    if os.path.exists(os.path.join(status_path,MRN+'.txt')):
-        continue
+    # if os.path.exists(os.path.join(status_path,MRN+'.txt')):
+    #     continue
     recurrence_path = os.path.join(images_path,MRN,Recurrence)
     recurrence_reader = Dicom_to_Imagestack(arg_max=False,Contour_Names=['Liver','Recurrence','Ablation_Recurrence',
                                                                          'Liver_Ablation','Ablation','GTV_Exp_5mm_outside_Ablation'])
@@ -51,6 +51,7 @@ for index in range(len(MRNs)):
                                           spacing=spacing, min_max=True, target_centroid=centroid_of_ablation)
     overlap = np.where((output_recurrence[...,-1]==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
     if overlap:
+        volume_overlap = len(overlap[0])*np.prod(spacing)/1000  # cm^3
         data['Overlap?'][index] = 1.0
     else:
         data['Overlap?'][index] = 0.0
