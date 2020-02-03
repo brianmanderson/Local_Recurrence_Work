@@ -17,3 +17,9 @@ if not os.path.exists(export_path):
     os.makedirs(export_path)
     case.ScriptableDicomExport(ExportFolderPath=export_path, Examinations=[exam.Name],
                                RtStructureSetsForExaminations=[exam.Name])
+else:
+    RS_Files = [i for i in os.listdir(export_path) if i.find('RS') == 0]
+    for file in RS_Files:
+        os.remove(os.path.join(export_path,file))
+    case.ScriptableDicomExport(ExportFolderPath=export_path, Examinations=[],
+                               RtStructureSetsForExaminations=[exam.Name])

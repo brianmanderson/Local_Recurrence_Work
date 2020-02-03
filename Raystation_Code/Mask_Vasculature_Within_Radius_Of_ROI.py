@@ -11,7 +11,7 @@ ablation_roi = r"Ablation"
 vasc_base = r"Liver_Vasculature"
 
 if case.PatientModel.StructureSets[examination.Name].RoiGeometries['Recurrence'].HasContours():
-    liver_roi = r"Liver_Recurrence"
+    liver_roi = r"Liver"
     ablation_roi = r"Ablation_Recurrence"
 
 expansion = 5  # cm
