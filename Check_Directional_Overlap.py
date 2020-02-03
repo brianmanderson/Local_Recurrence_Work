@@ -23,12 +23,15 @@ for index in range(len(MRNs)):
     MRN = str(data['MRN'][index])
     print(MRN)
     Recurrence = data['Recurrence'][index]
-    # if os.path.exists(os.path.join(status_path,MRN+'.txt')):
-    #     continue
+    if os.path.exists(os.path.join(status_path,MRN+'.txt')):
+        continue
     recurrence_path = os.path.join(images_path,MRN,Recurrence)
     recurrence_reader = Dicom_to_Imagestack(arg_max=False,Contour_Names=['Liver','Recurrence','Ablation_Recurrence',
                                                                          'Liver_Ablation','Ablation','GTV_Exp_5mm_outside_Ablation'])
-    recurrence_reader.Make_Contour_From_directory(recurrence_path)
+    try:
+        recurrence_reader.Make_Contour_From_directory(recurrence_path)
+    except:
+        continue
 
     mask = recurrence_reader.mask
     liver_recurrence = mask[...,1]
