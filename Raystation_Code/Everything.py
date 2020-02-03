@@ -35,11 +35,10 @@ def map_vasculature(case, examination,is_primary=True):
             case.PatientModel.CreateRoi(Name=new_roi, Color=color, Type="Organ")
             rois_in_case.append(new_roi)
 
-    if not case.PatientModel.StructureSets[examination.Name].RoiGeometries[cof_roi].HasContours():
-        center = case.PatientModel.StructureSets[examination.Name].RoiGeometries[ablation_roi].GetCenterOfRoi()
-        output = {'x': center.x, 'y': center.y, 'z': center.z}
-        case.PatientModel.RegionsOfInterest[cof_roi].CreateSphereGeometry(Radius=0.1, Examination=examination,
-                                                                          Center=output)
+    center = case.PatientModel.StructureSets[examination.Name].RoiGeometries[ablation_roi].GetCenterOfRoi()
+    output = {'x': center.x, 'y': center.y, 'z': center.z}
+    case.PatientModel.RegionsOfInterest[cof_roi].CreateSphereGeometry(Radius=0.1, Examination=examination,
+                                                                      Center=output)
 
     case.PatientModel.RegionsOfInterest[exp_roi].CreateAlgebraGeometry(Examination=examination, Algorithm="Auto",
                                                                        ExpressionA={'Operation': "Union",
@@ -100,8 +99,8 @@ def map_vasculature(case, examination,is_primary=True):
 
 case = get_current("Case")
 patient = get_current("Patient")
-primary_exam = 'CT 8'
-secondary_exam = 'CT 9'
+primary_exam = 'CT 3'
+secondary_exam = 'CT 4'
 
 for exam, is_primary in zip([primary_exam, secondary_exam],[True,False]):
     examination = case.Examinations[exam]
