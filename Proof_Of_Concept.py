@@ -1,8 +1,7 @@
 __author__ = 'Brian M Anderson'
 # Created on 12/30/2019
-from Dicom_RT_and_Images_to_Mask.Image_Array_And_Mask_From_Dicom_RT import Dicom_to_Imagestack, plot_scroll_Image, plt, np
 from scipy.ndimage.measurements import center_of_mass
-from Utilities import *
+from Ray_Tracing.Utilities import *
 
 
 def main():
@@ -14,7 +13,7 @@ def main():
     liver = np.zeros(recurrence.shape)
     spacing = (5,.97,.97)
     polar_cords = create_distance_field(recurrence,origin=centroid_of_ablation, spacing=spacing)
-    polar_cords = np.round(polar_cords,4)
+    polar_cords = np.round(polar_cords,6)
     output = define_cone(polar_cords, centroid_of_ablation, liver, spacing, margin=99999)
     output[output==1] = 3
     output[recurrence==1] = 1
