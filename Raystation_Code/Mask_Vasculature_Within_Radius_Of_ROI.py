@@ -7,7 +7,7 @@ case = get_current("Case")
 examination = get_current("Examination")
 
 liver_roi = r"Liver_Ablation"
-ablation_roi = r"Ablation"
+ablation_roi = r"GTV"
 vasc_base = r"Liver_Vasculature"
 
 if case.PatientModel.StructureSets[examination.Name].RoiGeometries['Recurrence'].HasContours():
