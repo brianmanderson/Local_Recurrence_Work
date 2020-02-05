@@ -29,6 +29,8 @@ while True:
         Recurrence = data['Recurrence'][index]
         if os.path.exists(os.path.join(status_path,MRN+'.txt')):
             continue
+        if not os.path.exists(os.path.join(status_path,MRN+'_go.txt')):
+            continue
         recurrence_path = os.path.join(images_path,MRN,Recurrence)
         recurrence_reader = Dicom_to_Imagestack(arg_max=False,Contour_Names=['Liver','Recurrence','Ablation_Recurrence',
                                                                              'Liver_Ablation','Ablation','GTV_Exp_5mm_outside_Ablation'])
