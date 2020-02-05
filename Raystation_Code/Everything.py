@@ -4,7 +4,7 @@ __author__ = 'Brian M Anderson'
 from connect import *
 
 
-def map_vasculature(case, examination,is_primary=True):
+def map_vasculature(case, examination,rois_in_case=[],is_primary=True, expansion=5):
     liver_roi = r"Liver_Ablation"
     ablation_roi = r"GTV"
     vasc_base = r"Liver_Vasculature"
@@ -13,23 +13,16 @@ def map_vasculature(case, examination,is_primary=True):
         liver_roi = r"Liver"
         ablation_roi = r"Ablation_Recurrence"
 
-    expansion = 5  # cm
-
-    rois_in_case = []
-    for name in case.PatientModel.RegionsOfInterest:
-        print(name.Name)
-        rois_in_case.append(name.Name)
     for roi in [liver_roi, ablation_roi, vasc_base]:
         print(roi)
         assert roi in rois_in_case, 'Need to provide contours!'
         assert case.PatientModel.StructureSets[examination.Name].RoiGeometries[roi].HasContours(), \
             'Contours not defined on exam!'
 
+    colours = ['Brown', 'Purple', 'Pink']
     cof_roi = r"Center_Of_Interest"
     exp_roi = r"Expanded_ROI"
     vasc_roi = r"Vasculature_Within_ROI"
-
-    colours = ['Brown', 'Purple', 'Pink']
     for color, new_roi in zip(colours, [cof_roi, exp_roi, vasc_roi]):
         if new_roi not in rois_in_case:
             case.PatientModel.CreateRoi(Name=new_roi, Color=color, Type="Organ")
@@ -99,16 +92,23 @@ def map_vasculature(case, examination,is_primary=True):
 
 case = get_current("Case")
 patient = get_current("Patient")
-primary_exam = 'CT 3'
-secondary_exam = 'CT 4'
-
+primary_exam = 'CT 12'
+secondary_exam = 'CT 13'
+expansion = 7  # cm
+rois_in_case = []
+for name in case.PatientModel.RegionsOfInterest:
+    print(name.Name)
+    rois_in_case.append(name.Name)
 for exam, is_primary in zip([primary_exam, secondary_exam],[True,False]):
     examination = case.Examinations[exam]
-    map_vasculature(case,examination,is_primary=is_primary)
+    map_vasculature(case,examination,rois_in_case=rois_in_case,is_primary=is_primary, expansion=expansion)
 patient.Save()
 case.ComputeRigidROIRegistration(FloatingExaminationName=secondary_exam, ReferenceExaminationName=primary_exam,
                                  DiscardRotations=False, RoiNames=[r"Vasculature_Within_ROI"])
+map_rois = [r"Liver_Ablation", r"Ablation", r"GTV_Exp_5mm_outside_Ablation", ]
+if r"GTV_Exp_7.5mm_outside_Ablation" in rois_in_case:
+    map_rois.append(r"GTV_Exp_7.5mm_outside_Ablation")
 case.PatientModel.CopyRoiGeometries(SourceExamination=case.Examinations[primary_exam],
                                     TargetExaminationNames=[secondary_exam],
-                                    RoiNames=[r"Liver_Ablation", r"Ablation", r"GTV_Exp_5mm_outside_Ablation"])
+                                    RoiNames=map_rois)
 patient.Save()
