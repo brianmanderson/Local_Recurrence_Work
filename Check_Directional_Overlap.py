@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from scipy.ndimage.measurements import center_of_mass
 from Ray_Tracing.Utilities import *
+import time
 
 
 '''
