@@ -22,13 +22,12 @@ if not os.path.exists(status_path):
 data = pd.read_excel(excel_file)
 MRNs = data['MRN']
 while True:
-    time.sleep(5)
     for index in range(len(MRNs)):
         MRN = str(data['MRN'][index])
-        print(MRN)
         Recurrence = data['Recurrence'][index]
         if os.path.exists(os.path.join(status_path,MRN+'.txt')):
             continue
+        print(MRN)
         if not os.path.exists(os.path.join(status_path,MRN+'_go.txt')):
             continue
         recurrence_path = os.path.join(images_path,MRN,Recurrence)
@@ -40,6 +39,8 @@ while True:
             continue
 
         mask = recurrence_reader.mask
+        bounds = [0,mask.shape[0]]
+        # mask = mask[130:160,...]
         liver_recurrence = mask[...,1]
         ablation_recurrence = mask[...,3]
         recurrence_base = mask[...,2]
@@ -69,3 +70,5 @@ while True:
         data.to_excel(output_file)
         fid = open(os.path.join(status_path,MRN+'.txt'),'w+')
         fid.close()
+    print('sleeping...')
+    time.sleep(10)
