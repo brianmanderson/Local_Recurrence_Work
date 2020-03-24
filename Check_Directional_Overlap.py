@@ -21,6 +21,8 @@ if not os.path.exists(status_path):
     os.makedirs(status_path)
 data = pd.read_excel(excel_file)
 MRNs = data['MRN']
+ablation_volume = []
+ablation_recurrence_volume = []
 while True:
     for index in range(len(MRNs)):
         MRN = str(data['MRN'][index])
@@ -53,7 +55,8 @@ while True:
         ablation[liver_ablation == 0] == 0
         min_ablation_margin[liver_ablation == 0] = 0
 
-
+        # ablation_volume.append(np.prod(recurrence_reader.annotation_handle.GetSpacing()) * np.sum(ablation==1))
+        # ablation_recurrence_volume.append(np.prod(recurrence_reader.annotation_handle.GetSpacing()) * np.sum(ablation_recurrence==1))
         centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_recurrence))
         centroid_of_ablation = np.asarray(center_of_mass(ablation))
         spacing = recurrence_reader.annotation_handle.GetSpacing()
