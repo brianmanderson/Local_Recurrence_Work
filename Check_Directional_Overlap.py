@@ -3,7 +3,7 @@ __author__ = 'Brian M Anderson'
 import os
 import pandas as pd
 from scipy.ndimage.measurements import center_of_mass
-from Ray_Tracing.Utilities import *
+from Local_Recurrence_Work.Ray_Tracing.Utilities import *
 import time
 
 
@@ -41,13 +41,13 @@ while True:
             continue
 
         mask = recurrence_reader.mask
-        bounds = [0,mask.shape[0]]
+        bounds = [0, mask.shape[0]]
         # mask = mask[130:160,...]
-        liver_recurrence = mask[...,1]
-        ablation_recurrence = mask[...,3]
-        recurrence_base = mask[...,2]
-        ablation_recurrence[liver_recurrence==0] = 0
-        recurrence_base[liver_recurrence==0] = 0
+        liver_recurrence = mask[..., 1]
+        ablation_recurrence = mask[..., 3]
+        recurrence_base = mask[..., 2]
+        ablation_recurrence[liver_recurrence == 0] = 0
+        recurrence_base[liver_recurrence == 0] = 0
 
         liver_ablation = mask[..., 4]
         ablation = mask[..., 5]
@@ -61,8 +61,8 @@ while True:
         centroid_of_ablation = np.asarray(center_of_mass(ablation))
         spacing = recurrence_reader.annotation_handle.GetSpacing()
         output_recurrence = create_output_ray(centroid_of_ablation_recurrence,ref_binary_image=recurrence_base,
-                                              spacing=spacing, min_max=True, target_centroid=centroid_of_ablation)
-        overlap = np.where((output_recurrence[...,-1]==1) & (min_ablation_margin==1)) # See if it overlaps with the minimum ablation margin
+                                              spacing=spacing, min_max_only=False, target_centroid=centroid_of_ablation)
+        overlap = np.where((output_recurrence[..., -1] == 1) & (min_ablation_margin == 1)) # See if it overlaps with the minimum ablation margin
         if overlap:
             volume_overlap = len(overlap[0])*np.prod(spacing)/1000  # cm^3
             data['Overlap?'][index] = 1.0
