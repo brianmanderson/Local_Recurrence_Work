@@ -12,14 +12,14 @@ This should have two parts... first, check the recurrence image for what directi
 the recurrence occurred
 Then, look at the post-treatment image and see if there was 5 mm margin existing in that direction
 '''
-images_path = r'K:\Morfeus\BMAnderson\CNN\Data\Data_Liver\Recurrence_Data\Images'
+images_path = r'H:\Data\Local_Recurrence_Exports'
 base_data_path = r'\\mymdafiles\di_data1\Morfeus\bmanderson\Modular_projects\Liver_Local_Recurrence_Work'
 excel_file = os.path.join(base_data_path,'Post_treatment_and_Recurrence_info.xlsx')
 output_file = os.path.join(base_data_path,'Post_treatment_and_Recurrence_info_output.xlsx')
 status_path = os.path.join(base_data_path,'Status')
 if not os.path.exists(status_path):
     os.makedirs(status_path)
-data = pd.read_excel(excel_file)
+data = pd.read_excel(output_file)
 MRNs = data['MRN']
 ablation_volume = []
 ablation_recurrence_volume = []
@@ -55,8 +55,6 @@ while True:
         ablation[liver_ablation == 0] == 0
         min_ablation_margin[liver_ablation == 0] = 0
 
-        # ablation_volume.append(np.prod(recurrence_reader.annotation_handle.GetSpacing()) * np.sum(ablation==1))
-        # ablation_recurrence_volume.append(np.prod(recurrence_reader.annotation_handle.GetSpacing()) * np.sum(ablation_recurrence==1))
         centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_recurrence))
         centroid_of_ablation = np.asarray(center_of_mass(ablation))
         spacing = recurrence_reader.annotation_handle.GetSpacing()
@@ -67,11 +65,13 @@ while True:
             volume_overlap = len(overlap[0])*np.prod(spacing)/1000  # cm^3
             data['Overlap?'][index] = 1.0
         else:
+            volume_overlap = 0
             data['Overlap?'][index] = 0.0
-        recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path,'new_RT'),
+        recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path, 'new_RT'),
                                            ROI_Names=['cone_recurrence', 'cone_projected'])
-        data.to_excel(output_file)
-        fid = open(os.path.join(status_path,MRN+'.txt'),'w+')
+        data['Volume (cc)'][index] = volume_overlap
+        print(volume_overlap)
+        data.to_excel(output_file, index=0)
+        fid = open(os.path.join(status_path, MRN+'.txt'), 'w+')
         fid.close()
-    print('sleeping...')
     time.sleep(10)
