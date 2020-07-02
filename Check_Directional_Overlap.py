@@ -30,9 +30,12 @@ while True:
         if os.path.exists(os.path.join(status_path,MRN+'.txt')):
             continue
         print(MRN)
-        if not os.path.exists(os.path.join(status_path,MRN+'_go.txt')):
+        patient_path = os.path.join(images_path, MRN)
+        if not os.path.exists(patient_path):
+            print('Does not exist...')
             continue
-        recurrence_path = os.path.join(images_path,MRN,Recurrence)
+        case = os.listdir(patient_path)[0]
+        recurrence_path = os.path.join(patient_path, case, Recurrence)
         recurrence_reader = Dicom_to_Imagestack(arg_max=False,Contour_Names=['Liver','Recurrence','Ablation_Recurrence',
                                                                              'Liver_Ablation','Ablation','GTV_Exp_5mm_outside_Ablation'])
         try:
