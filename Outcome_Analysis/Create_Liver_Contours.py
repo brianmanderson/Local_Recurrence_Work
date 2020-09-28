@@ -160,16 +160,16 @@ class create_RT_Structure():
         return None
 
 
-if __name__ == "__main__":
+def main():
     status_path = r'H:\Deeplearning_Recurrence_Work'
     excel_path = os.path.join(status_path, 'RetroAblation.xlsx')
     df = pandas.read_excel(excel_path)
     class_struct = create_RT_Structure(roi_name='Liver')
     for export in [True, False]:
-        MRNs = np.unique(df.MRN.values)
-        for MRN in MRNs:
+        MRNs = df.MRN.values
+        for MRN in np.unique(df.MRN.values):
             MRN_index = np.where(MRNs == MRN)[0][0]
-            MRN = str(int(MRN)) # Drop the 0 from the front
+            MRN = str(int(MRN))  # Drop the 0 from the front
             print(MRN)
             if export and os.path.exists(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN))):
                 continue
@@ -188,7 +188,7 @@ if __name__ == "__main__":
                 for date in [base_line, ablation]:
                     for exam in case.Examinations:
                         date_time = exam.GetExaminationDateTime()
-                        if date_time.Year == date.year and date_time.Month == date.month and date_time.Date == date.day:
+                        if date_time.Year == date.year and date_time.Month == date.month and date_time.Day == date.day:
                             if export:
                                 class_struct.export(exam)
                                 fid = open(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN)), 'w+')
@@ -199,3 +199,7 @@ if __name__ == "__main__":
                                     class_struct.patient.Save()
                                 fid = open(os.path.join(status_path, 'Imported_Predictions_{}.txt'.format(MRN)), 'w+')
                                 fid.close()
+
+
+if __name__ == "__main__":
+    main()
