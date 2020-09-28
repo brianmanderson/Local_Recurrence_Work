@@ -166,7 +166,9 @@ if __name__ == "__main__":
     df = pandas.read_excel(excel_path)
     class_struct = create_RT_Structure(roi_name='Liver')
     for export in [True, False]:
-        for MRN in np.unique(df['MRN']):
+        MRNs = np.unique(df.MRN.values)
+        for MRN in MRNs:
+            MRN_index = np.where(MRNs == MRN)[0][0]
             MRN = str(int(MRN)) # Drop the 0 from the front
             print(MRN)
             if export and os.path.exists(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN))):
@@ -181,14 +183,19 @@ if __name__ == "__main__":
                 continue
             for case in class_struct.patient.Cases:
                 class_struct.case = case
-                for exam in case.Examinations:
-                    if export:
-                        class_struct.export(exam)
-                        fid = open(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN)), 'w+')
-                        fid.close()
-                    else:
-                        if not class_struct.check_has_contours(exam):
-                            class_struct.import_data(exam)
-                            class_struct.patient.Save()
-                        fid = open(os.path.join(status_path, 'Imported_Predictions_{}.txt'.format(MRN)), 'w+')
-                        fid.close()
+                base_line = df.Baseline[MRN_index].to_pydatetime()
+                ablation = df.Ablation[MRN_index].to_pydatetime()
+                for date in [base_line, ablation]:
+                    for exam in case.Examinations:
+                        date_time = exam.GetExaminationDateTime()
+                        if date_time.Year == date.year and date_time.Month == date.month and date_time.Date == date.day:
+                            if export:
+                                class_struct.export(exam)
+                                fid = open(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN)), 'w+')
+                                fid.close()
+                            else:
+                                if not class_struct.check_has_contours(exam):
+                                    class_struct.import_data(exam)
+                                    class_struct.patient.Save()
+                                fid = open(os.path.join(status_path, 'Imported_Predictions_{}.txt'.format(MRN)), 'w+')
+                                fid.close()
