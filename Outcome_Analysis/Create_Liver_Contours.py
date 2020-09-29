@@ -65,11 +65,10 @@ class create_RT_Structure():
         self.has_contours = False
         if self.roi_name + self.version_name in self.rois_in_case:
             if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[self.roi_name + self.version_name].HasContours():
-                self.case.PatientModel.RegionsOfInterest[self.roi_name + self.version_name].DeleteRoi()
                 self.patient.Save()
                 self.get_rois_in_case()
-                # self.has_contours = True
-                # return True # Already have the contours for this patient
+                self.has_contours = True
+                return True # Already have the contours for this patient
         return False
 
     def export(self, exam):
