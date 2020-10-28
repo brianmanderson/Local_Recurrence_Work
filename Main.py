@@ -27,7 +27,7 @@ while True:
     for index in range(len(MRNs)):
         MRN = str(data['MRN'][index])
         Recurrence = data['Recurrence'][index]
-        if os.path.exists(os.path.join(status_path,MRN+'.txt')):
+        if os.path.exists(os.path.join(status_path, MRN+'.txt')):
             continue
         print(MRN)
         patient_path = os.path.join(images_path, MRN)
@@ -63,6 +63,8 @@ while True:
         spacing = recurrence_reader.annotation_handle.GetSpacing()
         output_recurrence = create_output_ray(centroid_of_ablation_recurrence,ref_binary_image=recurrence_base,
                                               spacing=spacing, min_max_only=False, target_centroid=centroid_of_ablation)
+        recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path, 'new_RT'),
+                                           ROI_Names=['cone_recurrence', 'cone_projected'])
         overlap = np.where((output_recurrence[..., -1] == 1) & (min_ablation_margin == 1)) # See if it overlaps with the minimum ablation margin
         if overlap:
             volume_overlap = len(overlap[0])*np.prod(spacing)/1000  # cm^3
@@ -70,8 +72,6 @@ while True:
         else:
             volume_overlap = 0
             data['Overlap?'][index] = 0.0
-        recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path, 'new_RT'),
-                                           ROI_Names=['cone_recurrence', 'cone_projected'])
         data['Volume (cc)'][index] = volume_overlap
         print(volume_overlap)
         data.to_excel(output_file, index=0)
