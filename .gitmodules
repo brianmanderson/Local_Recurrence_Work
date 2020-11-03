@@ -1,3 +1,9 @@
 [submodule "Ray_Tracing"]
 	path = Ray_Tracing
 	url = https://github.com/brianmanderson/Ray_Tracing.git
+[submodule "Brazil_Data/Import_Patients_To_Raystation"]
+	path = Brazil_Data/Import_Patients_To_Raystation
+	url = https://github.com/brianmanderson/Import_Patients_To_Raystation.git
+[submodule "Brazil_Data/Raystation_Import_Scripts"]
+	path = Brazil_Data/Raystation_Import_Scripts
+	url = https://github.com/brianmanderson/Raystation_Import_Scripts
