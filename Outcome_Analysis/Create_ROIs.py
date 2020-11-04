@@ -48,7 +48,9 @@ def main():
     MRN_dictionary = return_MRN_dictionary(excel_path)
     class_struct = create_RT_Structure()
     for MRN_key in MRN_dictionary.keys():
-        MRN = str(int(MRN_key))  # Drop the 0 from the front
+        MRN = str(MRN_key)
+        while MRN[0] == '0':  # Drop the 0 from the front
+            MRN = MRN[1:]
         print(MRN)
         if os.path.exists(os.path.join(status_path, 'Created ROIs_{}.txt'.format(MRN))):
             continue
