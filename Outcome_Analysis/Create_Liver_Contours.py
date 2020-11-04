@@ -9,6 +9,24 @@ import pandas
 import numpy as np
 
 
+def return_MRN_dictionary(excel_path):
+    df = pd.read_excel(excel_path, sheet_name='Refined')
+    MRN_list, GTV_List, Ablation_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values
+    MRN_dictionary = {}
+    for MRN, GTV, Ablation in zip(MRN_list, GTV_List, Ablation_list):
+        if MRN not in MRN_dictionary:
+            MRN_dictionary[MRN] = []
+        for exam in [GTV, Ablation]:
+            if type(exam) is not float:
+                exam = str(exam)
+                if exam.startswith('CT'):
+                    if exam.find(' ') == -1:
+                        exam = 'CT {}'.format(exam.split('CT')[-1])
+                    if exam not in MRN_dictionary[MRN]:
+                        MRN_dictionary[MRN].append(exam)
+    return MRN_dictionary
+
+
 class create_RT_Structure():
     def __init__(self,roi_name):
         self.roi_name = roi_name
@@ -160,16 +178,19 @@ class create_RT_Structure():
 
 
 def main():
-    status_path = r'H:\Deeplearning_Recurrence_Work'
-    excel_path = os.path.join(status_path, 'RetroAblation.xlsx')
-    df = pandas.read_excel(excel_path)
+    status_path = r'H:\Deeplearning_Recurrence_Work\Status\Liver'
+    path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
+           r'\Predicting_Recurrence'
+
+    excel_path = os.path.join(path, 'RetroAblation.xlsx')
+    MRN_dictionary = return_MRN_dictionary(excel_path)
     class_struct = create_RT_Structure(roi_name='Liver')
     for export in [True, False]:
-        MRNs = df.MRN.values
-        for MRN in np.unique(df.MRN.values):
-            MRN_index = np.where(MRNs == MRN)[0][0]
-            MRN = str(int(MRN))  # Drop the 0 from the front
+        for MRN_key in MRN_dictionary.keys():
+            MRN = str(int(MRN_key))  # Drop the 0 from the front
             print(MRN)
+            if not MRN_dictionary[MRN_key]:
+                continue
             if export and os.path.exists(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN))):
                 continue
             elif not export and os.path.exists(os.path.join(status_path, 'Imported_Predictions_{}.txt'.format(MRN))):
@@ -182,20 +203,21 @@ def main():
                 continue
             for case in class_struct.patient.Cases:
                 class_struct.case = case
-                base_line = df.Baseline[MRN_index].to_pydatetime()
-                ablation = df.Ablation[MRN_index].to_pydatetime()
-                for date in [base_line, ablation]:
-                    for exam in case.Examinations:
-                        date_time = exam.GetExaminationDateTime()
-                        if date_time.Year == date.year and date_time.Month == date.month and date_time.Day == date.day:
-                            if export:
-                                class_struct.export(exam)
+                for case in class_struct.patient.Cases:
+                    class_struct.case = case
+                    for exam_name in MRN_dictionary[MRN_key]:
+                        try:
+                            exam = case.Examinations[exam_name]
+                        except:
+                            break
+                        if export:
+                            if class_struct.export(exam):
                                 fid = open(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN)), 'w+')
                                 fid.close()
-                            else:
-                                if not class_struct.check_has_contours(exam):
-                                    class_struct.import_data(exam)
-                                    class_struct.patient.Save()
+                        else:
+                            if not class_struct.check_has_contours(exam):
+                                class_struct.import_data(exam)
+                                class_struct.patient.Save()
                                 fid = open(os.path.join(status_path, 'Imported_Predictions_{}.txt'.format(MRN)), 'w+')
                                 fid.close()
 
