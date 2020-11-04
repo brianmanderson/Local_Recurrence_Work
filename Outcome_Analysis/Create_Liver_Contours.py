@@ -5,8 +5,7 @@ __author__ = 'Brian M Anderson'
 import os
 from connect import *
 import time, getpass
-import pandas
-import numpy as np
+import pandas as pd
 
 
 def return_MRN_dictionary(excel_path):
