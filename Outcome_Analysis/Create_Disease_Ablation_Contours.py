@@ -4,7 +4,6 @@ import os
 from connect import *
 import time, getpass
 import pandas as pd
-import numpy as np
 
 
 def return_MRN_dictionary(excel_path):
@@ -212,7 +211,9 @@ def main():
     class_struct = create_RT_Structure(roi_name='Liver_Disease_Ablation')
     for export in [True, False]:
         for MRN_key in MRN_dictionary.keys():
-            MRN = str(int(MRN_key))  # Drop the 0 from the front
+            MRN = str(MRN_key)
+            while MRN[0] == '0':  # Drop the 0 from the front
+                MRN = MRN[1:]
             print(MRN)
             if not MRN_dictionary[MRN_key]:
                 continue
