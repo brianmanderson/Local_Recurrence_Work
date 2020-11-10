@@ -9,14 +9,19 @@ import numpy as np
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    MRN_list, status_list = df['MRN'].values, df['Status'].values
+    MRN_list, GTV_List, Ablation_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values
     MRN_dictionary = {}
-    for MRN, status in zip(MRN_list, status_list):
+    for MRN, GTV, Ablation in zip(MRN_list, GTV_List, Ablation_list):
         if MRN not in MRN_dictionary:
             MRN_dictionary[MRN] = []
-        if type(status) is float:
-            if status not in MRN_dictionary[MRN]:
-                MRN_dictionary[MRN].append(int(status))
+        for exam in [GTV, Ablation]:
+            if type(exam) is not float:
+                exam = str(exam)
+                if exam.startswith('CT'):
+                    if exam.find(' ') == -1:
+                        exam = 'CT {}'.format(exam.split('CT')[-1])
+                    if exam not in MRN_dictionary[MRN]:
+                        MRN_dictionary[MRN].append(exam)
     return MRN_dictionary
 
 
