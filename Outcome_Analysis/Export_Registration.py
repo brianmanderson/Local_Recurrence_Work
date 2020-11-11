@@ -66,6 +66,7 @@ def main():
     MRN_dictionary = return_MRN_dictionary(excel_path)
     class_struct = create_RT_Structure()
     for MRN_key in MRN_dictionary.keys():
+        patient_dictionary = MRN_dictionary[MRN_key]
         MRN = str(MRN_key)
         while MRN[0] == '0':  # Drop the 0 from the front
             MRN = MRN[1:]
@@ -84,8 +85,8 @@ def main():
             dicom_files = [i for i in os.listdir(export_path) if i.endswith('.dcm')]
             if dicom_files:
                 continue  # Path already exists and has files
-        primary = MRN_dictionary['Primary']
-        secondary = MRN_dictionary['Secondary']
+        primary = patient_dictionary['Primary']
+        secondary = patient_dictionary['Secondary']
         for registration in case.Registrations:
             to_for = registration.ToFrameOfReference
             # Frame of reference of the "From" examination.
