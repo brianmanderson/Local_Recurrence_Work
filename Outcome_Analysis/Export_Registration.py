@@ -1,7 +1,10 @@
 __author__ = 'Brian M Anderson'
 # Created on 11/10/2020
 import os
-# from connect import *
+try:
+    from connect import *
+except:
+    xxx = 1
 import time, getpass
 import pandas as pd
 import numpy as np
