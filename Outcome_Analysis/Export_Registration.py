@@ -76,42 +76,30 @@ def main():
         case = None
         for case in class_struct.patient.Cases:
             continue
-        export_pair = False
-        '''
-        First, check to see if one of the ROIs is present on the pre-treatment exam
-        '''
-        keys = ['Primary', 'Secondary']
-        for key in keys:
-            exam_name = MRN_dictionary[MRN_key][key]
-            try:
-                exam = case.Examinations[exam_name]
-            except:
-                continue
-            for roi in ['Retro_GTV', 'Retro_Ablation', 'Retro_GTV_Recurred']:
-                if case.PatientModel.StructureSets[exam.Name].RoiGeometries[roi].HasContours():
-                    '''
-                    If it exists, export the pre-treatment and post-treatment scan
-                    '''
-                    export_pair = True
-                    break
-        if export_pair:
-            for exam_name in MRN_dictionary[MRN_key]:
-                try:
-                    exam = case.Examinations[exam_name]
-                except:
-                    continue
-                export_path = os.path.join(base_export_path, MRN, case.CaseName, exam_name)
-                if os.path.exists(export_path) and os.listdir(export_path):
-                    dicom_files = [i for i in os.listdir(export_path) if i.endswith('.dcm')]
-                    if dicom_files:
-                        continue  # Path already exists and has files
+        export_path = os.path.join(base_export_path, MRN, case.CaseName, 'Registration')
+        if os.path.exists(export_path) and os.listdir(export_path):
+            dicom_files = [i for i in os.listdir(export_path) if i.endswith('.dcm')]
+            if dicom_files:
+                continue  # Path already exists and has files
+        primary = MRN_dictionary['Primary']
+        secondary = MRN_dictionary['Secondary']
+        for registration in case.Registrations:
+            to_for = registration.ToFrameOfReference
+            # Frame of reference of the "From" examination.
+            from_for = registration.FromFrameOfReference
+            # Find all examinations with frame of reference that matches 'to_for'.
+            to_examinations = [e for e in case.Examinations if
+                               e.EquipmentInfo.FrameOfReference == to_for]
+            # Find all examinations with frame of reference that matches 'from_for'.
+            from_examinations = [e for e in case.Examinations if e.EquipmentInfo.FrameOfReference == from_for]
+            if primary in to_examinations and secondary in from_examinations:
+                exam_names = ["%s:%s" % (registration.RegistrationSource.ToExamination.Name,
+                                         registration.RegistrationSource.FromExamination.Name)]
                 if not os.path.exists(export_path):
                     os.makedirs(export_path)
-                case.ScriptableDicomExport(ExportFolderPath=export_path, Examinations=[exam.Name],
-                                           RtStructureSetsForExaminations=[exam.Name])
-        else:
-            fid = open(os.path.join(status_path, '{}_None.txt'.format(MRN)), 'w+')
-            fid.close()
+                case.ScriptableDicomExport(ExportFolderPath=export_path,
+                                           SpatialRegistrationForExaminations=exam_names,
+                                           IgnorePreConditionWarnings=True)
 
 
 if __name__ == "__main__":
