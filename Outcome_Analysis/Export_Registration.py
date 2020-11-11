@@ -92,10 +92,9 @@ def main():
             # Frame of reference of the "From" examination.
             from_for = registration.FromFrameOfReference
             # Find all examinations with frame of reference that matches 'to_for'.
-            to_examinations = [e for e in case.Examinations if
-                               e.EquipmentInfo.FrameOfReference == to_for]
+            to_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == to_for]
             # Find all examinations with frame of reference that matches 'from_for'.
-            from_examinations = [e for e in case.Examinations if e.EquipmentInfo.FrameOfReference == from_for]
+            from_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == from_for]
             if primary in to_examinations and secondary in from_examinations:
                 exam_names = ["%s:%s" % (registration.RegistrationSource.ToExamination.Name,
                                          registration.RegistrationSource.FromExamination.Name)]
