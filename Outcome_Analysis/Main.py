@@ -25,3 +25,7 @@ The ROI will help train the model for outcomes
 Export the DICOM and RT
 Export_Patients.py
 '''
+
+'''
+Register the images about the liver and export
+'''
