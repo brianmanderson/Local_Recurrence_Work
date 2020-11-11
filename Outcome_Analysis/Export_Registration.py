@@ -1,7 +1,7 @@
 __author__ = 'Brian M Anderson'
 # Created on 11/10/2020
 import os
-from connect import *
+# from connect import *
 import time, getpass
 import pandas as pd
 import numpy as np
@@ -9,19 +9,26 @@ import numpy as np
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    MRN_list, GTV_List, Ablation_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values
+    MRN_list, GTV_List, Ablation_list, Registered_list = df['MRN'].values, df['PreExam'].values,\
+                                                         df['Ablation_Exam'].values, df['Registered'].values
     MRN_dictionary = {}
-    for MRN, GTV, Ablation in zip(MRN_list, GTV_List, Ablation_list):
-        if MRN not in MRN_dictionary:
-            MRN_dictionary[MRN] = []
-        for exam in [GTV, Ablation]:
-            if type(exam) is not float:
-                exam = str(exam)
-                if exam.startswith('CT'):
-                    if exam.find(' ') == -1:
-                        exam = 'CT {}'.format(exam.split('CT')[-1])
-                    if exam not in MRN_dictionary[MRN]:
-                        MRN_dictionary[MRN].append(exam)
+    for MRN, GTV, Ablation, Registered in zip(MRN_list, GTV_List, Ablation_list, Registered_list):
+        Registered = str(Registered)
+        if Registered != '1.0':
+            continue
+        add = True
+        if type(GTV) is float or type(Ablation) is float:
+            add = False
+        if add:
+            GTV = str(GTV)
+            if GTV.startswith('CT'):
+                if GTV.find(' ') == -1:
+                    GTV = 'CT {}'.format(GTV.split('CT')[-1])
+            Ablation = str(Ablation)
+            if Ablation.startswith('CT'):
+                if Ablation.find(' ') == -1:
+                    Ablation = 'CT {}'.format(Ablation.split('CT')[-1])
+            MRN_dictionary[MRN] = {'Primary': GTV, 'Secondary': Ablation}
     return MRN_dictionary
 
 
@@ -73,7 +80,9 @@ def main():
         '''
         First, check to see if one of the ROIs is present on the pre-treatment exam
         '''
-        for exam_name in MRN_dictionary[MRN_key]:
+        keys = ['Primary', 'Secondary']
+        for key in keys:
+            exam_name = MRN_dictionary[MRN_key][key]
             try:
                 exam = case.Examinations[exam_name]
             except:
