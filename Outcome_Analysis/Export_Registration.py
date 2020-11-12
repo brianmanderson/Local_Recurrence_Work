@@ -114,5 +114,6 @@ def main():
         if not had_reg:
             print('{} did not have  registration'.format(MRN))
 
+
 if __name__ == "__main__":
     main()
