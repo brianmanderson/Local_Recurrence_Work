@@ -41,19 +41,23 @@ def main():
 
     MRN_dictionary = return_MRN_dictionary(excel_path)
     for MRN in MRN_dictionary.keys():
-        if MRN not in os.listdir(base_export_path) or MRN.find('Brazil') != -1:
+        if MRN not in os.listdir(base_export_path):
             continue
+        """
+        For each patient, load in the primary and secondary DICOM images, also liver.
+        On primary, pull in the Retro_GTV, Recurred, these shouldn't be present on the secondary
+        """
         patient_dictionary = MRN_dictionary[MRN]
         primary = patient_dictionary['Primary']
         secondary = patient_dictionary['Secondary']
         assocations = {'Liver_BMA_Program_4': 'Liver'}
-        primary_reader = DicomReaderWriter(Contour_Names=['Retro_GTV', 'Retro_GTV_Recurred', 'Liver'],
+        primary_reader = DicomReaderWriter(Contour_Names=['Retro_GTV', 'Retro_GTV_Recurred', 'Liver'],  # Need all
                                            associations=assocations, arg_max=False, require_all_contours=False)
-        secondary_reader = DicomReaderWriter(Contour_Names=['Liver'], associations=assocations)
+        secondary_reader = DicomReaderWriter(Contour_Names=['Liver'], associations=assocations)  # Only need the liver
         for root, directories, files in os.walk(os.path.join(base_export_path, MRN)):
             if 'Registration' in directories and primary in directories and secondary in directories:
                 '''
-                First, load in our registration
+                Load in our registration
                 '''
                 registration_path = os.path.join(root, 'Registration')
                 registration_file = [os.path.join(registration_path, i) for i in os.listdir(registration_path)][0]
@@ -67,18 +71,27 @@ def main():
                 secondary_reader.down_folder(secondary_path)
                 fixed_dicom_image = sitk.Cast(primary_reader.dicom_handle, sitk.sitkFloat32)
                 moving_dicom_image = sitk.Cast(secondary_reader.dicom_handle, sitk.sitkFloat32)
-
-                fixed_dicom_mask = sitk.Cast(primary_reader.dicom_handle, sitk.sitkFloat32)
-                moving_dicom_mask = sitk.Cast(secondary_reader.dicom_handle, sitk.sitkFloat32)
-
+                moving_dicom_mask = sitk.Cast(secondary_reader.annotation_handle, sitk.sitkFloat32)
+                """
+                Resample the moving image to register with the primary
+                """
                 resampled_moving_image = register_images_with_dicom_reg(fixed_image=fixed_dicom_image,
                                                                         moving_image=moving_dicom_image,
                                                                         dicom_registration=dicom_registration,
                                                                         min_value=-1000)
-                resampled_moving_mask = register_images_with_dicom_reg(fixed_image=fixed_dicom_mask,
+                """
+                Resample the liver contour as well
+                """
+                resampled_moving_mask = register_images_with_dicom_reg(fixed_image=fixed_dicom_image,
                                                                        moving_image=moving_dicom_mask,
                                                                        dicom_registration=dicom_registration,
                                                                        min_value=0)
+                resampled_moving_mask = sitk.GetArrayFromImage(resampled_moving_mask)
+                resampled_moving_mask[resampled_moving_mask > 0] = 1
+                resampled_moving_mask = sitk.GetImageFromArray(resampled_moving_mask.astype('int8'))
+                resampled_moving_mask.SetOrigin(resampled_moving_image.GetOrigin())
+                resampled_moving_mask.SetDirection(resampled_moving_image.GetDirection())
+                resampled_moving_mask.SetSpacing(resampled_moving_image.GetSpacing())
                 xxx = 1
 
 

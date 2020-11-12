@@ -100,6 +100,9 @@ def main():
                     os.makedirs(export_path)
                 case.ScriptableDicomExport(ExportFolderPath=export_path, Examinations=[exam.Name],
                                            RtStructureSetsForExaminations=[exam.Name])
+        else:
+            fid = open(os.path.join(status_path, '{}_None.txt'.format(MRN)), 'w+')
+            fid.close()
 
 
 if __name__ == "__main__":
