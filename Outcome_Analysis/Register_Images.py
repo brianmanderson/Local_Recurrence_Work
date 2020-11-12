@@ -71,15 +71,14 @@ def main():
                 fixed_dicom_mask = sitk.Cast(primary_reader.dicom_handle, sitk.sitkFloat32)
                 moving_dicom_mask = sitk.Cast(secondary_reader.dicom_handle, sitk.sitkFloat32)
 
-                resampled_moving = register_images_with_dicom_reg(fixed_image=fixed_image, moving_image=moving_image,
-                                                                  dicom_registration=dicom_registration, min_value=0)
-                resampled_array = sitk.GetArrayFromImage(resampled_moving)
-                resampled_array[resampled_array > 200] = 200
-                resampled_array[resampled_array < -200] = -200
-
-                fixed_array = sitk.GetArrayFromImage(fixed_image)
-                fixed_array[fixed_array > 200] = 200
-                fixed_array[fixed_array < -200] = -200
+                resampled_moving_image = register_images_with_dicom_reg(fixed_image=fixed_dicom_image,
+                                                                        moving_image=moving_dicom_image,
+                                                                        dicom_registration=dicom_registration,
+                                                                        min_value=-1000)
+                resampled_moving_mask = register_images_with_dicom_reg(fixed_image=fixed_dicom_mask,
+                                                                       moving_image=moving_dicom_mask,
+                                                                       dicom_registration=dicom_registration,
+                                                                       min_value=0)
                 xxx = 1
 
 
