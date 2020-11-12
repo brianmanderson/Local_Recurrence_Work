@@ -82,7 +82,8 @@ def main():
             continue
         export_path = os.path.join(base_export_path, MRN, case.CaseName, 'Registration')
         if os.path.exists(export_path) and os.listdir(export_path):
-            dicom_files = [i for i in os.listdir(export_path) if i.endswith('.dcm')]
+            dicom_files = [i for i in os.listdir(export_path) if i.endswith('.dcm') or
+                           i.startswith('SameFrameOfReference')]
             if dicom_files:
                 continue  # Path already exists and has files
         primary = patient_dictionary['Primary']
@@ -96,13 +97,17 @@ def main():
             # Find all examinations with frame of reference that matches 'from_for'.
             from_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == from_for]
             if primary in to_examinations and secondary in from_examinations:
-                exam_names = ["%s:%s" % (registration.RegistrationSource.ToExamination.Name,
-                                         registration.RegistrationSource.FromExamination.Name)]
                 if not os.path.exists(export_path):
                     os.makedirs(export_path)
-                case.ScriptableDicomExport(ExportFolderPath=export_path,
-                                           SpatialRegistrationForExaminations=exam_names,
-                                           IgnorePreConditionWarnings=True)
+                if registration.RegistrationSource is not None:
+                    exam_names = ["%s:%s" % (registration.RegistrationSource.ToExamination.Name,
+                                             registration.RegistrationSource.FromExamination.Name)]
+                    case.ScriptableDicomExport(ExportFolderPath=export_path,
+                                               SpatialRegistrationForExaminations=exam_names,
+                                               IgnorePreConditionWarnings=True)
+                else:
+                    fid = open(os.path.join(export_path, 'SameFrameOfReference.txt'), 'w+')
+                    fid.close()
 
 
 if __name__ == "__main__":
