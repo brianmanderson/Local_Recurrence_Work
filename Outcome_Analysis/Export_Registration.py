@@ -85,10 +85,13 @@ def main():
             dicom_files = [i for i in os.listdir(export_path) if i.endswith('.dcm') or
                            i.startswith('SameFrameOfReference')]
             if dicom_files:
+                print('Already has a registration')
                 continue  # Path already exists and has files
         primary = patient_dictionary['Primary']
         secondary = patient_dictionary['Secondary']
+        had_reg = False
         for registration in case.Registrations:
+            had_reg = True
             to_for = registration.ToFrameOfReference
             # Frame of reference of the "From" examination.
             from_for = registration.FromFrameOfReference
@@ -108,7 +111,8 @@ def main():
                 else:
                     fid = open(os.path.join(export_path, 'SameFrameOfReference.txt'), 'w+')
                     fid.close()
-
+        if not had_reg:
+            print('{} did not have  registration'.format(MRN))
 
 if __name__ == "__main__":
     main()
