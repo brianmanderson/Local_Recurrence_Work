@@ -89,6 +89,9 @@ def main():
                 continue  # Path already exists and has files
         primary = patient_dictionary['Primary']
         secondary = patient_dictionary['Secondary']
+        exam_names = [e.Name for e in case.Examinations]
+        if primary not in exam_names or secondary not in exam_names:
+            continue
         if case.Examinations[primary].EquipmentInfo.FrameOfReference == \
                 case.Examinations[secondary].EquipmentInfo.FrameOfReference:
             if not os.path.exists(export_path):
