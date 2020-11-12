@@ -97,7 +97,6 @@ def main():
             fid.close()
         else:
             for registration in case.Registrations:
-                had_reg = True
                 to_for = registration.ToFrameOfReference
                 # Frame of reference of the "From" examination.
                 from_for = registration.FromFrameOfReference
