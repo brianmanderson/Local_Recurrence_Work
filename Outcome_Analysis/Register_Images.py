@@ -35,14 +35,32 @@ def return_MRN_dictionary(excel_path):
 
 
 def main():
-    base_export_path = r'H:\Deeplearning_Recurrence_Work\Dicom_Exports'
+    dicom_export_path = r'H:\Deeplearning_Recurrence_Work\Dicom_Exports'
+    nifti_export_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports'
     excel_path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
                  r'\Predicting_Recurrence\RetroAblation.xlsx'
-
+    anonymized_sheet = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
+                       r'\Predicting_Recurrence\Patient_Anonymization.xlsx'
+    patient_df = pd.read_excel(anonymized_sheet)
     MRN_dictionary = return_MRN_dictionary(excel_path)
     for MRN in MRN_dictionary.keys():
-        if MRN not in os.listdir(base_export_path):
+        if MRN not in os.listdir(dicom_export_path):
             continue
+        print(MRN)
+        """
+        Check and see if we've done this one before
+        """
+        add_patient = True
+        if MRN in patient_df['MRN'].values:
+            patient_id = int(patient_df['PatientID'].values[list(patient_df['MRN'].values).index(MRN)])
+            add_patient = False
+            if os.path.exists(os.path.join(nifti_export_path, '{}_Primary_Dicom.nii'.format(patient_id))):
+                continue
+        else:
+            patient_id = 0
+            int_ids = [int(i) for i in patient_df['PatientID'].values]
+            while patient_id in int_ids:
+                patient_id += 1
         """
         For each patient, load in the primary and secondary DICOM images, also liver.
         On primary, pull in the Retro_GTV, Recurred, these shouldn't be present on the secondary
@@ -52,9 +70,9 @@ def main():
         secondary = patient_dictionary['Secondary']
         assocations = {'Liver_BMA_Program_4': 'Liver'}
         primary_reader = DicomReaderWriter(Contour_Names=['Retro_GTV', 'Retro_GTV_Recurred', 'Liver'],  # Need all
-                                           associations=assocations, arg_max=False, require_all_contours=False)
+                                           associations=assocations, require_all_contours=False)
         secondary_reader = DicomReaderWriter(Contour_Names=['Liver'], associations=assocations)  # Only need the liver
-        for root, directories, files in os.walk(os.path.join(base_export_path, MRN)):
+        for root, directories, files in os.walk(os.path.join(dicom_export_path, MRN)):
             if 'Registration' in directories and primary in directories and secondary in directories:
                 '''
                 Load in our registration
@@ -70,6 +88,7 @@ def main():
                 primary_reader.down_folder(primary_path)
                 secondary_reader.down_folder(secondary_path)
                 fixed_dicom_image = sitk.Cast(primary_reader.dicom_handle, sitk.sitkFloat32)
+                fixed_dicom_mask = primary_reader.annotation_handle
                 moving_dicom_image = sitk.Cast(secondary_reader.dicom_handle, sitk.sitkFloat32)
                 moving_dicom_mask = sitk.Cast(secondary_reader.annotation_handle, sitk.sitkFloat32)
                 """
@@ -92,7 +111,19 @@ def main():
                 resampled_moving_mask.SetOrigin(resampled_moving_image.GetOrigin())
                 resampled_moving_mask.SetDirection(resampled_moving_image.GetDirection())
                 resampled_moving_mask.SetSpacing(resampled_moving_image.GetSpacing())
-                xxx = 1
+
+                sitk.WriteImage(resampled_moving_image, os.path.join(nifti_export_path,
+                                                                     '{}_Secondary_Dicom.nii'.format(patient_id)))
+                sitk.WriteImage(resampled_moving_mask, os.path.join(nifti_export_path,
+                                                                    '{}_Secondary_Mask.nii'.format(patient_id)))
+                sitk.WriteImage(fixed_dicom_image, os.path.join(nifti_export_path,
+                                                                '{}_Primary_Dicom.nii'.format(patient_id)))
+                sitk.WriteImage(fixed_dicom_mask, os.path.join(nifti_export_path,
+                                                               '{}_Primary_Mask.nii'.format(patient_id)))
+                if add_patient:
+                    new_patient = {'PatientID': patient_id, 'MRN': MRN}
+                    patient_df = patient_df.append(new_patient, ignore_index=True)
+                    patient_df.to_excel(anonymized_sheet, index=0)
 
 
 if __name__ == "__main__":
