@@ -89,30 +89,34 @@ def main():
                 continue  # Path already exists and has files
         primary = patient_dictionary['Primary']
         secondary = patient_dictionary['Secondary']
-        had_reg = False
-        for registration in case.Registrations:
-            had_reg = True
-            to_for = registration.ToFrameOfReference
-            # Frame of reference of the "From" examination.
-            from_for = registration.FromFrameOfReference
-            # Find all examinations with frame of reference that matches 'to_for'.
-            to_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == to_for]
-            # Find all examinations with frame of reference that matches 'from_for'.
-            from_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == from_for]
-            if primary in to_examinations and secondary in from_examinations:
-                if not os.path.exists(export_path):
-                    os.makedirs(export_path)
-                if registration.RegistrationSource is not None:
-                    exam_names = ["%s:%s" % (registration.RegistrationSource.ToExamination.Name,
-                                             registration.RegistrationSource.FromExamination.Name)]
-                    case.ScriptableDicomExport(ExportFolderPath=export_path,
-                                               SpatialRegistrationForExaminations=exam_names,
-                                               IgnorePreConditionWarnings=True)
-                else:
-                    fid = open(os.path.join(export_path, 'SameFrameOfReference.txt'), 'w+')
-                    fid.close()
-        if not had_reg:
-            print('{} did not have  registration'.format(MRN))
+        if case.Examinations[primary].EquipmentInfo.FrameOfReference == \
+                case.Examinations[secondary].EquipmentInfo.FrameOfReference:
+            if not os.path.exists(export_path):
+                os.makedirs(export_path)
+            fid = open(os.path.join(export_path, 'SameFrameOfReference.txt'), 'w+')
+            fid.close()
+        else:
+            for registration in case.Registrations:
+                had_reg = True
+                to_for = registration.ToFrameOfReference
+                # Frame of reference of the "From" examination.
+                from_for = registration.FromFrameOfReference
+                # Find all examinations with frame of reference that matches 'to_for'.
+                to_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == to_for]
+                # Find all examinations with frame of reference that matches 'from_for'.
+                from_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == from_for]
+                if primary in to_examinations and secondary in from_examinations:
+                    if not os.path.exists(export_path):
+                        os.makedirs(export_path)
+                    if registration.RegistrationSource is not None:
+                        exam_names = ["%s:%s" % (registration.RegistrationSource.ToExamination.Name,
+                                                 registration.RegistrationSource.FromExamination.Name)]
+                        case.ScriptableDicomExport(ExportFolderPath=export_path,
+                                                   SpatialRegistrationForExaminations=exam_names,
+                                                   IgnorePreConditionWarnings=True)
+                    else:
+                        fid = open(os.path.join(export_path, 'SameFrameOfReference.txt'), 'w+')
+                        fid.close()
 
 
 if __name__ == "__main__":
