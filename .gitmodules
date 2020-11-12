@@ -7,3 +7,6 @@
 [submodule "Brazil_Data/Raystation_Import_Scripts"]
 	path = Brazil_Data/Raystation_Import_Scripts
 	url = https://github.com/brianmanderson/Raystation_Import_Scripts
+[submodule "Outcome_Analysis/RegisteringImages"]
+	path = Outcome_Analysis/RegisteringImages
+	url = https://github.com/brianmanderson/RegisteringImages
