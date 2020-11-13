@@ -90,7 +90,27 @@ def main():
                 primary_path = os.path.join(root, primary)
                 secondary_path = os.path.join(root, secondary)
                 primary_reader.down_folder(primary_path)
-                secondary_reader.down_folder(secondary_path)
+                has_liver = False
+                for roi in primary_reader.rois_in_case:
+                    if roi in primary_reader.associations.keys() in primary_reader.associations[roi] and \
+                            primary_reader.associations[roi] == 'liver':
+                        has_liver = True
+                        break
+                if not has_liver:
+                    print('No liver contours at {}'.format(primary_path))
+                    continue
+                else:
+                    has_liver = False
+                    secondary_reader.down_folder(secondary_path)
+                    for roi in secondary_reader.rois_in_case:
+                        if roi in secondary_reader.associations.keys() in secondary_reader.associations[roi] and \
+                                secondary_reader.associations[roi] == 'liver':
+                            has_liver = True
+                            break
+                if not has_liver:
+                    print('No liver contours at {}'.format(secondary_path))
+                    continue
+
                 fixed_dicom_image = sitk.Cast(primary_reader.dicom_handle, sitk.sitkFloat32)
                 fixed_dicom_mask = primary_reader.annotation_handle
                 moving_dicom_image = sitk.Cast(secondary_reader.dicom_handle, sitk.sitkFloat32)
