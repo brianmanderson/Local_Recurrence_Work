@@ -92,8 +92,7 @@ def main():
                 primary_reader.down_folder(primary_path)
                 has_liver = False
                 for roi in primary_reader.rois_in_case:
-                    if roi in primary_reader.associations.keys() in primary_reader.associations[roi] and \
-                            primary_reader.associations[roi] == 'liver':
+                    if roi in primary_reader.associations.keys() and primary_reader.associations[roi] == 'liver':
                         has_liver = True
                         break
                 if not has_liver:
@@ -103,7 +102,7 @@ def main():
                     has_liver = False
                     secondary_reader.down_folder(secondary_path)
                     for roi in secondary_reader.rois_in_case:
-                        if roi in secondary_reader.associations.keys() in secondary_reader.associations[roi] and \
+                        if roi in secondary_reader.associations.keys() and \
                                 secondary_reader.associations[roi] == 'liver':
                             has_liver = True
                             break
