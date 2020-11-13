@@ -27,8 +27,8 @@ while True:
     for index in range(len(MRNs)):
         MRN = str(data['MRN'][index])
         Recurrence = data['Recurrence'][index]
-        if os.path.exists(os.path.join(status_path, MRN+'.txt')):
-            continue
+        # if os.path.exists(os.path.join(status_path, MRN+'.txt')):
+        #     continue
         print(MRN)
         patient_path = os.path.join(images_path, MRN)
         if not os.path.exists(patient_path):
@@ -36,15 +36,19 @@ while True:
             continue
         case = os.listdir(patient_path)[0]
         recurrence_path = os.path.join(patient_path, case, Recurrence)
-        recurrence_reader = Dicom_to_Imagestack(arg_max=False,Contour_Names=['Liver','Recurrence','Ablation_Recurrence',
-                                                                             'Liver_Ablation','Ablation','GTV_Exp_5mm_outside_Ablation'])
+        output_dir = os.path.join(recurrence_path, 'new_RT')
+        RS_files = []
+        if os.path.exists(output_dir):
+            RS_files = [i for i in os.listdir(output_dir) if i.endswith('.dcm')]
+        recurrence_reader = DicomReaderWriter(arg_max=False, Contour_Names=['Liver', 'Recurrence',
+                                                                            'Ablation_Recurrence', 'Liver_Ablation',
+                                                                            'Ablation', 'GTV_Exp_5mm_outside_Ablation'])
         try:
             recurrence_reader.Make_Contour_From_directory(recurrence_path)
         except:
             continue
-
+        spacing = recurrence_reader.annotation_handle.GetSpacing()
         mask = recurrence_reader.mask
-        bounds = [0, mask.shape[0]]
         # mask = mask[130:160,...]
         liver_recurrence = mask[..., 1]
         ablation_recurrence = mask[..., 3]
@@ -57,23 +61,30 @@ while True:
         min_ablation_margin = mask[..., 6]
         ablation[liver_ablation == 0] == 0
         min_ablation_margin[liver_ablation == 0] = 0
-
-        centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_recurrence))
-        centroid_of_ablation = np.asarray(center_of_mass(ablation))
-        spacing = recurrence_reader.annotation_handle.GetSpacing()
-        output_recurrence = create_output_ray(centroid_of_ablation_recurrence,ref_binary_image=recurrence_base,
-                                              spacing=spacing, min_max_only=False, target_centroid=centroid_of_ablation)
-        recurrence_reader.with_annotations(output_recurrence, output_dir=os.path.join(recurrence_path, 'new_RT'),
-                                           ROI_Names=['cone_recurrence', 'cone_projected'])
+        if not RS_files:
+            centroid_of_ablation_recurrence = np.asarray(center_of_mass(ablation_recurrence))
+            centroid_of_ablation = np.asarray(center_of_mass(ablation))
+            output_recurrence = create_output_ray(centroid_of_ablation_recurrence, ref_binary_image=recurrence_base,
+                                                  spacing=spacing, min_max_only=False, target_centroid=centroid_of_ablation)
+            recurrence_reader.with_annotations(output_recurrence, output_dir=output_dir,
+                                               ROI_Names=['cone_recurrence', 'cone_projected'])
+        else:
+            cone_reader = DicomReaderWriter(arg_max=False, Contour_Names=['cone_recurrence', 'cone_projected'])
+            cone_reader.make_array(recurrence_path)
+            cone_reader.rois_in_case = []
+            cone_reader.RTs_in_case = {}
+            cone_reader.add_RT(output_dir)
+            cone_reader.get_mask()
+            output_recurrence = cone_reader.mask
         overlap = np.where((output_recurrence[..., -1] == 1) & (min_ablation_margin == 1)) # See if it overlaps with the minimum ablation margin
-        if overlap:
+        if np.any(overlap):
             volume_overlap = len(overlap[0])*np.prod(spacing)/1000  # cm^3
             data['Overlap?'][index] = 1.0
         else:
             volume_overlap = 0
             data['Overlap?'][index] = 0.0
         data['Volume (cc)'][index] = volume_overlap
-        print(volume_overlap)
+        print('Overlap volume is {} for {}'.format(volume_overlap, MRN))
         data.to_excel(output_file, index=0)
         fid = open(os.path.join(status_path, MRN+'.txt'), 'w+')
         fid.close()
