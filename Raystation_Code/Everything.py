@@ -15,9 +15,9 @@ def map_vasculature(case, examination,rois_in_case=[],is_primary=True, expansion
 
     for roi in [liver_roi, ablation_roi, vasc_base]:
         print(roi)
-        assert roi in rois_in_case, 'Need to provide contours!'
+        assert roi in rois_in_case, 'Need to provide contours of {}!'.format(roi)
         assert case.PatientModel.StructureSets[examination.Name].RoiGeometries[roi].HasContours(), \
-            'Contours not defined on exam!'
+            '{} not defined on exam!'.format(roi)
 
     colours = ['Brown', 'Purple', 'Pink']
     cof_roi = r"Center_Of_Interest"
@@ -92,8 +92,8 @@ def map_vasculature(case, examination,rois_in_case=[],is_primary=True, expansion
 
 case = get_current("Case")
 patient = get_current("Patient")
-primary_exam = 'CT 12'
-secondary_exam = 'CT 13'
+primary_exam = 'CT 7'
+secondary_exam = 'CT 8'
 expansion = 7  # cm
 rois_in_case = []
 for name in case.PatientModel.RegionsOfInterest:
