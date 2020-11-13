@@ -30,7 +30,7 @@ def return_MRN_dictionary(excel_path):
             if Ablation.startswith('CT'):
                 if Ablation.find(' ') == -1:
                     Ablation = 'CT {}'.format(Ablation.split('CT')[-1])
-            MRN_dictionary[MRN] = {'Primary': GTV, 'Secondary': Ablation}
+            MRN_dictionary[str(MRN)] = {'Primary': GTV, 'Secondary': Ablation}
     return MRN_dictionary
 
 
@@ -45,6 +45,7 @@ def main():
     MRN_dictionary = return_MRN_dictionary(excel_path)
     for MRN in MRN_dictionary.keys():
         if MRN not in os.listdir(dicom_export_path):
+            print('{} not present in collection'.format(MRN))
             continue
         print(MRN)
         """
@@ -69,7 +70,7 @@ def main():
         primary = patient_dictionary['Primary']
         secondary = patient_dictionary['Secondary']
         assocations = {'Liver_BMA_Program_4': 'Liver'}
-        primary_reader = DicomReaderWriter(Contour_Names=['Retro_GTV', 'Retro_GTV_Recurred', 'Liver'],  # Need all
+        primary_reader = DicomReaderWriter(Contour_Names=['Retro_GTV', 'Retro_GTV_Recurred', 'Liver'],
                                            associations=assocations, require_all_contours=False)
         secondary_reader = DicomReaderWriter(Contour_Names=['Liver'], associations=assocations)  # Only need the liver
         for root, directories, files in os.walk(os.path.join(dicom_export_path, MRN)):
@@ -79,7 +80,10 @@ def main():
                 '''
                 registration_path = os.path.join(root, 'Registration')
                 registration_file = [os.path.join(registration_path, i) for i in os.listdir(registration_path)][0]
-                dicom_registration = pydicom.read_file(registration_file)
+                if registration_file.endswith('.dcm'):
+                    dicom_registration = pydicom.read_file(registration_file)
+                else:
+                    dicom_registration = None
                 '''
                 Next, our primary and secondary images, as sitkFloat32
                 '''
@@ -97,15 +101,17 @@ def main():
                 resampled_moving_image = register_images_with_dicom_reg(fixed_image=fixed_dicom_image,
                                                                         moving_image=moving_dicom_image,
                                                                         dicom_registration=dicom_registration,
-                                                                        min_value=-1000)
+                                                                        min_value=-1000, method=sitk.sitkLinear)
                 """
-                Resample the liver contour as well
+                Resample the liver contour as well, we're using a linear sampling here because we often have large 
+                rotations present.. cut off of 0.5 seemed appropriate
                 """
-                resampled_moving_mask = register_images_with_dicom_reg(fixed_image=fixed_dicom_image,
+                resampled_moving_mask = register_images_with_dicom_reg(fixed_image=fixed_dicom_mask,
                                                                        moving_image=moving_dicom_mask,
                                                                        dicom_registration=dicom_registration,
-                                                                       min_value=0)
+                                                                       min_value=0, method=sitk.sitkLinear)
                 resampled_moving_mask = sitk.GetArrayFromImage(resampled_moving_mask)
+                resampled_moving_mask[resampled_moving_mask < 0.5] = 0
                 resampled_moving_mask[resampled_moving_mask > 0] = 1
                 resampled_moving_mask = sitk.GetImageFromArray(resampled_moving_mask.astype('int8'))
                 resampled_moving_mask.SetOrigin(resampled_moving_image.GetOrigin())
