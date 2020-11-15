@@ -34,13 +34,7 @@ def return_MRN_dictionary(excel_path):
     return MRN_dictionary
 
 
-def main():
-    dicom_export_path = r'H:\Deeplearning_Recurrence_Work\Dicom_Exports'
-    nifti_export_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports'
-    excel_path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
-                 r'\Predicting_Recurrence\RetroAblation.xlsx'
-    anonymized_sheet = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
-                       r'\Predicting_Recurrence\Patient_Anonymization.xlsx'
+def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, anonymized_sheet):
     patient_df = pd.read_excel(anonymized_sheet)
     MRN_dictionary = return_MRN_dictionary(excel_path)
     for MRN in MRN_dictionary.keys():
@@ -152,4 +146,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    pass
+    # register_images_to_nifti()
