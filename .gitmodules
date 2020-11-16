@@ -10,3 +10,6 @@
 [submodule "Outcome_Analysis/RegisteringImages"]
 	path = Outcome_Analysis/RegisteringImages
 	url = https://github.com/brianmanderson/RegisteringImages
+[submodule "Outcome_Analysis/Make_Single_Images"]
+	path = Outcome_Analysis/Make_Single_Images
+	url = https://github.com/brianmanderson/Make_Single_Images.git
