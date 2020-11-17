@@ -86,7 +86,7 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
                 primary_reader.down_folder(primary_path)
                 has_liver = False
                 for roi in primary_reader.rois_in_case:
-                    if roi in primary_reader.associations.keys() and primary_reader.associations[roi] == 'liver':
+                    if roi in primary_reader.associations.keys() and primary_reader.associations[roi].lower() == 'liver':
                         has_liver = True
                         break
                 if not has_liver:
@@ -97,7 +97,7 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
                     secondary_reader.down_folder(secondary_path)
                     for roi in secondary_reader.rois_in_case:
                         if roi in secondary_reader.associations.keys() and \
-                                secondary_reader.associations[roi] == 'liver':
+                                secondary_reader.associations[roi].lower() == 'liver':
                             has_liver = True
                             break
                 if not has_liver:
