@@ -2,6 +2,9 @@ __author__ = 'Brian M Anderson'
 # Created on 9/28/2020
 
 '''
+All of the top part will be in PreProcessingTools
+'''
+'''
 First thing we need to do is create segmentations of liver, GTV, and ablation on our exams
 '''
 
@@ -34,10 +37,10 @@ Export_Registration.py
 '''
 Load the DICOM and masks, register based on the exported registration matrix, export as nifti
 '''
-register_export_to_nifti = True
+register_export_to_nifti = False
 nifti_export_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports'
 if register_export_to_nifti:
-    from Local_Recurrence_Work.Outcome_Analysis.Register_Images import register_images_to_nifti
+    from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.Register_Images import register_images_to_nifti
     dicom_export_path = r'H:\Deeplearning_Recurrence_Work\Dicom_Exports'
 
     excel_path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
@@ -81,9 +84,9 @@ if write_records:
 
 
 '''
-Now lets split them up into 5 cross-validation groups, based on patient
+Now lets split them up into 5 cross-validation groups, based on patient ID
 '''
-distribute_into_groups = True
+distribute_into_groups = False
 if distribute_into_groups:
     from Local_Recurrence_Work.Outcome_Analysis.DistributeIntoCVGroups import distribute_into_cv, os
     records_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records'
@@ -93,6 +96,9 @@ if distribute_into_groups:
         distribute_into_cv(records_path=os.path.join(records_path, description), out_path_base=out_path,
                            description='_{}'.format(description), cv_groups=5)
 
+'''
+Now, we can finally work on the deep learning part
+'''
 workondeeplearning = False
 if workondeeplearning:
     from Deep_Learning.Base_Deeplearning_Code.Data_Generators.TFRecord_to_Dataset_Generator import Data_Generator_Class
