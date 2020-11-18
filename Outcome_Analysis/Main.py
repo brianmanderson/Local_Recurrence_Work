@@ -71,7 +71,7 @@ if write_records:
 '''
 Now lets split them up into 5 cross-validation groups, based on patient ID
 '''
-distribute_into_groups = False
+distribute_into_groups = True
 if distribute_into_groups:
     from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.DistributeIntoCVGroups import distribute_into_cv, os
     records_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records'
@@ -80,22 +80,4 @@ if distribute_into_groups:
     for description in ['No_Recurrence', 'Recurrence']:
         distribute_into_cv(records_path=os.path.join(records_path, description), out_path_base=out_path,
                            description='_{}'.format(description), cv_groups=5)
-
-'''
-Now, we can finally work on the deep learning part, these will be in DeepLearningTools
-'''
-workondeeplearning = False
-if workondeeplearning:
-    from Deep_Learning.Base_Deeplearning_Code.Data_Generators.TFRecord_to_Dataset_Generator import Data_Generator_Class
-    from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Module.Image_Processors_DataSet import *
-    from Deep_Learning.Base_Deeplearning_Code.Plot_And_Scroll_Images.Plot_Scroll_Images import plot_scroll_Image
-    generator_recurrence = Data_Generator_Class(record_paths=
-                                                [r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Recurrence'])
-    generator_nonrecurrence = Data_Generator_Class(record_paths=
-                                                   [r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\No_Recurrence'])
-    train_processors = [Return_Outputs(wanted_keys_dict={'inputs': ('image',), 'outputs': ('annotation',)})]
-    generator_recurrence.compile_data_set(train_processors)
-    generator_nonrecurrence.compile_data_set(train_processors)
-    x, y = next(iter(generator_recurrence.data_set))
-    xx, yy = next(iter(generator_nonrecurrence.data_set))
-    xxx = 1
+print("All finished here, now move on to MainDeepLearning.py!")
