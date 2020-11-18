@@ -41,7 +41,6 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
         if MRN not in os.listdir(dicom_export_path):
             print('{} not present in collection'.format(MRN))
             continue
-        print(MRN)
         """
         Check and see if we've done this one before
         """
@@ -67,6 +66,7 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
         primary_reader = DicomReaderWriter(Contour_Names=['Retro_GTV', 'Retro_GTV_Recurred', 'Liver'],
                                            associations=assocations, require_all_contours=False)
         secondary_reader = DicomReaderWriter(Contour_Names=['Liver'], associations=assocations)  # Only need the liver
+        print(MRN)
         for root, directories, files in os.walk(os.path.join(dicom_export_path, MRN)):
             if 'Registration' in directories and primary in directories and secondary in directories:
                 '''
@@ -86,7 +86,9 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
                 primary_reader.down_folder(primary_path)
                 has_liver = False
                 for roi in primary_reader.rois_in_case:
-                    if roi in primary_reader.associations.keys() and primary_reader.associations[roi].lower() == 'liver':
+                    roi = roi.lower()
+                    if roi in primary_reader.associations.keys() and \
+                            primary_reader.associations[roi].lower() == 'liver':
                         has_liver = True
                         break
                 if not has_liver:
@@ -96,6 +98,7 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
                     has_liver = False
                     secondary_reader.down_folder(secondary_path)
                     for roi in secondary_reader.rois_in_case:
+                        roi = roi.lower()
                         if roi in secondary_reader.associations.keys() and \
                                 secondary_reader.associations[roi].lower() == 'liver':
                             has_liver = True
@@ -122,10 +125,10 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
                 resampled_moving_mask = register_images_with_dicom_reg(fixed_image=fixed_dicom_mask,
                                                                        moving_image=moving_dicom_mask,
                                                                        dicom_registration=dicom_registration,
-                                                                       min_value=0, method=sitk.sitkLinear)
+                                                                       min_value=0, method=sitk.sitkNearestNeighbor)
                 resampled_moving_mask = sitk.GetArrayFromImage(resampled_moving_mask)
-                resampled_moving_mask[resampled_moving_mask < 0.5] = 0
-                resampled_moving_mask[resampled_moving_mask > 0] = 1
+                # resampled_moving_mask[resampled_moving_mask < 0.5] = 0
+                # resampled_moving_mask[resampled_moving_mask > 0] = 1
                 resampled_moving_mask = sitk.GetImageFromArray(resampled_moving_mask.astype('int8'))
                 resampled_moving_mask.SetOrigin(resampled_moving_image.GetOrigin())
                 resampled_moving_mask.SetDirection(resampled_moving_image.GetDirection())
@@ -143,6 +146,9 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
                     new_patient = {'PatientID': patient_id, 'MRN': MRN}
                     patient_df = patient_df.append(new_patient, ignore_index=True)
                     patient_df.to_excel(anonymized_sheet, index=0)
+                break
+        if not os.path.exists(os.path.join(nifti_export_path, '{}_Primary_Dicom.nii'.format(patient_id))):
+            print('{} was never written!'.format(MRN))
 
 
 if __name__ == "__main__":
