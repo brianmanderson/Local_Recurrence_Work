@@ -42,35 +42,20 @@ nifti_export_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports'
 if register_export_to_nifti:
     from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.Register_Images import register_images_to_nifti
     dicom_export_path = r'H:\Deeplearning_Recurrence_Work\Dicom_Exports'
-
     excel_path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
                  r'\Predicting_Recurrence\RetroAblation.xlsx'
     anonymized_sheet = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
                        r'\Predicting_Recurrence\Patient_Anonymization.xlsx'
     register_images_to_nifti(dicom_export_path=dicom_export_path, nifti_export_path=nifti_export_path,
                              excel_path=excel_path, anonymized_sheet=anonymized_sheet)
+
 '''
 Check the volumes of the livers, just to make sure everything worked out correctly
 '''
 check_volume = False
 if check_volume:
-    import os
-    import SimpleITK as sitk
-    import numpy as np
-    primary_masks = [i for i in os.listdir(nifti_export_path) if i.endswith('Primary_Mask.nii')]
-    for file in primary_masks:
-        primary_mask = sitk.ReadImage(os.path.join(nifti_export_path, file))
-        secondary_mask = sitk.ReadImage(os.path.join(nifti_export_path, file.replace('Primary', 'Secondary')))
-        primary_mask_array = sitk.GetArrayFromImage(primary_mask)
-        secondary_mask_array = sitk.GetArrayFromImage(secondary_mask)
-        primary_volume = np.prod(primary_mask.GetSpacing()) * np.sum(primary_mask_array > 0) / 1000  # in cc
-        secondary_volume = np.prod(secondary_mask.GetSpacing()) * np.sum(secondary_mask_array > 0) / 1000  # in cc
-        volume_change = np.abs(primary_volume - secondary_volume) / np.min([primary_volume, secondary_volume]) * 100
-        if primary_volume < 500 or secondary_volume < 500:
-            print('Might want to check out {}'.format(file))
-        elif volume_change > 30:
-            print('Might want to check out {}, {}% volume change'.format(file, volume_change))
-        xxx = 1
+    from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.CheckLiverVolume import check_liver_volume
+    check_liver_volume(nifti_export_path=nifti_export_path)
 
 '''
 Ensure that all contours are within the liver contour, as sometimes they're drawn to extend past it
@@ -79,7 +64,7 @@ Ensure that all contours are within the liver contour, as sometimes they're draw
 Contour_names = ['Retro_GTV', 'Retro_GTV_Recurred', 'Liver']
 write_records = False
 if write_records:
-    from Local_Recurrence_Work.Outcome_Analysis.Nifti_to_tfrecords import nifti_to_records
+    from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.Nifti_to_tfrecords import nifti_to_records
     nifti_to_records(nifti_path=nifti_export_path)
 
 
@@ -88,7 +73,7 @@ Now lets split them up into 5 cross-validation groups, based on patient ID
 '''
 distribute_into_groups = False
 if distribute_into_groups:
-    from Local_Recurrence_Work.Outcome_Analysis.DistributeIntoCVGroups import distribute_into_cv, os
+    from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.DistributeIntoCVGroups import distribute_into_cv, os
     records_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records'
     out_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\CrossValidation'
     description = '_No_Recurrence'
@@ -97,7 +82,7 @@ if distribute_into_groups:
                            description='_{}'.format(description), cv_groups=5)
 
 '''
-Now, we can finally work on the deep learning part
+Now, we can finally work on the deep learning part, these will be in DeepLearningTools
 '''
 workondeeplearning = False
 if workondeeplearning:
