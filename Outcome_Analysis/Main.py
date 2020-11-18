@@ -34,10 +34,10 @@ Export_Registration.py
 '''
 Load the DICOM and masks, register based on the exported registration matrix, export as nifti
 '''
-register_export_to_nifti = False
+register_export_to_nifti = True
 nifti_export_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports'
 if register_export_to_nifti:
-    from .Register_Images import register_images_to_nifti
+    from Local_Recurrence_Work.Outcome_Analysis.Register_Images import register_images_to_nifti
     dicom_export_path = r'H:\Deeplearning_Recurrence_Work\Dicom_Exports'
 
     excel_path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
@@ -46,69 +46,51 @@ if register_export_to_nifti:
                        r'\Predicting_Recurrence\Patient_Anonymization.xlsx'
     register_images_to_nifti(dicom_export_path=dicom_export_path, nifti_export_path=nifti_export_path,
                              excel_path=excel_path, anonymized_sheet=anonymized_sheet)
-
+'''
+Check the volumes of the livers, just to make sure everything worked out correctly
+'''
+check_volume = False
+if check_volume:
+    import os
+    import SimpleITK as sitk
+    import numpy as np
+    primary_masks = [i for i in os.listdir(nifti_export_path) if i.endswith('Primary_Mask.nii')]
+    for file in primary_masks:
+        primary_mask = sitk.ReadImage(os.path.join(nifti_export_path, file))
+        secondary_mask = sitk.ReadImage(os.path.join(nifti_export_path, file.replace('Primary', 'Secondary')))
+        primary_mask_array = sitk.GetArrayFromImage(primary_mask)
+        secondary_mask_array = sitk.GetArrayFromImage(secondary_mask)
+        primary_volume = np.prod(primary_mask.GetSpacing()) * np.sum(primary_mask_array > 0) / 1000  # in cc
+        secondary_volume = np.prod(secondary_mask.GetSpacing()) * np.sum(secondary_mask_array > 0) / 1000  # in cc
+        volume_change = np.abs(primary_volume - secondary_volume) / np.min([primary_volume, secondary_volume]) * 100
+        if primary_volume < 500 or secondary_volume < 500:
+            print('Might want to check out {}'.format(file))
+        elif volume_change > 30:
+            print('Might want to check out {}, {}% volume change'.format(file, volume_change))
+        xxx = 1
 
 '''
 Ensure that all contours are within the liver contour, as sometimes they're drawn to extend past it
 '''
-def path_parser(niftii_path, out_path, *args, **kwargs):
-    data_dict = {}
-    primary_files = [i for i in os.listdir(niftii_path) if i.endswith('_Primary_Dicom.nii')]
-    for file in primary_files:
-        iteration = file.split('_')[0]
-        data_dict[iteration] = {'primary_image_path': os.path.join(niftii_path, file),
-                                'primary_mask_path': os.path.join(niftii_path, file.replace('Dicom', 'Mask')),
-                                'secondary_image_path': os.path.join(niftii_path, file.replace('Primary', 'Secondary')),
-                                'secondary_mask_path': os.path.join(niftii_path, file.replace('Primary_Dicom',
-                                                                                              'Secondary_Mask')),
-                                'out_path': out_path,
-                                'out_file': os.path.join(out_path, '{}.tfrecord'.format(file.split('_')[0]))}
-    return data_dict
 
-ensure_contours = True
-if ensure_contours:
-    import SimpleITK as sitk
-    import os
-    masks = [os.path.join(nifti_export_path, i) for i in os.listdir(nifti_export_path) if i.endswith('_Mask.nii')]
-    primary_masks = [i for i in masks if i.find('Primary') != -1]
-    secondary = [i for i in masks if i not in primary_masks]
-    # for mask_path in primary_masks:
-    #     mask = sitk.ReadImage(mask_path)
-    from Local_Recurrence_Work.Outcome_Analysis.Make_Single_Images.Make_TFRecord_Class import write_tf_record
-    from Local_Recurrence_Work.Outcome_Analysis.Make_Single_Images.Image_Processors_Module.Image_Processors_TFRecord import *
-    check_backend = False
-    thread_count = 1
-    if check_backend:
-        path = r'H:\Liver_Disease_Ablation'
-        cube_size = (32, 128, 128)
-        base_normalizer = [Normalize_to_annotation(annotation_value_list=[1, 2], mirror_max=True), To_Categorical(3)]
-        image_processors_train = []
-        image_processors_train += base_normalizer
-        image_processors_train += [Cast_Data({'annotation': 'float16'}),
-                                   Split_Disease_Into_Cubes(cube_size=cube_size, disease_annotation=2,
-                                                            min_voxel_volume=300, max_voxels=1350000),
-                                   Distribute_into_3D(max_z=cube_size[0], max_rows=cube_size[1], max_cols=cube_size[2],
-                                                      min_z=cube_size[0])]
+Contour_names = ['Retro_GTV', 'Retro_GTV_Recurred', 'Liver']
+write_records = False
+if write_records:
+    from Local_Recurrence_Work.Outcome_Analysis.Nifti_to_tfrecords import nifti_to_records
+    nifti_to_records(nifti_path=nifti_export_path)
 
-        write_tf_record(os.path.join(path, 'Train'),
-                        out_path=os.path.join(path, 'Records', 'Train_{}_Records'.format(cube_size[0])),
-                        image_processors=image_processors_train,
-                        is_3D=True, rewrite=True, thread_count=thread_count)
 
-    # path = r'H:\Liver_Disease_Ablation'
-    path = nifti_export_path
-    base_normalizer = [
-        Add_Images_And_Annotations(nifti_path_keys=('primary_image_path', 'secondary_image_path',
-                                                    'primary_mask_path', 'secondary_mask_path'),
-                                   out_keys=('primary_image', 'secondary_image', 'primary_mask', 'secondary_mask'),
-                                   dtypes=('float32', 'float32', 'int8', 'int8')),
-        Threshold_Images(image_key='primary_image', lower_bound=-200, upper_bound=200, divide=False),
-        Threshold_Images(image_key='secondary_image', lower_bound=-200, upper_bound=200, divide=False),
-        Normalize_to_annotation(image_key='primary_image', annotation_key='primary_mask',
-                                annotation_value_list=[1, 2, 3], mirror_max=True),
-        Normalize_to_annotation(image_key='secondary_image', annotation_key='secondary_mask',
-                                annotation_value_list=[1], mirror_max=True)
-                       ]
-    write_tf_record(niftii_path=path, file_parser=path_parser,
-                    out_path=os.path.join(path, 'Records'),
-                    image_processors=base_normalizer, is_3D=True, rewrite=False, thread_count=thread_count, debug=True)
+check_records = True
+if check_records:
+    from Deep_Learning.Base_Deeplearning_Code.Data_Generators.TFRecord_to_Dataset_Generator import Data_Generator_Class
+    from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Module.Image_Processors_DataSet import *
+    generator_recurrence = Data_Generator_Class(record_paths=
+                                                [r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Recurrence'])
+    generator_nonrecurrence = Data_Generator_Class(record_paths=
+                                                   [r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\No_Recurrence'])
+    train_processors = [Return_Outputs(wanted_keys_dict={'inputs': ('image',), 'outputs': ('annotation',)})]
+    generator_recurrence.compile_data_set(train_processors)
+    generator_nonrecurrence.compile_data_set(train_processors)
+    x, y = next(iter(generator_recurrence.data_set))
+    xx, yy = next(iter(generator_nonrecurrence.data_set))
+    xxx = 1
