@@ -195,6 +195,9 @@ def main():
             rois_in_case.append(roi.Name)
         for roi_base in ['Liver', 'Liver_BMA_Program_4']:
             has_contours = True
+            if roi_base not in rois_in_case:
+                has_contours = False
+                continue
             for exam in [primary, secondary]:
                 if not case.PatientModel.StructureSets[exam].RoiGeometries[roi_base].HasContours():
                     has_contours = False
