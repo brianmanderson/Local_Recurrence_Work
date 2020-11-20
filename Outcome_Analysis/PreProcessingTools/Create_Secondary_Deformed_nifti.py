@@ -24,6 +24,7 @@ def create_secondary_deformed_nifti(nifti_export_path, deformation_export_path, 
             print('These are not the same for {}...'.format(MRN))
             deformed_handle = sitk.Resample(deformed_handle, primary_handle, sitk.AffineTransform(3), sitk.sitkLinear,
                                             -1000, deformed_handle.GetPixelID())
+        deformed_handle.SetSpacing(primary_handle.GetSpacing())
         sitk.WriteImage(deformed_handle, out_path)
     return None
 
