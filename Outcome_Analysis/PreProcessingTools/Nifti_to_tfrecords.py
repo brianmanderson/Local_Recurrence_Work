@@ -14,6 +14,8 @@ def path_parser(niftii_path, **kwargs):
         data_dict[iteration] = {'primary_image_path': os.path.join(niftii_path, file),
                                 'primary_mask_path': os.path.join(niftii_path, file.replace('Dicom', 'Mask')),
                                 'secondary_image_path': os.path.join(niftii_path, file.replace('Primary', 'Secondary')),
+                                'secondary_deformed_path': os.path.join(niftii_path, file.replace('Primary_Dicom',
+                                                                                                  'Secondary_Deformed')),
                                 'secondary_mask_path': os.path.join(niftii_path, file.replace('Primary_Dicom',
                                                                                               'Secondary_Mask')),
                                 'file_name': '{}.tfrecord'.format(file.split('_')[0])
@@ -22,11 +24,18 @@ def path_parser(niftii_path, **kwargs):
 
 
 def nifti_to_records(nifti_path):
+    """
+    :param nifti_path: path to the nifti files
+    :return:
+    """
+    Contour_names = ['Retro_GTV', 'Retro_GTV_Recurred', 'Liver']
     base_normalizer = [
         Add_Images_And_Annotations(nifti_path_keys=('primary_image_path', 'secondary_image_path',
-                                                    'primary_mask_path', 'secondary_mask_path'),
-                                   out_keys=('primary_image', 'secondary_image', 'primary_mask', 'secondary_mask'),
-                                   dtypes=('float32', 'float32', 'int8', 'int8')),
+                                                    'primary_mask_path', 'secondary_mask_path',
+                                                    'secondary_deformed_path'),
+                                   out_keys=('primary_image', 'secondary_image', 'primary_mask',
+                                             'secondary_mask', 'secondary_deformed_image'),
+                                   dtypes=('float32', 'float32', 'int8', 'int8', 'float32')),
         Resampler(resample_keys=('primary_image', 'secondary_image', 'primary_mask', 'secondary_mask'),
                   desired_output_spacing=(1., 1., 2.5),
                   resample_interpolators=('Linear', 'Linear', 'Nearest', 'Nearest')),
@@ -46,7 +55,7 @@ def nifti_to_records(nifti_path):
                     out_path=os.path.join(nifti_path, 'Records'),
                     recordwriter=RecordWriterRecurrence(out_path=os.path.join(nifti_path, 'Records'),
                                                         file_name_key='file_name', rewrite=True),
-                    image_processors=base_normalizer, is_3D=True, thread_count=20, debug=False)
+                    image_processors=base_normalizer, is_3D=True, thread_count=20, debug=True)
 
 
 if __name__ == '__main__':
