@@ -40,7 +40,7 @@ def nifti_to_records(nifti_path):
         Threshold_Images(image_key='secondary_image', lower_bound=-15, upper_bound=10, divide=False),
         AddByValues(image_keys=('primary_image', 'secondary_image'), values=(2.5, 2.5)),
         DivideByValues(image_keys=('primary_image', 'secondary_image'), values=(12.5, 12.5)),
-        DistributeIntoRecurrenceCubes(rows=128, cols=128, images=32)
+        DistributeIntoRecurrenceCubes(images=32, rows=128, cols=128)
     ]
     write_tf_record(niftii_path=nifti_path, file_parser=path_parser, max_records=np.inf,
                     out_path=os.path.join(nifti_path, 'Records'),
