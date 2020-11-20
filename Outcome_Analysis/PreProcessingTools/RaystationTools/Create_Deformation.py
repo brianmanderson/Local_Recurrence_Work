@@ -217,7 +217,6 @@ def main():
                     if not os.path.exists(out_deformation_image):
                         structure_registration.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
                     break
-        return None
 
 
 if __name__ == '__main__':
