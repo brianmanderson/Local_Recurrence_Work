@@ -162,7 +162,7 @@ def main():
             MRN = MRN[1:]
         out_deformation_image = os.path.join(base_export_path, '{}.mhd'.format(MRN))
         if os.path.exists(out_deformation_image):
-            print('Already done')
+            print('{} was already deformed'.format(MRN))
             continue
         try:
             patient = patient_changer.change_patient(MRN)
@@ -180,13 +180,15 @@ def main():
         already_deformed = False
         new_reg_name = 'Deform_BCs_{}_to_{}'.format(primary, secondary)
         old_reg_name = 'Deformation_Boundary_Conditions_{}_to_{}'.format(primary, secondary)
+        older_name = 'BiomechanicalDefReg_Liver_TriMesh_{}_{}'.format(primary, secondary)
         for top_registration in case.Registrations:
             for struct_reg in top_registration.StructureRegistrations:
-                if struct_reg.Name.startswith(new_reg_name) or struct_reg.Name.startswith(old_reg_name):
-                    already_deformed = True
-                    if not os.path.exists(out_deformation_image):
-                        struct_reg.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
-                    break
+                for name in [new_reg_name, older_name, old_reg_name]:
+                    if struct_reg.Name.startswith(new_reg_name) or struct_reg.Name.startswith(name):
+                        already_deformed = True
+                        if not os.path.exists(out_deformation_image):
+                            struct_reg.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
+                        break
         if already_deformed:
             print('{} was already deformed'.format(MRN))
             continue
