@@ -25,6 +25,10 @@ The ROI will help train the model for outcomes
 '''
 
 '''
+Create Morfeus registrations between all of the images
+'''
+
+'''
 Export the DICOM and RT
 Export_Patients.py
 '''
@@ -50,6 +54,18 @@ if register_export_to_nifti:
                              excel_path=excel_path, anonymized_sheet=anonymized_sheet)
 
 '''
+Pad the deformed images, write over as well
+'''
+pad_deformed_to_primary = False
+if pad_deformed_to_primary:
+    from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.Create_Secondary_Deformed_nifti\
+        import create_secondary_deformed_nifti
+    deformation_export_path = r'H:\Deeplearning_Recurrence_Work\Deformed_Exports'
+    anonymized_sheet = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
+                       r'\Predicting_Recurrence\Patient_Anonymization.xlsx'
+    create_secondary_deformed_nifti(deformation_export_path=deformation_export_path, anonymized_sheet=anonymized_sheet,
+                                    nifti_export_path=nifti_export_path)
+'''
 Check the volumes of the livers, just to make sure everything worked out correctly
 '''
 check_volume = False
@@ -62,7 +78,7 @@ Ensure that all contours are within the liver contour, as sometimes they're draw
 '''
 
 Contour_names = ['Retro_GTV', 'Retro_GTV_Recurred', 'Liver']
-write_records = False
+write_records = True
 if write_records:
     from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.Nifti_to_tfrecords import nifti_to_records
     nifti_to_records(nifti_path=nifti_export_path)
@@ -71,7 +87,7 @@ if write_records:
 '''
 Now lets split them up into 5 cross-validation groups, based on patient ID
 '''
-distribute_into_groups = True
+distribute_into_groups = False
 if distribute_into_groups:
     from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.DistributeIntoCVGroups import distribute_into_cv, os
     records_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records'
