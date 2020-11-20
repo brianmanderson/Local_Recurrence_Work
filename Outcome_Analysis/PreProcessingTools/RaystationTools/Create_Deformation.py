@@ -1,0 +1,221 @@
+__author__ = 'Brian M Anderson'
+# Created on 11/20/2020
+
+import os
+from connect import *
+import time, getpass
+import pandas as pd
+
+
+def return_MRN_dictionary(excel_path):
+    df = pd.read_excel(excel_path, sheet_name='Refined')
+    MRN_list, primary_list, secondary_list, registered_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values, df['Registered'].values
+    MRN_dictionary = {}
+    for MRN, primary, secondary, registered in zip(MRN_list, primary_list, secondary_list, registered_list):
+        if MRN in MRN_dictionary:
+            continue
+        registered = str(registered)
+        if registered != '1.0':
+            continue
+        if type(primary) is not float:
+            primary = str(primary)
+            if primary.startswith('CT'):
+                if primary.find(' ') == -1:
+                    primary = 'CT {}'.format(primary.split('CT')[-1])
+        else:
+            continue
+        if type(secondary) is not float:
+            secondary = str(secondary)
+            if secondary.startswith('CT'):
+                if secondary.find(' ') == -1:
+                    secondary = 'CT {}'.format(secondary.split('CT')[-1])
+        else:
+            continue
+        MRN_dictionary[MRN] = {'Primary': primary, 'Secondary': secondary}
+    return MRN_dictionary
+
+
+class ChangePatient(object):
+    def __init__(self):
+        self.patient_db = get_current("PatientDB")
+        self.MRN = 0
+
+    def change_patient(self, MRN):
+        print('got here')
+        self.MRN = MRN
+        info_all = self.patient_db.QueryPatientInfo(Filter={"PatientID": self.MRN}, UseIndexService=False)
+        if not info_all:
+            info_all = self.patient_db.QueryPatientInfo(Filter={"PatientID": self.MRN}, UseIndexService=True)
+        for info in info_all:
+            if info['PatientID'] == self.MRN:
+                return self.patient_db.LoadPatient(PatientInfo=info, AllowPatientUpgrade=True)
+        print('did not find a patient')
+        return None
+
+
+def simplify_contours(case,exam_name,roi_name):
+    case.PatientModel.StructureSets[exam_name].SimplifyContours(RoiNames=[roi_name], RemoveHoles3D=True,
+                                                                RemoveSmallContours=True, AreaThreshold=5,
+                                                                ReduceMaxNumberOfPointsInContours=False,
+                                                                MaxNumberOfPoints=None, CreateCopyOfRoi=False,
+                                                                ResolveOverlappingContours=True)
+    return None
+
+
+def is_BC_roi(case, reference_examination_name, target_examination_name, roi_name):
+    """
+    Checks if an ROI can be used as boundary conditions. i.e., triangle mesh with the same number of vertices in both reference and target image
+    :param case: Current case
+    :param reference_examination_name: Name of reference examination
+    :param target_examination_name: Name of target examination
+    :param roi_name: Name of ROI
+    :return: if ok to use
+    """
+    reference_ss = case.PatientModel.StructureSets[reference_examination_name]
+    target_ss = case.PatientModel.StructureSets[target_examination_name]
+    ref_geometry = reference_ss.RoiGeometries[roi_name]
+    tar_geometry = target_ss.RoiGeometries[roi_name]
+    if ref_geometry.PrimaryShape is None:
+        return False
+    if tar_geometry.PrimaryShape is None:
+        return False
+    ref_vert = None
+    try:
+        ref_vert = ref_geometry.PrimaryShape.Vertices
+    except:
+        return False
+    tar_vert = None
+    try:
+        tar_vert = tar_geometry.PrimaryShape.Vertices
+    except:
+        return False
+    if len([vert for vert in ref_vert]) == 0:
+        return False
+    if len([vert for vert in ref_vert]) != len([vert for vert in tar_vert]):
+        return False
+    return True
+
+
+def create_dir(patient, case, Ref, Ablation, roi_base, rois_in_case):
+    for exam_name in [Ref, Ablation]:
+        simplify_contours(case, exam_name, roi_base)
+    use_curvature_adaptation = False
+    equal_edge = 3
+    smooth_iter = 1
+    max_smooth_steps = 4
+    voxel_side_length = 0.2
+    BC_rois = [roi.Name for roi in case.PatientModel.RegionsOfInterest if roi.Name.startswith(roi_base) and
+               is_BC_roi(case, Ref, Ablation, roi.Name)]
+    if BC_rois:
+        BC_roi_name = BC_rois[-1]
+    else:
+        try:
+            smoothing = case.PatientModel.CreateBoundaryConditionsForMorfeus(
+                RoiNames=[roi_base],
+                ReferenceExaminationName=Ref, TargetExaminationName=Ablation,
+                VoxelRepresentationVoxelSideLength=voxel_side_length,
+                TriangulationEqualEdgeLength=equal_edge,
+                TriangulationUseCurvatureAdaptation=use_curvature_adaptation,
+                TriangulationSmoothingIterations=smooth_iter,
+                MaxNrOfSmoothingSteps=max_smooth_steps)
+            BC_roi_name = [roi.Name for roi in case.PatientModel.RegionsOfInterest if roi.Name not in
+                           rois_in_case][0]
+            print(BC_roi_name)
+        except Exception as e:
+            MessageBox.Show("Error when generating BCs")
+            return
+    BioDef_Name = 'Deform_BCs_{}_to_{}_for_{}'.format(Ref, Ablation, roi_base)[:50]  # Must be less than 50 characters
+    group_names = [group.Name == BioDef_Name for group in case.PatientModel.StructureRegistrationGroups]
+    if group_names:
+        already_done = max(group_names)
+    else:
+        already_done = False
+    if not already_done:
+        case.PatientModel.CreateBiomechanicalDeformableRegistrationGroup(RegistrationGroupName=BioDef_Name,
+                                                                         ReferenceExaminationName=Ref,
+                                                                         TargetExaminationNames=[
+                                                                             Ablation],
+                                                                         ControllingRois=[{'Name':
+                                                                                               BC_roi_name,
+                                                                                           'InterfaceModeling':
+                                                                                               "Fixed"}],
+                                                                         DeformationGridVoxelSize={'x': 0.25,
+                                                                                                   'y': 0.25,
+                                                                                                   'z': 0.25})
+    patient.Save()
+    return None
+
+
+def main():
+    base_export_path = r'H:\Deeplearning_Recurrence_Work\Deformed_Exports'
+    if not os.path.exists(base_export_path):
+        os.makedirs(base_export_path)
+    excel_path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
+                 r'\Predicting_Recurrence\RetroAblation.xlsx'
+
+    MRN_dictionary = return_MRN_dictionary(excel_path)
+    patient_changer = ChangePatient()
+    for MRN_key in MRN_dictionary.keys():
+        primary, secondary = MRN_dictionary[MRN_key]['Primary'], MRN_dictionary[MRN_key]['Secondary']
+        MRN = str(MRN_key)
+        while MRN[0] == '0':  # Drop the 0 from the front
+            MRN = MRN[1:]
+        out_deformation_image = os.path.join(base_export_path, '{}.mhd'.format(MRN))
+        if os.path.exists(out_deformation_image):
+            print('Already done')
+            continue
+        try:
+            patient = patient_changer.change_patient(MRN)
+        except:
+            continue
+        if patient is None:
+            print('{} failed to load a patient'.format(MRN))
+            continue
+
+        print(MRN)
+        case = None
+        for case in patient.Cases:
+            continue
+
+        already_deformed = False
+        new_reg_name = 'Deform_BCs_{}_to_{}'.format(primary, secondary)
+        old_reg_name = 'Deformation_Boundary_Conditions_{}_to_{}'.format(primary, secondary)
+        for top_registration in case.Registrations:
+            for struct_reg in top_registration.StructureRegistrations:
+                if struct_reg.Name.startswith(new_reg_name) or struct_reg.Name.startswith(old_reg_name):
+                    already_deformed = True
+                    if not os.path.exists(out_deformation_image):
+                        struct_reg.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
+                    break
+        if already_deformed:
+            print('{} was already deformed'.format(MRN))
+            continue
+        rois_in_case = []
+        for roi in case.PatientModel.RegionsOfInterest:
+            rois_in_case.append(roi.Name)
+        for roi_base in ['Liver', 'Liver_BMA_Program_4']:
+            has_contours = True
+            for exam in [primary, secondary]:
+                if not case.PatientModel.StructureSets[exam].RoiGeometries[roi_base].HasContours():
+                    has_contours = False
+                    break
+            if has_contours:
+                break
+        if not has_contours:
+            print('{} did not have the contours needed'.format(MRN))
+            continue
+        create_dir(patient, case, primary, secondary, roi_base, rois_in_case)
+        '''
+        Now export the meta image
+        '''
+        for top_registration in case.Registrations:
+            for structure_registration in top_registration.StructureRegistrations:
+                if structure_registration.Name.startswith(new_reg_name):
+                    if not os.path.exists(out_deformation_image):
+                        structure_registration.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
+                    break
+        return None
+
+
+if __name__ == '__main__':
+    main()
