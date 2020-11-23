@@ -241,16 +241,13 @@ def GetVolume_and_DTA(case, Ref, gtv_name='GTV',ablation_name='Ablation'):
     return volExcluded
 
 
-def return_MRN_dictionary(excel_path, out_excel_sheet):
-    df = pd.read_excel(excel_path, sheet_name='GetDTA')
-    if os.path.exists(out_excel_sheet):
-        df2 = pd.read_excel(out_excel_sheet)
-    else:
-        df2 = pd.DataFrame({'MRN': [], 'Rigid_DTA': []})
-    MRN_list, primary_list, secondary_list = df['MRN'].values, df['Primary'].values, df['Secondary'].values
+def return_MRN_dictionary(excel_path):
+    df = pd.read_excel(excel_path, sheet_name='DTA')
+    MRN_list, case_list, primary_list, secondary_list = df['MRN'].values, df['Case'].values, df['Primary'].values,\
+                                                        df['Secondary'].values
     MRN_dictionary = {}
-    for MRN, primary, secondary in zip(MRN_list, primary_list, secondary_list):
-        if MRN in df2['MRN'].values:
+    for MRN, case, primary, secondary in zip(MRN_list, case_list, primary_list, secondary_list):
+        if str(df['Rigid_DTA'].values[list(df['MRN'].values).index(MRN)]) != 'nan':
             continue
         if type(primary) is not float:
             primary = str(primary)
@@ -266,8 +263,8 @@ def return_MRN_dictionary(excel_path, out_excel_sheet):
                     secondary = 'CT {}'.format(secondary.split('CT')[-1])
         else:
             continue
-        MRN_dictionary[MRN] = {'Primary': primary, 'Secondary': secondary}
-    return MRN_dictionary, df2
+        MRN_dictionary[MRN] = {'Primary': primary, 'Secondary': secondary, 'Case': str(case)}
+    return MRN_dictionary, df
 
 
 class ChangePatient(object):
@@ -312,16 +309,15 @@ def get_contour_points_from_roi(geometry):
 def main():
     excel_path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
                  r'\DTA_Results_Recurrence_and_Non_Recurrence.xlsx'
-    out_excel_sheet = excel_path.replace('Non_Recurrence.xlsx', 'Non_Recurrence_Output.xlsx')
-    MRN_dictionary, out_df = return_MRN_dictionary(excel_path, out_excel_sheet=out_excel_sheet)
+    MRN_dictionary, df = return_MRN_dictionary(excel_path)
+    df.set_index('MRN', inplace=True)
     patient_changer = ChangePatient()
-    ExcludedVolume = {}
-    roi_base = 'Liver'
     gtv_base = 'GTV'
     ablation_base = 'Ablation'
     for MRN_key in MRN_dictionary.keys():
         patient_dict = {'MRN': [MRN_key]}
-        primary_exam, secondary_exam = MRN_dictionary[MRN_key]['Primary'], MRN_dictionary[MRN_key]['Secondary']
+        case, primary_exam, secondary_exam = MRN_dictionary[MRN_key]['Case'], MRN_dictionary[MRN_key]['Primary'],\
+                                             MRN_dictionary[MRN_key]['Secondary']
         MRN = str(MRN_key)
         while MRN[0] == '0':  # Drop the 0 from the front
             MRN = MRN[1:]
@@ -333,12 +329,24 @@ def main():
             print('{} failed to load a patient'.format(MRN))
             continue
         print(MRN)
-        case = None
-        for case in patient.Cases:
-            continue
+        if case == '-1':
+            for case in patient.Cases:
+                continue
+        else:
+            case = patient.Cases['CASE {}'.format(case)]
+        case.SetCurrent()
         rois_in_case = []
         for roi in case.PatientModel.RegionsOfInterest:
             rois_in_case.append(roi.Name)
+        roi_base = None
+        for roi in ['Liver', 'Liver_BMA_Program_4']:
+            if roi not in rois_in_case:
+                continue
+            elif case.PatientModel.StructureSets[primary_exam].RoiGeometries[roi].HasContours():
+                if case.PatientModel.StructureSets[secondary_exam].RoiGeometries[roi].HasContours():
+                    roi_base = roi
+                    break
+        assert roi_base is not None, "No liver contour found"
         for roi in [roi_base, gtv_base, ablation_base]:
             assert roi in rois_in_case, '{} is not present in the case!'.format(roi)
 
@@ -347,7 +355,7 @@ def main():
                                                                                                    'on primary!' \
                                                                                                    ''.format(roi)
         for roi in [roi_base, ablation_base]:
-            assert case.PatientModel.StructureSets[primary_exam].RoiGeometries[roi].HasContours(), '{} is not ' \
+            assert case.PatientModel.StructureSets[secondary_exam].RoiGeometries[roi].HasContours(), '{} is not ' \
                                                                                                    'on secondary!' \
                                                                                                    ''.format(roi)
         gtv_roi = gtv_base + '_Rigid'
@@ -366,10 +374,12 @@ def main():
 
         volume_expansion(roi_base, gtv_roi, ablation_base, rois_in_case, case, secondary_exam)
         out_dta = GetVolume_and_DTA(case, secondary_exam, gtv_name=gtv_roi, ablation_name=ablation_base)
+        print(out_dta)
         patient_dict['Rigid_DTA'] = [out_dta['Min DTA']]
-        out_df = pd.merge(left=out_df, right=pd.DataFrame(patient_dict), left_on='MRN', right_on='MRN')
-        out_df.to_excel(out_excel_sheet, index=0)
-        print(ExcludedVolume)
+        patient_df = pd.DataFrame(patient_dict)
+        print(patient_dict)
+        df.update(patient_df.set_index('MRN'))
+        df.to_excel(excel_path, index=0)
         break
 
 
