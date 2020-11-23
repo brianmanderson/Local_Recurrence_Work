@@ -228,7 +228,7 @@ def volume_expansion(roi_base,gtv_name,ablation_roi,rois_in_case,case, examinati
     return rois_in_case
 
 
-def GetVolume_and_DTA(case,Ref,gtv_name='GTV',ablation_name='Ablation'):
+def GetVolume_and_DTA(case, Ref, gtv_name='GTV',ablation_name='Ablation'):
     volExcluded = {}
     volExcluded['GTV_volume'] = case.PatientModel.StructureSets[Ref].RoiGeometries[gtv_name].GetRoiVolume()
     volExcluded['Ablation_volume'] = case.PatientModel.StructureSets[Ref].RoiGeometries[ablation_name].GetRoiVolume()
@@ -241,12 +241,13 @@ def GetVolume_and_DTA(case,Ref,gtv_name='GTV',ablation_name='Ablation'):
     return volExcluded
 
 
-def return_MRN_dictionary(excel_path):
+def return_MRN_dictionary(excel_path, out_excel_sheet):
     df = pd.read_excel(excel_path, sheet_name='GetDTA')
+    df2 = pd.read_excel(out_excel_sheet)
     MRN_list, primary_list, secondary_list = df['MRN'].values, df['Primary'].values, df['Secondary'].values
     MRN_dictionary = {}
     for MRN, primary, secondary in zip(MRN_list, primary_list, secondary_list):
-        if MRN in MRN_dictionary:
+        if MRN in df2['MRN'].values:
             continue
         if type(primary) is not float:
             primary = str(primary)
@@ -263,7 +264,7 @@ def return_MRN_dictionary(excel_path):
         else:
             continue
         MRN_dictionary[MRN] = {'Primary': primary, 'Secondary': secondary}
-    return MRN_dictionary
+    return MRN_dictionary, df2
 
 
 class ChangePatient(object):
@@ -308,11 +309,15 @@ def get_contour_points_from_roi(geometry):
 def main():
     excel_path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
                  r'\DTA_Results_Recurrence_and_Non_Recurrence.xlsx'
-
-    MRN_dictionary = return_MRN_dictionary(excel_path)
+    out_excel_sheet = excel_path.replace('Non_Recurrence.xlsx', 'Non_Recurrence_Output.xlsx')
+    MRN_dictionary, out_df = return_MRN_dictionary(excel_path, out_excel_sheet=out_excel_sheet)
     patient_changer = ChangePatient()
     ExcludedVolume = {}
+    roi_base = 'Liver'
+    gtv_base = 'GTV'
+    ablation_base = 'Ablation'
     for MRN_key in MRN_dictionary.keys():
+        patient_dict = {'MRN': [MRN_key]}
         primary_exam, secondary_exam = MRN_dictionary[MRN_key]['Primary'], MRN_dictionary[MRN_key]['Secondary']
         MRN = str(MRN_key)
         while MRN[0] == '0':  # Drop the 0 from the front
@@ -331,39 +336,38 @@ def main():
         rois_in_case = []
         for roi in case.PatientModel.RegionsOfInterest:
             rois_in_case.append(roi.Name)
-        roi_base = 'Liver'
-        gtv_roi = 'GTV'
-        ablation_roi = 'Ablation'
-        for roi in [roi_base, gtv_roi, ablation_roi]:
+        for roi in [roi_base, gtv_base, ablation_base]:
             assert roi in rois_in_case, '{} is not present in the case!'.format(roi)
 
-        for roi in [roi_base, gtv_roi]:
+        for roi in [roi_base, gtv_base]:
             assert case.PatientModel.StructureSets[primary_exam].RoiGeometries[roi].HasContours(), '{} is not ' \
                                                                                                    'on primary!' \
                                                                                                    ''.format(roi)
-        for roi in [roi_base, ablation_roi]:
+        for roi in [roi_base, ablation_base]:
             assert case.PatientModel.StructureSets[primary_exam].RoiGeometries[roi].HasContours(), '{} is not ' \
                                                                                                    'on secondary!' \
                                                                                                    ''.format(roi)
-
-        if gtv_roi + '_Rigid' not in rois_in_case:
-            case.PatientModel.CreateRoi(Name=gtv_roi + '_Rigid', Color='Red',
-                                        Type='External')
+        gtv_roi = gtv_base + '_Rigid'
+        if gtv_roi not in rois_in_case:
+            case.PatientModel.CreateRoi(Name=gtv_roi, Color='Red', Type='External')
         primary_examination = case.Examinations[primary_exam]
-        case.PatientModel.RegionsOfInterest[gtv_roi + '_Rigid'].CreateExternalGeometry(Examination=primary_examination,
-                                                                                       ThresholdLevel=-250)
-        new_contours = get_contour_points_from_roi(case.PatientModel.StructureSets[primary_exam].RoiGeometries[gtv_roi])
-        case.PatientModel.StructureSets[primary_exam].RoiGeometries[gtv_roi + '_Rigid'].PrimaryShape.Contours = new_contours
-        case.PatientModel.RegionsOfInterest[gtv_roi + '_Rigid'].Type = case.PatientModel.RegionsOfInterest[gtv_roi].Type
+        case.PatientModel.RegionsOfInterest[gtv_roi].CreateExternalGeometry(Examination=primary_examination,
+                                                                            ThresholdLevel=-250)
+        contours = get_contour_points_from_roi(case.PatientModel.StructureSets[primary_exam].RoiGeometries[gtv_base])
+        case.PatientModel.StructureSets[primary_exam].RoiGeometries[gtv_roi].PrimaryShape.Contours = contours
+        case.PatientModel.RegionsOfInterest[gtv_roi].Type = case.PatientModel.RegionsOfInterest[gtv_base].Type
         case.PatientModel.CopyRoiGeometries(SourceExamination=case.Examinations[primary_exam],
                                             TargetExaminationNames=[secondary_exam],
                                             RoiNames=[gtv_roi])
         # save_obj(self.ExcludedVolume, self.out_path_name)
 
-        rois_in_case = volume_expansion(roi_base, gtv_roi, ablation_roi, rois_in_case, case, secondary_exam)
-        ExcludedVolume[patient.PatientID] = GetVolume_and_DTA(case, secondary_exam, gtv_name=gtv_roi,
-                                                              ablation_name=ablation_roi)
+        volume_expansion(roi_base, gtv_roi, ablation_base, rois_in_case, case, secondary_exam)
+        out_dta = GetVolume_and_DTA(case, secondary_exam, gtv_name=gtv_roi, ablation_name=ablation_base)
+        patient_dict['Rigid_DTA'] = [out_dta['Min DTA']]
+        out_df = pd.merge(left=out_df, right=pd.DataFrame(patient_dict), left_on='MRN', right_on='MRN')
+        out_df.to_excel(out_excel_sheet, index=0)
         print(ExcludedVolume)
+        break
 
 
 if __name__ == '__main__':
