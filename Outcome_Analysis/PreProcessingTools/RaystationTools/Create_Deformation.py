@@ -47,7 +47,7 @@ class ChangePatient(object):
         if not info_all:
             info_all = self.patient_db.QueryPatientInfo(Filter={"PatientID": self.MRN}, UseIndexService=True)
         for info in info_all:
-            if info['PatientID'] == self.MRN:
+            if info['PatientID'] == self.MRN and info['LastName'].find('_') == -1:
                 return self.patient_db.LoadPatient(PatientInfo=info, AllowPatientUpgrade=True)
         print('did not find a patient')
         return None
