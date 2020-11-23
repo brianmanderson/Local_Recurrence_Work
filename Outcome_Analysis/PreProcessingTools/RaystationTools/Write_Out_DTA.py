@@ -243,7 +243,10 @@ def GetVolume_and_DTA(case, Ref, gtv_name='GTV',ablation_name='Ablation'):
 
 def return_MRN_dictionary(excel_path, out_excel_sheet):
     df = pd.read_excel(excel_path, sheet_name='GetDTA')
-    df2 = pd.read_excel(out_excel_sheet)
+    if os.path.exists(out_excel_sheet):
+        df2 = pd.read_excel(out_excel_sheet)
+    else:
+        df2 = pd.DataFrame({'MRN': [], 'Rigid_DTA': []})
     MRN_list, primary_list, secondary_list = df['MRN'].values, df['Primary'].values, df['Secondary'].values
     MRN_dictionary = {}
     for MRN, primary, secondary in zip(MRN_list, primary_list, secondary_list):
