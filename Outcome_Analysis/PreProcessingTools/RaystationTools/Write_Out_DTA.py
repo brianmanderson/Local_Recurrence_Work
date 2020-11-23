@@ -242,7 +242,7 @@ def GetVolume_and_DTA(case, Ref, gtv_name='GTV',ablation_name='Ablation'):
 
 
 def return_MRN_dictionary(excel_path):
-    df = pd.read_excel(excel_path, sheet_name='DTA')
+    df = pd.read_excel(excel_path)
     MRN_list, case_list, primary_list, secondary_list = df['MRN'].values, df['Case'].values, df['Primary'].values,\
                                                         df['Secondary'].values
     MRN_dictionary = {}
@@ -379,8 +379,7 @@ def main():
         patient_df = pd.DataFrame(patient_dict)
         print(patient_dict)
         df.update(patient_df.set_index('MRN'))
-        df.to_excel(excel_path, index=0)
-        break
+        df.to_excel(excel_path)
 
 
 if __name__ == '__main__':
