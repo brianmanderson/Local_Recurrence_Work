@@ -4,7 +4,7 @@ __author__ = 'Brian M Anderson'
 All parts here are in the DeepLearningTools folder
 '''
 import sys, os
-sys.path.append('..')
+sys.path.insert(0, os.path.abspath(os.path.join('..', '..')))
 if len(sys.argv) > 1:
     gpu = int(sys.argv[1])
 else:
