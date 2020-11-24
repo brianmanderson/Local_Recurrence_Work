@@ -374,12 +374,13 @@ def main():
 
         volume_expansion(roi_base, gtv_roi, ablation_base, rois_in_case, case, secondary_exam)
         out_dta = GetVolume_and_DTA(case, secondary_exam, gtv_name=gtv_roi, ablation_name=ablation_base)
+        patient.Save()
         print(out_dta)
         patient_dict['Rigid_DTA'] = [out_dta['Min DTA']]
         patient_df = pd.DataFrame(patient_dict)
         print(patient_dict)
-        df.update(patient_df.set_index('MRN'))
-        df.to_excel(excel_path)
+        # df.update(patient_df.set_index('MRN'))
+        # df.to_excel(excel_path)
 
 
 if __name__ == '__main__':
