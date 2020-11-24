@@ -12,8 +12,8 @@ import os
 def find_best_lr(batch_size=24, model_type='2D_Vanilla'):
     base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                                         cross_validation_id=-1,
-                                                                                        cache=False)
-    min_lr = 1e-10
+                                                                                        cache=True)
+    min_lr = 1e-6
     max_lr = 1
     for iteration in [0, 1, 2]:
         for optimizer in ['SGD']:
@@ -38,7 +38,7 @@ def find_best_lr(batch_size=24, model_type='2D_Vanilla'):
             LearningRateFinder(epochs=10, model=model, metrics=['accuracy'],
                                out_path=out_path, optimizer=lr_opt,
                                loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
-                               steps_per_epoch=10000//(len(train_generator) * 10),
+                               steps_per_epoch=10000//(10 * batch_size),
                                train_generator=train_generator.data_set, lower_lr=min_lr, high_lr=max_lr)
             tf.keras.backend.clear_session()
             return None # repeat!

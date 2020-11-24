@@ -78,7 +78,7 @@ Ensure that all contours are within the liver contour, as sometimes they're draw
 '''
 
 Contour_names = ['Retro_GTV', 'Retro_GTV_Recurred', 'Liver']
-write_records = True
+write_records = False
 if write_records:
     from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.Nifti_to_tfrecords import nifti_to_records
     nifti_to_records(nifti_path=nifti_export_path)
