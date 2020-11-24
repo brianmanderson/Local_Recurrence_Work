@@ -16,6 +16,7 @@ def distribute_into_cv(records_path, out_path_base, description, cv_groups=5):
             patient_dictionary[iteration] += [file]
     split_key_groups = np.array_split(np.array(list(patient_dictionary.keys())), cv_groups)
     for i in range(cv_groups):
+        print('Performing split {} of {}'.format(i + 1, cv_groups))
         out_validation = os.path.join(out_path_base, 'CV_{}'.format(i),
                                       'Validation{}'.format(description))
         out_train = os.path.join(out_path_base, 'CV_{}'.format(i), 'Train{}'.format(description))
