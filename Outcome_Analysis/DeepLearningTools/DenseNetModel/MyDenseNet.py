@@ -230,7 +230,7 @@ def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128
 
     x = layers.GlobalAveragePooling3D(name='avg_pool')(x)
 
-    x = layers.Dense(classes, activation='softmax', name='predictions')(x)
+    x = layers.Dense(classes, activation='softmax', name='predictions', dtype='float32')(x)
 
     if blocks == [6, 12, 24, 16]:
         model_name = 'densenet121'
