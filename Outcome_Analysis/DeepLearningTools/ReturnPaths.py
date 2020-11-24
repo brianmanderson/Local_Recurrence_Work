@@ -2,7 +2,11 @@ __author__ = 'Brian M Anderson'
 # Created on 2/17/2020
 
 import os
-from Base_Deeplearning_Code.Data_Generators.Return_Paths import find_base_dir, find_raid_dir
+from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Return_Paths import find_base_dir, find_raid_dir
+
+
+def __init__():
+    pass
 
 
 def return_paths():
