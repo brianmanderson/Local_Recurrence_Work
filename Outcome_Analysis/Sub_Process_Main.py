@@ -15,6 +15,7 @@ args = "python MainDeepLearning.py {}".format(gpu)
 # args = "python Return_Train_Validation_Generators_TF2.py {}".format(gpu)
 num_models = 18
 iterations = 3
+sys.path.append('..')
 for _ in range(100):
     print('Running iteration now')
     call(args=args, shell=True)
