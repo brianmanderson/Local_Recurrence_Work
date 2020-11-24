@@ -13,3 +13,6 @@
 [submodule "Outcome_Analysis/Make_Single_Images"]
 	path = Outcome_Analysis/Make_Single_Images
 	url = https://github.com/brianmanderson/Make_Single_Images.git
+[submodule "Outcome_Analysis/DeepLearningTools/Base_Deeplearning_Code"]
+	path = Outcome_Analysis/DeepLearningTools/Base_Deeplearning_Code
+	url = https://github.com/brianmanderson/Base_Deeplearning_Code.git
