@@ -8,9 +8,8 @@ import tensorflow as tf
 from tensorflow.keras.applications import imagenet_utils
 import sys
 
-sys.path.append('..')
-from Base_Deeplearning_Code.Models.TF_Keras_Models import base_UNet, ExpandDimension, SqueezeDimension, SqueezeAxes, \
-    BreakUpSqueezeDimensions
+from Deep_Learning.Base_Deeplearning_Code.Models.TF_Keras_Models import base_UNet, ExpandDimension, SqueezeDimension,\
+    SqueezeAxes, BreakUpSqueezeDimensions
 from tensorflow.keras.models import Model
 from tensorflow.keras import layers
 from tensorflow.python.keras.utils import data_utils
