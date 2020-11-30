@@ -10,7 +10,7 @@ def return_list_of_models(model_type=0):
             OrderedDict({'Model_Type': model_type, 'min_lr': min_lr, 'max_lr': max_lr, 'step_factor': step_factor})
         dictionary = [
             base_dict0(min_lr=8e-6, max_lr=2e-3, step_factor=5),
-            base_dict0(min_lr=8e-6, max_lr=2e-3, step_factor=5),
+            base_dict0(min_lr=8e-6, max_lr=2e-3, step_factor=10),
             base_dict0(min_lr=8e-6, max_lr=2e-3, step_factor=20)
         ]
         model_dictionary[0] = dictionary
