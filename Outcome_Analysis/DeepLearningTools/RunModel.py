@@ -9,7 +9,7 @@ from tensorboard.plugins.hparams.keras import Callback
 
 def run_model(model, train_generator, validation_generator, min_lr, max_lr, model_path, tensorboard_path, trial_id,
               optimizer, hparams=None, step_factor=8, epochs=120):
-    checkpoint_path = os.path.join(model_path, 'cp-{epoch:04d}.cpkt')
+    checkpoint_path = os.path.join(model_path, 'cp-best.cpkt')
     checkpoint = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, monitor='val_loss', mode='min', verbose=1,
                                                     save_freq='epoch', save_best_only=True, save_weights_only=True)
     tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tensorboard_path, profile_batch=0,
