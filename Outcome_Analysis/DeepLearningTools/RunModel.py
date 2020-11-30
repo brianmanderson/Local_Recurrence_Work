@@ -28,7 +28,7 @@ def run_model(model, train_generator, validation_generator, min_lr, max_lr, mode
                   metrics=[tf.keras.metrics.CategoricalAccuracy()])
     model.fit(train_generator.data_set, epochs=epochs, steps_per_epoch=len(train_generator),
               validation_data=validation_generator.data_set, validation_steps=len(validation_generator),
-              validation_freq=3, callbacks=callbacks)
+              validation_freq=1, callbacks=callbacks)
     model.save(os.path.join(model_path, 'final_model.h5'))
     tf.keras.backend.clear_session()
     return None
