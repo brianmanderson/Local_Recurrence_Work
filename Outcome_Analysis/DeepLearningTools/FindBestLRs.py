@@ -15,7 +15,7 @@ def find_best_lr(batch_size=24, model_type='2D_Vanilla'):
                                                                                         cache=True)
     min_lr = 1e-6
     max_lr = 1
-    for iteration in [0, 1, 2]:
+    for iteration in [0, 1, 2, 3]:
         for optimizer in ['SGD']:
             things = ['Optimizer_{}'.format(optimizer)]
             things.append('{}_Iteration'.format(iteration))

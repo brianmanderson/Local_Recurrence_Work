@@ -13,18 +13,23 @@ print('Running on {}'.format(gpu))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
 
-find_lr = True
+from tensorflow.keras.mixed_precision import experimental
+
+policy = experimental.Policy('mixed_float16')
+experimental.set_policy(policy)
+
+batch_size = 24
+find_lr = False
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
-    find_best_lr(batch_size=24, model_type='2D_Vanilla')
+    find_best_lr(batch_size=batch_size, model_type='2D_Vanilla')
 
 plot_lr = False
 if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-workondeeplearning = False
-if workondeeplearning:
-    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators
-    base_path, morfeus_drive, train_generator, validation_generator = return_generators()
-    xxx = 1
+run_the_2D_model = True
+if run_the_2D_model:
+    from .DeepLearningTools.Run2DModel import run_2d_model
+    run_2d_model(batch_size=batch_size)
