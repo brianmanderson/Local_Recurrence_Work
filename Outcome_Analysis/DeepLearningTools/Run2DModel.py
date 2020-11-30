@@ -45,11 +45,12 @@ def run_2d_model(batch_size=24):
                 model_path = os.path.join(base_path, 'Models', 'Model_Index_{}'.format(model_index))
                 tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
                                                 'Model_Index_{}'.format(model_index))
+                print('Saving model to {}\ntensorboard at {}'.format(model_path, tensorboard_path))
                 current_run_df.insert(0, column='Model_Index', value=model_index)
                 hparams = return_hparams(model_parameters, features_list=features_list, excluded_keys=[])
                 current_run_df.set_index('Model_Index')
                 base_df = base_df.append(current_run_df)
-                # base_df.to_excel(excel_path, index=0)
+                base_df.to_excel(excel_path, index=0)
                 run_model(model=model, train_generator=train_generator, validation_generator=validation_generator,
                           min_lr=model_parameters['min_lr'], max_lr=model_parameters['max_lr'], model_path=model_path,
                           tensorboard_path=tensorboard_path, trial_id=model_index, optimizer=optimizer, hparams=hparams,

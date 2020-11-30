@@ -4,10 +4,10 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.DenseNetModel.MyDe
 from tensorflow.keras.mixed_precision import experimental
 
 
-def return_model(model_type='2D_Vanilla'):
+def return_model(model_key=0):
     policy = experimental.Policy('mixed_float16')
     experimental.set_policy(policy)
-    if model_type == '2D_Vanilla':
+    if model_key == 0:
         return MyDenseNet121(include_top=False, input_shape=(32, 128, 128, 3), classes=2)
     else:
         return None

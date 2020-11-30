@@ -31,5 +31,5 @@ if plot_lr:
 
 run_the_2D_model = True
 if run_the_2D_model:
-    from .DeepLearningTools.Run2DModel import run_2d_model
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
