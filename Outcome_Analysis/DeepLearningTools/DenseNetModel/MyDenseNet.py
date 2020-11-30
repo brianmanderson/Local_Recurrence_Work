@@ -4,18 +4,10 @@ __author__ = 'Brian M Anderson'
 
 # Created on 9/1/2020
 from tensorflow.keras import backend
-import tensorflow as tf
-from tensorflow.keras.applications import imagenet_utils
-import sys
-
-from Deep_Learning.Base_Deeplearning_Code.Models.TF_Keras_Models import base_UNet, ExpandDimension, SqueezeDimension,\
-    SqueezeAxes, BreakUpSqueezeDimensions
+import tensorflow.keras.regularizers as regularizers
 from tensorflow.keras.models import Model
 from tensorflow.keras import layers
 from tensorflow.python.keras.utils import data_utils
-from tensorflow.python.keras.utils import layer_utils
-from tensorflow.python.lib.io import file_io
-from tensorflow.python.util.tf_export import keras_export
 
 BASE_WEIGTHS_PATH = ('https://storage.googleapis.com/tensorflow/'
                      'keras-applications/densenet/')
@@ -83,7 +75,7 @@ def transition_block(x, reduction, name):
     x = layers.Activation('relu', name=name + '_relu')(x)
     x = layers.Conv2D(int(backend.int_shape(x)[-1] * reduction), 1,
                       use_bias=False, padding='same', name=name + '_conv')(x)
-    x = layers.AveragePooling3D((2, 2, 2), strides=(2, 2, 2), name=name + '_pool')(x)
+    x = layers.AveragePooling3D((1, 2, 2), strides=(1, 2, 2), name=name + '_pool')(x)
     return x
 
 
@@ -228,8 +220,14 @@ def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128
     x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
     x = layers.Activation('relu', name='relu')(x)
 
-    x = layers.GlobalAveragePooling3D(name='avg_pool')(x)
-
+    x = layers.MaxPooling3D(pool_size=(1, 2, 2))(x)
+    x = layers.Flatten()(x)
+    x = layers.Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.001))(x)
+    x = layers.Dropout(0.5)(x)
+    x = layers.Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.001))(x)
+    x = layers.Dropout(0.5)(x)
+    x = layers.Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.001))(x)
+    x = layers.Dropout(0.5)(x)
     x = layers.Dense(classes, activation='softmax', name='predictions', dtype='float32')(x)
 
     if blocks == [6, 12, 24, 16]:
