@@ -13,7 +13,7 @@ import tensorflow as tf
 
 def run_2d_model(batch_size=24):
     optimizer = tf.keras.optimizers.SGD()
-    epochs = 500
+    epochs = 120
     model_dictionary = return_list_of_models()
     model_key = 0
     list_of_models = model_dictionary[model_key]  # A list of models to attempt to run
