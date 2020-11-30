@@ -16,7 +16,7 @@ def run_model(model, train_generator, validation_generator, min_lr, max_lr, mode
                                                  write_graph=True)  # profile_batch='300,401',
 
     lrate = SGDRScheduler(min_lr=min_lr, max_lr=max_lr, steps_per_epoch=len(train_generator), cycle_length=step_factor,
-                          lr_decay=0.90, mult_factor=2, gentle_start_epochs=0, gentle_fraction=0.1)
+                          lr_decay=0.90, mult_factor=2, gentle_start_epochs=step_factor * 2, gentle_fraction=0.1)
     add_lr = Add_Images_and_LR(log_dir=tensorboard_path, add_images=False)
     callbacks = [tensorboard, lrate, add_lr]
     if hparams is not None:
