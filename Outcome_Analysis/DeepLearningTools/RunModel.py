@@ -18,7 +18,7 @@ def run_model(model, train_generator, validation_generator, min_lr, max_lr, mode
     lrate = SGDRScheduler(min_lr=min_lr, max_lr=max_lr, steps_per_epoch=len(train_generator), cycle_length=step_factor,
                           lr_decay=0.98)
     add_lr = Add_Images_and_LR(log_dir=tensorboard_path, add_images=False)
-    callbacks = [tensorboard, lrate]
+    callbacks = [tensorboard, lrate, add_lr]
     if hparams is not None:
         hp_callback = Callback(tensorboard_path, hparams=hparams, trial_id='Trial_ID:{}'.format(trial_id))
         callbacks += [hp_callback]
