@@ -27,7 +27,7 @@ def find_best_lr(batch_size=24, model_type='2D_Vanilla'):
                 continue
             os.makedirs(out_path)
             print(out_path)
-            model = return_model(model_type=model_type)
+            model = return_model(model_key=0)
             k = TensorBoard(log_dir=out_path, profile_batch=0, write_graph=True)
             k.set_model(model)
             k.on_train_begin()
