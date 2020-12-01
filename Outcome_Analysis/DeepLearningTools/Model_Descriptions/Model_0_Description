@@ -1,4 +1,5 @@
 Model 0 is built on DenseNet121, all MaxPooling are turned into MaxPooling3D with size (1, 3, 3) stride (1, 2, 2)
+
 The feature extraction terminates with a 3D Max pooling with size (1, 2, 2) into a Flatten() layer
 
 There are three Dense connections with 512 connections, l2 normalization, and dropout of 0.5

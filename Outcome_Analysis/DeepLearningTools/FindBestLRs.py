@@ -23,9 +23,9 @@ def find_best_lr(batch_size=24, model_key=0):
             if os.path.exists(out_path):
                 print('already done')
                 continue
+            model = return_model(model_key=model_key)
             _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                             cross_validation_id=-1, cache=True)
-            model = return_model(model_key=model_key)
             os.makedirs(out_path)
             print(out_path)
             k = TensorBoard(log_dir=out_path, profile_batch=0, write_graph=True)
