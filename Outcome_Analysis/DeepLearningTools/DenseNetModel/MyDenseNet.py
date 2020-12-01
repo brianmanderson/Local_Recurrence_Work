@@ -220,20 +220,20 @@ def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128
     if include_3d:
         strides = (2, 2, 2)
     x = dense_block(x, blocks[0], name='conv2')
-    if include_3d:
-        x = dense_block3d(x=x, blocks=blocks[0], name='3d_conv2')
+    # if include_3d:
+    #     x = dense_block3d(x=x, blocks=blocks[0], name='3d_conv2')
     x = transition_block(x, 0.5, name='pool2', strides=strides)
     x = dense_block(x, blocks[1], name='conv3')
-    if include_3d:
-        x = dense_block3d(x=x, blocks=blocks[1], name='3d_conv3')
+    # if include_3d:
+    #     x = dense_block3d(x=x, blocks=blocks[1], name='3d_conv3')
     x = transition_block(x, 0.5, name='pool3', strides=strides)
     x = dense_block(x, blocks[2], name='conv4')
-    if include_3d:
-        x = dense_block3d(x=x, blocks=blocks[2], name='3d_conv4')
+    # if include_3d:
+    #     x = dense_block3d(x=x, blocks=blocks[2], name='3d_conv4')
     x = transition_block(x, 0.5, name='pool4', strides=strides)
     x = dense_block(x, blocks[3], name='conv5')
-    if include_3d:
-        x = dense_block3d(x=x, blocks=blocks[3], name='3d_conv5')
+    # if include_3d:
+    #     x = dense_block3d(x=x, blocks=blocks[3], name='3d_conv5')
 
     x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
     x = layers.Activation('relu', name='relu')(x)
