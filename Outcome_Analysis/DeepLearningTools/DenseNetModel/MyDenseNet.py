@@ -55,8 +55,10 @@ def dense_block3d(x, blocks, name):
     Returns:
       Output tensor for the block.
     """
+    out_filters = x.shape[-1]
     for i in range(blocks):
         x = conv_block_3d(x, 32, name=name + '_block' + str(i + 1))
+    x = bottle_neck(x=x, out_filters=out_filters, name=name)
     return x
 
 
@@ -118,6 +120,19 @@ def conv_block_3d(x, growth_rate, name):
     x1 = layers.Activation('relu', name=name + '_1_relu')(x1)
     x1 = layers.Conv3D(growth_rate, (3, 1, 1), padding='same', use_bias=False, name=name + '_2_conv')(x1)
     x = layers.Concatenate(axis=-1, name=name + '_concat')([x, x1])
+    return x
+
+
+def bottle_neck(x, out_filters, name):
+    """ A bottle-neck for using 3D models
+    :param x:
+    :param out_filters:
+    :param name:
+    :return:
+    """
+    x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_bn_bottleneck')(x)
+    x = layers.Activation('relu', name=name + '_bn_relu')(x)
+    x = layers.Conv3D(out_filters, 1, use_bias=False, name=name + '_bn_conv', padding='same')(x)
     return x
 
 
