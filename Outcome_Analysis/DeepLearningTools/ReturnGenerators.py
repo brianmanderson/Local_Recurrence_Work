@@ -90,7 +90,8 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     Now, we want to provide the model with examples of both recurrence and non_recurrence each time
     '''
     train_dataset = tf.data.Dataset.zip((train_no_recurence_generator.data_set, train_recurrence_generator.data_set)).\
-        map(lambda x, y: ((tf.concat((x[0][0], y[0][0]), axis=0),), (tf.concat((x[1][0], y[1][0]), axis=0),)))
+        map(lambda x, y: ((tf.concat((x[0][0], y[0][0]), axis=0),), (tf.concat((x[1][0], y[1][0]), axis=0),)),
+            num_parallel_calls=tf.data.experimental.AUTOTUNE)
     train_generator = train_recurrence_generator
     train_generator.data_set = train_dataset
     train_generator.total_examples += train_no_recurence_generator.total_examples
@@ -99,7 +100,8 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         validation_generator = validation_recurrence_generator
         validation_dataset = tf.data.Dataset.zip((validation_recurrence_generator.data_set,
                                                   validation_no_recurrence_generator.data_set)).map(
-            lambda x, y: ((tf.concat((x[0][0], y[0][0]), axis=0),), (tf.concat((x[1][0], y[1][0]), axis=0),)))
+            lambda x, y: ((tf.concat((x[0][0], y[0][0]), axis=0),), (tf.concat((x[1][0], y[1][0]), axis=0),)),
+            num_parallel_calls=tf.data.experimental.AUTOTUNE)
         validation_generator.data_set = validation_dataset.unbatch().batch(1)
         validation_generator.total_examples += validation_no_recurrence_generator.total_examples
     generators = [validation_generator]
