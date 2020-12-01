@@ -11,11 +11,10 @@ print('Running on {}'.format(gpu))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
 
-args = "python MainDeepLearning.py {}".format(gpu)
+args = "python MainDeepLearning.py {} {}"
 # args = "python Return_Train_Validation_Generators_TF2.py {}".format(gpu)
-num_models = 18
-iterations = 3
+model_key = 1
 sys.path.append('..')
 for _ in range(100):
     print('Running iteration now')
-    call(args=args, shell=True)
+    call(args=args.format(gpu, model_key), shell=True)

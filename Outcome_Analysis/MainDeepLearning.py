@@ -7,9 +7,11 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join('..', '..')))
 if len(sys.argv) > 1:
     gpu = int(sys.argv[1])
+    model_key = int(sys.argv[2])
 else:
     gpu = 0
-print('Running on {}'.format(gpu))
+    model_key = 1
+print('Running on {} for key {}'.format(gpu, model_key))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
 
@@ -17,7 +19,7 @@ from tensorflow.keras import mixed_precision
 
 mixed_precision.set_global_policy('mixed_float16')
 
-model_key = 1
+
 batch_size = 24
 find_lr = False
 if find_lr:
