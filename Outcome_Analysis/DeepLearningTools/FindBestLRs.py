@@ -9,7 +9,7 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels impor
 import os
 
 
-def find_best_lr(batch_size=24, model_type='2D_Vanilla'):
+def find_best_lr(batch_size=24, model_key=0):
     base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                                         cross_validation_id=-1,
                                                                                         cache=True)
@@ -19,7 +19,7 @@ def find_best_lr(batch_size=24, model_type='2D_Vanilla'):
         for optimizer in ['SGD']:
             things = ['Optimizer_{}'.format(optimizer)]
             things.append('{}_Iteration'.format(iteration))
-            out_path = os.path.join(morfeus_drive, 'Learning_Rates', model_type)
+            out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
             for thing in things:
                 out_path = os.path.join(out_path,thing)
             if os.path.exists(out_path):
@@ -27,7 +27,7 @@ def find_best_lr(batch_size=24, model_type='2D_Vanilla'):
                 continue
             os.makedirs(out_path)
             print(out_path)
-            model = return_model(model_key=0)
+            model = return_model(model_key=model_key)
             k = TensorBoard(log_dir=out_path, profile_batch=0, write_graph=True)
             k.set_model(model)
             k.on_train_begin()
