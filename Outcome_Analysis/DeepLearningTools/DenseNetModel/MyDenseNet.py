@@ -238,7 +238,7 @@ def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128
     x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
     x = layers.Activation('relu', name='relu')(x)
 
-    x = layers.MaxPooling3D(pool_size=strides)(x)
+    x = layers.AveragePooling3D(pool_size=strides)(x)
     x = layers.Flatten()(x)
     x = layers.Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.001))(x)
     x = layers.Dropout(0.5)(x)
