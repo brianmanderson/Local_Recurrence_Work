@@ -25,7 +25,7 @@ def run_2d_model(batch_size=24, model_key=0):
         _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                         cross_validation_id=cv_id,
                                                                         cache=True)
-        for iteration in range(10):
+        for iteration in range(5):
             for model_parameters in list_of_models:
                 base_df = pd.read_excel(excel_path)
                 base_df.set_index('Model_Index')
