@@ -17,7 +17,7 @@ from tensorflow.keras import mixed_precision
 
 mixed_precision.set_global_policy('mixed_float16')
 
-model_key = 1
+model_key = 0
 batch_size = 24
 find_lr = False
 if find_lr:
@@ -39,8 +39,10 @@ if evaluate_model:
     from tensorflow.keras.models import load_model
     import numpy as np
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators
-    model_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_Index_88\final_model.h5'
-    model = load_model(model_path)
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
+    model_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_Index_88\cp-best.cpkt'
+    model = return_model(model_key=0)
+    model.load_weights(model_path)
     _, _, train_generator, val_generator = return_generators(batch_size=12, cross_validation_id=4)
     val_iter = iter(val_generator.data_set)
     truth = []
