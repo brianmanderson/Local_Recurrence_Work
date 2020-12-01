@@ -10,9 +10,7 @@ import os
 
 
 def find_best_lr(batch_size=24, model_key=0):
-    base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=batch_size,
-                                                                                        cross_validation_id=-1,
-                                                                                        cache=True)
+    base_path, morfeus_drive = return_paths()
     min_lr = 1e-6
     max_lr = 1
     for iteration in [0, 1, 2, 3]:
@@ -25,9 +23,11 @@ def find_best_lr(batch_size=24, model_key=0):
             if os.path.exists(out_path):
                 print('already done')
                 continue
+            _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
+                                                                            cross_validation_id=-1, cache=True)
+            model = return_model(model_key=model_key)
             os.makedirs(out_path)
             print(out_path)
-            model = return_model(model_key=model_key)
             k = TensorBoard(log_dir=out_path, profile_batch=0, write_graph=True)
             k.set_model(model)
             k.on_train_begin()
