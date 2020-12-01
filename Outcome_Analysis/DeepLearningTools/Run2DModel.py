@@ -13,7 +13,7 @@ import tensorflow as tf
 
 def run_2d_model(batch_size=24, model_key=0):
     optimizer = tf.keras.optimizers.SGD()
-    epochs = 220
+    epochs = 500
     model_dictionary = return_list_of_models(model_key=model_key)
     list_of_models = model_dictionary[model_key]  # A list of models to attempt to run
     base_path, morfeus_drive = return_paths()
