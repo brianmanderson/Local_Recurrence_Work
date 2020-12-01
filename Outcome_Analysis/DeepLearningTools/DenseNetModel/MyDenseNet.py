@@ -62,7 +62,7 @@ def dense_block3d(x, blocks, name):
     return x
 
 
-def transition_block(x, reduction, name):
+def transition_block(x, reduction, name, strides=(1, 2, 2)):
     """A transition block.
 
     Arguments:
@@ -77,7 +77,7 @@ def transition_block(x, reduction, name):
     x = layers.Activation('relu', name=name + '_relu')(x)
     x = layers.Conv2D(int(backend.int_shape(x)[-1] * reduction), 1,
                       use_bias=False, padding='same', name=name + '_conv')(x)
-    x = layers.AveragePooling3D((1, 2, 2), strides=(1, 2, 2), name=name + '_pool')(x)
+    x = layers.AveragePooling3D(strides, strides=strides, name=name + '_pool')(x)
     return x
 
 
@@ -216,18 +216,21 @@ def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128
     x = layers.Activation('relu', name='conv1/relu')(x)
     x = layers.MaxPooling3D((1, 3, 3), strides=(1, 2, 2), name='pool1')(x)
 
+    strides = (1, 2, 2)
+    if include_3d:
+        strides = (2, 2, 2)
     x = dense_block(x, blocks[0], name='conv2')
     if include_3d:
         x = dense_block3d(x=x, blocks=blocks[0], name='3d_conv2')
-    x = transition_block(x, 0.5, name='pool2')
+    x = transition_block(x, 0.5, name='pool2', strides=strides)
     x = dense_block(x, blocks[1], name='conv3')
     if include_3d:
         x = dense_block3d(x=x, blocks=blocks[1], name='3d_conv3')
-    x = transition_block(x, 0.5, name='pool3')
+    x = transition_block(x, 0.5, name='pool3', strides=strides)
     x = dense_block(x, blocks[2], name='conv4')
     if include_3d:
         x = dense_block3d(x=x, blocks=blocks[2], name='3d_conv4')
-    x = transition_block(x, 0.5, name='pool4')
+    x = transition_block(x, 0.5, name='pool4', strides=strides)
     x = dense_block(x, blocks[3], name='conv5')
     if include_3d:
         x = dense_block3d(x=x, blocks=blocks[3], name='3d_conv5')
