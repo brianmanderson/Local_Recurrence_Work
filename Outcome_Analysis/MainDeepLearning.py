@@ -17,7 +17,7 @@ from tensorflow.keras import mixed_precision
 
 mixed_precision.set_global_policy('mixed_float16')
 
-model_key = 0
+model_key = 1
 batch_size = 24
 find_lr = False
 if find_lr:
