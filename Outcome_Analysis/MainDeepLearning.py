@@ -13,10 +13,9 @@ print('Running on {}'.format(gpu))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
 
-from tensorflow.keras.mixed_precision import experimental
+from tensorflow.keras import mixed_precision
 
-policy = experimental.Policy('mixed_float16')
-experimental.set_policy(policy)
+mixed_precision.set_global_policy('mixed_float16')
 
 model_key = 1
 batch_size = 12
