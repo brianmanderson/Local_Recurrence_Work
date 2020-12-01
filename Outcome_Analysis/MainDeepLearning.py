@@ -17,11 +17,12 @@ from tensorflow.keras import mixed_precision
 
 mixed_precision.set_global_policy('mixed_float16')
 
+model_key = 1
 batch_size = 24
 find_lr = False
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
-    find_best_lr(batch_size=batch_size, model_type='2D_Vanilla')
+    find_best_lr(batch_size=batch_size, model_key=model_key)
 
 plot_lr = False
 if plot_lr:
