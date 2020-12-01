@@ -121,7 +121,7 @@ def conv_block_3d(x, growth_rate, name):
     return x
 
 
-def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128, 128, 2), include3D=False,
+def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128, 128, 2), include_3d=False,
              model_name='unique', classes=1000):
     """Instantiates the DenseNet architecture.
 
@@ -202,19 +202,19 @@ def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128
     x = layers.MaxPooling3D((1, 3, 3), strides=(1, 2, 2), name='pool1')(x)
 
     x = dense_block(x, blocks[0], name='conv2')
-    if include3D:
+    if include_3d:
         x = dense_block3d(x=x, blocks=blocks[0], name='3d_conv2')
     x = transition_block(x, 0.5, name='pool2')
     x = dense_block(x, blocks[1], name='conv3')
-    if include3D:
+    if include_3d:
         x = dense_block3d(x=x, blocks=blocks[1], name='3d_conv3')
     x = transition_block(x, 0.5, name='pool3')
     x = dense_block(x, blocks[2], name='conv4')
-    if include3D:
+    if include_3d:
         x = dense_block3d(x=x, blocks=blocks[2], name='3d_conv4')
     x = transition_block(x, 0.5, name='pool4')
     x = dense_block(x, blocks[3], name='conv5')
-    if include3D:
+    if include_3d:
         x = dense_block3d(x=x, blocks=blocks[3], name='3d_conv5')
 
     x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
@@ -285,9 +285,9 @@ def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128
 
 
 def MyDenseNet121(include_top=False,
-                weights='imagenet',
-                input_shape=(32, 128, 128, 2),
-                classes=2, layers_dict=None):
+                  weights='imagenet',
+                  input_shape=(32, 128, 128, 2),
+                  classes=2, include_3d=False):
     """Instantiates the Densenet121 architecture."""
     return DenseNet(blocks=[6, 12, 24, 16], include_top=include_top, weights=weights, input_shape=input_shape,
-                    classes=classes)
+                    classes=classes, include_3d=include_3d)
