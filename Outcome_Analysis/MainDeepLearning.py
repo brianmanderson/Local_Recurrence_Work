@@ -19,7 +19,7 @@ mixed_precision.set_global_policy('mixed_float16')
 
 model_key = 1
 batch_size = 24
-find_lr = True
+find_lr = False
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -29,7 +29,7 @@ if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-run_the_2D_model = False
+run_the_2D_model = True
 if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
-    run_2d_model(batch_size=batch_size)
+    run_2d_model(batch_size=batch_size, model_key=model_key)
