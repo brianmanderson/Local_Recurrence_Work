@@ -4,12 +4,20 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.DenseNetModel.MyDe
 
 
 def return_model(model_key=0):
+    model = None
     if model_key == 0:
-        return MyDenseNet121(include_top=False, input_shape=(32, 128, 128, 3), classes=2, include_3d=False)
+        model = MyDenseNet121(include_top=False, input_shape=(32, 128, 128, 3), classes=2, include_3d=False)
     elif model_key == 1:
-        return MyDenseNet121(include_top=False, input_shape=(32, 128, 128, 3), classes=2, include_3d=True)
-    else:
-        return None
+        model = MyDenseNet121(include_top=False, input_shape=(32, 128, 128, 3), classes=2, include_3d=True)
+    elif model_key == 2:
+        model = MyDenseNet121(include_top=False, input_shape=(32, 128, 128, 3), classes=2, include_3d=False)
+        freeze_name = 'final_average_pooling'
+        trainable = False
+        for index, layer in enumerate(model.layers):
+            if layer.name.find(freeze_name) == 0:
+                trainable = True
+            model.layers[index].trainable = trainable
+    return model
 
 
 if __name__ == '__main__':
