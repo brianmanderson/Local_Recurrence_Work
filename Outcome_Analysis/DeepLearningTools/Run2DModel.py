@@ -10,14 +10,19 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels impor
 import pandas as pd
 import tensorflow as tf
 import types
+import numpy as np
 
 
 def run_2d_model(batch_size=24, model_key=0):
     optimizer = tf.keras.optimizers.SGD()
     epochs = 500
     model_dictionary = return_list_of_models(model_key=model_key)
-    list_of_models = model_dictionary[model_key]  # A list of models to attempt to run
+    list_of_models = np.asarray(model_dictionary[model_key])  # A list of models to attempt to run
+    perm = np.arange(len(list_of_models))
+    np.random.shuffle(perm)
+    list_of_models = list_of_models[perm]  # Shuffle the list of models up
     base_path, morfeus_drive = return_paths()
+
     excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
     compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'cv_id')
     features_list = ('Model_Type', 'step_factor')
