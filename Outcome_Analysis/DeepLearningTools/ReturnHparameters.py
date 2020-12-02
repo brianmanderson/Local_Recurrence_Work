@@ -21,6 +21,12 @@ def return_list_of_models(model_key=0):
             base_dict0(min_lr=8e-5, max_lr=8e-3, step_factor=10),
             base_dict0(min_lr=8e-5, max_lr=4e-2, step_factor=10),
         ]
+    elif model_key == 2:
+        base_dict0 = lambda min_lr, max_lr, step_factor: \
+            OrderedDict({'Model_Type': model_key, 'min_lr': min_lr, 'max_lr': max_lr, 'step_factor': step_factor})
+        dictionary = [
+            base_dict0(min_lr=3e-6, max_lr=2e-3, step_factor=10),
+        ]
     model_dictionary = {model_key: dictionary}
     return model_dictionary
 
