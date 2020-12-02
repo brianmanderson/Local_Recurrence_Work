@@ -30,7 +30,7 @@ if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_key=model_key)
