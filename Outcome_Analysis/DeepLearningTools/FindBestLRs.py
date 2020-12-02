@@ -12,50 +12,49 @@ from tensorflow_addons.optimizers import RectifiedAdam
 
 
 def return_model_and_things(model_base, out_path, things):
-    if not isinstance(model_base, types.FunctionType):
-        for thing in things:
-            out_path = os.path.join(out_path, thing)
-        if os.path.exists(out_path):
-            print('already done')
-            return None, None
-        return model_base, out_path
-    else:
-
-        for blocks_in_dense in [3, 4]:
-            for dense_conv_blocks in [3, 4]:
-                for dense_layers in [3]:
-                    for num_dense_connections in [256]:
-                        for filters in [16, 32]:
-                            for growth_rate in [16, 32]:
-                                all_list = 'blocks_in_dense_{}.dense_conv_blocks_{}.dense_layers_{}.' \
-                                           'num_dense_connections{}.filters_{}.' \
-                                           'growth_rate_{}'.format(blocks_in_dense, dense_conv_blocks, dense_layers,
-                                                                   num_dense_connections, filters, growth_rate)
-                                new_out_path = os.path.join(out_path, all_list)
-                                for thing in things:
-                                    new_out_path = os.path.join(new_out_path, thing)
-                                if os.path.exists(new_out_path):
-                                    continue
-                                else:
-                                    return model_base(blocks_in_dense=blocks_in_dense,
-                                                      dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
-                                                      num_dense_connections=num_dense_connections,filters=filters,
-                                                      growth_rate=growth_rate), new_out_path
+    for blocks_in_dense in [3, 4]:
+        for dense_conv_blocks in [3, 4]:
+            for dense_layers in [3]:
+                for num_dense_connections in [256]:
+                    for filters in [16, 32]:
+                        for growth_rate in [16, 32]:
+                            all_list = 'blocks_in_dense_{}.dense_conv_blocks_{}.dense_layers_{}.' \
+                                       'num_dense_connections{}.filters_{}.' \
+                                       'growth_rate_{}'.format(blocks_in_dense, dense_conv_blocks, dense_layers,
+                                                               num_dense_connections, filters, growth_rate)
+                            new_out_path = os.path.join(out_path, all_list)
+                            for thing in things:
+                                new_out_path = os.path.join(new_out_path, thing)
+                            if os.path.exists(new_out_path):
+                                continue
+                            else:
+                                return model_base(blocks_in_dense=blocks_in_dense,
+                                                  dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
+                                                  num_dense_connections=num_dense_connections,filters=filters,
+                                                  growth_rate=growth_rate), new_out_path
     return None, None
 
 def find_best_lr(batch_size=24, model_key=0):
     base_path, morfeus_drive = return_paths()
     min_lr = 1e-6
     max_lr = 1e-1
+    model_base = return_model(model_key=model_key)
     for iteration in [0, 1, 2]:
         for optimizer in ['SGD', 'RAdam']:
             things = ['Optimizer_{}'.format(optimizer)]
             things.append('{}_Iteration'.format(iteration))
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
-            model_base = return_model(model_key=model_key)
-            model, out_path = return_model_and_things(model_base=model_base, out_path=out_path, things=things)
-            if model is None:
-                continue
+            if not isinstance(model_base, types.FunctionType):
+                model = model_base
+                for thing in things:
+                    out_path = os.path.join(out_path, thing)
+                if os.path.exists(out_path):
+                    print('already done')
+                    continue
+            else:
+                model, out_path = return_model_and_things(model_base=model_base, out_path=out_path, things=things)
+                if model is None:
+                    continue
             _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                             cross_validation_id=-1, cache=True)
             os.makedirs(out_path)
