@@ -1,6 +1,7 @@
 __author__ = 'Brian M Anderson'
 # Created on 11/24/2020
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.DenseNetModel.MyDenseNet import MyDenseNet121
+from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.DenseNetModel.My3DDenseNet import mydensenet
 
 
 def return_model(model_key=0):
@@ -17,6 +18,8 @@ def return_model(model_key=0):
             if layer.name.find(freeze_name) == 0:
                 trainable = True
             model.layers[index].trainable = trainable
+    elif model_key == 3:
+        model = mydensenet
     return model
 
 

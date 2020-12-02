@@ -9,6 +9,7 @@ import os
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
 import pandas as pd
 import tensorflow as tf
+import types
 
 
 def run_2d_model(batch_size=24, model_key=0):
@@ -20,13 +21,17 @@ def run_2d_model(batch_size=24, model_key=0):
     excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
     compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'cv_id')
     features_list = ('Model_Type', 'step_factor')
-    model = return_model(model_key=model_key)
+    model_base = return_model(model_key=model_key)
     for cv_id in range(5):
         _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                         cross_validation_id=cv_id,
                                                                         cache=True)
         for iteration in range(5):
             for model_parameters in list_of_models:
+                if isinstance(model_base, types.FunctionType):
+                    model = model_base(**model_parameters)
+                else:
+                    model = model_base
                 base_df = pd.read_excel(excel_path)
                 base_df.set_index('Model_Index')
                 model_parameters['Iteration'] = iteration

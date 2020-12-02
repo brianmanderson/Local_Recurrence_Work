@@ -27,6 +27,16 @@ def return_list_of_models(model_key=0):
         dictionary = [
             base_dict0(min_lr=3e-6, max_lr=2e-3, step_factor=10),
         ]
+    elif model_key == 3:
+        base_dict0 = lambda blocks_in_dense, dense_conv_blocks, dense_layers, num_dense_connections, filters, growth_rate, min_lr, max_lr, step_factor: \
+            OrderedDict({'blocks_in_dense': blocks_in_dense, 'dense_conv_blocks': dense_conv_blocks,
+                         'dense_layers': dense_layers, 'num_dense_connections': num_dense_connections,
+                         'filters': filters, 'growth_rate': growth_rate, 'min_lr': min_lr, 'max_lr': max_lr,
+                         'step_factor': step_factor, 'Model_Type': model_key})
+        dictionary = [
+            base_dict0(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=3, num_dense_connections=128, filters=16,
+                       growth_rate=16, min_lr=0.01, max_lr=0.01, step_factor=10)
+        ]
     model_dictionary = {model_key: dictionary}
     return model_dictionary
 
