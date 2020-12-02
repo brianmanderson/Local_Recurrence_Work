@@ -17,8 +17,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
 
 from tensorflow.keras import mixed_precision
 
-mixed_precision.set_global_policy('mixed_float16')
-
+# mixed_precision.set_global_policy('mixed_float16')
 
 batch_size = 24
 find_lr = True

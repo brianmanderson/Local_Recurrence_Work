@@ -10,14 +10,14 @@ import os
 import types
 
 
-def return_model_and_things(model, out_path, things):
-    if not isinstance(model, types.FunctionType):
+def return_model_and_things(model_base, out_path, things):
+    if not isinstance(model_base, types.FunctionType):
         for thing in things:
             out_path = os.path.join(out_path, thing)
         if os.path.exists(out_path):
             print('already done')
             return None, None
-        return model, out_path
+        return model_base, out_path
     else:
 
         for blocks_in_dense in [3]:
@@ -36,9 +36,10 @@ def return_model_and_things(model, out_path, things):
                                 if os.path.exists(new_out_path):
                                     continue
                                 else:
-                                    return model(blocks_in_dense=blocks_in_dense, dense_conv_blocks=dense_conv_blocks,
-                                                 dense_layers=dense_layers, num_dense_connections=num_dense_connections,
-                                                 filters=filters, growth_rate=growth_rate), new_out_path
+                                    return model_base(blocks_in_dense=blocks_in_dense,
+                                                      dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
+                                                      num_dense_connections=num_dense_connections,filters=filters,
+                                                      growth_rate=growth_rate), new_out_path
     return None, None
 
 def find_best_lr(batch_size=24, model_key=0):
@@ -50,8 +51,8 @@ def find_best_lr(batch_size=24, model_key=0):
             things = ['Optimizer_{}'.format(optimizer)]
             things.append('{}_Iteration'.format(iteration))
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
-            model = return_model(model_key=model_key)
-            model, out_path = return_model_and_things(model=model, out_path=out_path, things=things)
+            model_base = return_model(model_key=model_key)
+            model, out_path = return_model_and_things(model_base=model_base, out_path=out_path, things=things)
             if model is None:
                 continue
             _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
