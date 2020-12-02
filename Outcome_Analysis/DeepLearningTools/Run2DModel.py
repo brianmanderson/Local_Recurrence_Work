@@ -10,14 +10,11 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels impor
 import pandas as pd
 import tensorflow as tf
 import types
+from tensorflow_addons.optimizers import RectifiedAdam
 import numpy as np
 
 
-def run_2d_model(batch_size=24, model_key=0, optimizer='SGD'):
-    if optimizer == 'SGD':
-        opt = tf.keras.optimizers.SGD()
-    else:
-        opt = tf.keras.optimizers.Adam()
+def run_2d_model(batch_size=24, model_key=0):
     epochs = 500
     model_dictionary = return_list_of_models(model_key=model_key)
     list_of_models = np.asarray(model_dictionary[model_key])  # A list of models to attempt to run
@@ -49,7 +46,12 @@ def run_2d_model(batch_size=24, model_key=0, optimizer='SGD'):
                 base_df = pd.read_excel(excel_path)
                 base_df.set_index('Model_Index')
                 model_parameters['Iteration'] = iteration
-                model_parameters['Optimizer'] = optimizer
+                if model_parameters['Optimizer'] == 'SGD':
+                    opt = tf.keras.optimizers.SGD()
+                elif model_parameters['Optimizer'] == 'Adam':
+                    opt = tf.keras.optimizers.Adam()
+                elif model_parameters['Optimizer'] == 'RAdam':
+                    opt = RectifiedAdam()
                 model_parameters['cv_id'] = cv_id
                 current_run_df = pd.DataFrame(model_parameters, index=[0])
                 contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
