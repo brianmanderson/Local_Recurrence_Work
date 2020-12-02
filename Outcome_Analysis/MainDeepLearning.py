@@ -10,7 +10,7 @@ if len(sys.argv) > 1:
     model_key = int(sys.argv[2])
 else:
     gpu = 0
-model_key = 2
+model_key = 3
 print('Running on {} for key {}'.format(gpu, model_key))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
@@ -21,7 +21,7 @@ mixed_precision.set_global_policy('mixed_float16')
 
 
 batch_size = 24
-find_lr = False
+find_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     find_best_lr(batch_size=batch_size, model_key=model_key)

@@ -6,21 +6,20 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels impor
 import tensorflow as tf
 import os
 import numpy as np
-from tensorflow.keras.applications.densenet import DenseNet121 as ogdensenet
 
 
 id = 1
 base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=24,
-                                                                                    cache=True, cross_validation_id=id)
+                                                                                    cache=False, cross_validation_id=id)
 x, y = next(iter(validation_generator.data_set))
 model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_{}'.format(id)
 model_path = os.path.join(model_path_dir, 'cp.ckpt')
 tf_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Tensorboard\TB_{}'.format(id)
-model = return_model(model_type='2D_Vanilla')
+model = return_model(model_key=3)
+model = model()
 if not os.path.exists(model_path_dir) or not os.listdir(model_path_dir):
     loss = tf.keras.losses.CategoricalCrossentropy()
     optimizer = tf.keras.optimizers.Adam(lr=5e-5)
-    optimizer = tf.train.experimental.enable_mixed_precision_graph_rewrite(optimizer)
     checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor='val_loss', mode='min', save_best_only=True,
                                                     save_freq='epoch', save_weights_only=True, verbose=1)
     tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tf_path, profile_batch='50,100',

@@ -7,7 +7,39 @@ from tensorflow.keras.callbacks import TensorBoard
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators, return_paths
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
 import os
+import types
 
+
+def return_model_and_things(model, out_path, things):
+    if not isinstance(model, types.FunctionType):
+        for thing in things:
+            out_path = os.path.join(out_path, thing)
+        if os.path.exists(out_path):
+            print('already done')
+            return None, None
+        return model, out_path
+    else:
+
+        for blocks_in_dense in [2, 3, 4]:
+            for dense_conv_blocks in [2, 3, 4]:
+                for dense_layers in [2, 3, 4]:
+                    for num_dense_connections in [128]:
+                        for filters in [16]:
+                            for growth_rate in [16]:
+                                all_list = 'blocks_in_dense_{}.dense_conv_blocks_{}.dense_layers_{}.' \
+                                           'num_dense_connections{}.filters_{}.' \
+                                           'growth_rate_{}'.format(blocks_in_dense, dense_conv_blocks, dense_layers,
+                                                                   num_dense_connections, filters, growth_rate)
+                                new_out_path = os.path.join(out_path, all_list)
+                                for thing in things:
+                                    new_out_path = os.path.join(new_out_path, thing)
+                                if os.path.exists(new_out_path):
+                                    continue
+                                else:
+                                    return model(blocks_in_dense=blocks_in_dense, dense_conv_blocks=dense_conv_blocks,
+                                                 dense_layers=dense_layers, num_dense_connections=num_dense_connections,
+                                                 filters=filters, growth_rate=growth_rate), new_out_path
+    return None, None
 
 def find_best_lr(batch_size=24, model_key=0):
     base_path, morfeus_drive = return_paths()
@@ -18,12 +50,10 @@ def find_best_lr(batch_size=24, model_key=0):
             things = ['Optimizer_{}'.format(optimizer)]
             things.append('{}_Iteration'.format(iteration))
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
-            for thing in things:
-                out_path = os.path.join(out_path,thing)
-            if os.path.exists(out_path):
-                print('already done')
-                continue
             model = return_model(model_key=model_key)
+            model, out_path = return_model_and_things(model=model, out_path=out_path, things=things)
+            if model is None:
+                continue
             _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                             cross_validation_id=-1, cache=True)
             os.makedirs(out_path)
@@ -38,7 +68,7 @@ def find_best_lr(batch_size=24, model_key=0):
             LearningRateFinder(epochs=10, model=model, metrics=['accuracy'],
                                out_path=out_path, optimizer=lr_opt,
                                loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
-                               steps_per_epoch=10000//(10 * batch_size),
+                               steps_per_epoch=10000 // (10 * batch_size),
                                train_generator=train_generator.data_set, lower_lr=min_lr, high_lr=max_lr)
             tf.keras.backend.clear_session()
             return None # repeat!
