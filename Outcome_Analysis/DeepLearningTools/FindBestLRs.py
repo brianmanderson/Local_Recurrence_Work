@@ -8,6 +8,7 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators i
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
 import os
 import types
+from tensorflow_addons.optimizers import RectifiedAdam
 
 
 def return_model_and_things(model_base, out_path, things):
@@ -45,9 +46,9 @@ def return_model_and_things(model_base, out_path, things):
 def find_best_lr(batch_size=24, model_key=0):
     base_path, morfeus_drive = return_paths()
     min_lr = 1e-6
-    max_lr = 1
-    for iteration in [0, 1]:
-        for optimizer in ['SGD']:
+    max_lr = 1e-1
+    for iteration in [0, 1, 2]:
+        for optimizer in ['SGD', 'RAdam']:
             things = ['Optimizer_{}'.format(optimizer)]
             things.append('{}_Iteration'.format(iteration))
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
@@ -63,9 +64,11 @@ def find_best_lr(batch_size=24, model_key=0):
             k.set_model(model)
             k.on_train_begin()
             if optimizer == 'SGD':
-                lr_opt = tf.keras.optimizers.SGD
-            else:
-                lr_opt = tf.keras.optimizers.Adam
+                lr_opt = tf.keras.optimizers.SGD()
+            elif optimizer == 'Adam':
+                lr_opt = tf.keras.optimizers.Adam()
+            elif optimizer == 'RAdam':
+                lr_opt = RectifiedAdam()
             LearningRateFinder(epochs=10, model=model, metrics=['accuracy'],
                                out_path=out_path, optimizer=lr_opt,
                                loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
