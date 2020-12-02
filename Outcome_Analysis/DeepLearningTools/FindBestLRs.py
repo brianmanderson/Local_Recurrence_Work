@@ -64,11 +64,11 @@ def find_best_lr(batch_size=24, model_key=0):
             k.set_model(model)
             k.on_train_begin()
             if optimizer == 'SGD':
-                lr_opt = tf.keras.optimizers.SGD()
+                lr_opt = tf.keras.optimizers.SGD
             elif optimizer == 'Adam':
-                lr_opt = tf.keras.optimizers.Adam()
+                lr_opt = tf.keras.optimizers.Adam
             elif optimizer == 'RAdam':
-                lr_opt = RectifiedAdam()
+                lr_opt = RectifiedAdam
             LearningRateFinder(epochs=10, model=model, metrics=['accuracy'],
                                out_path=out_path, optimizer=lr_opt,
                                loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
