@@ -41,6 +41,8 @@ def find_best_lr(batch_size=24, model_key=0):
     model_base = return_model(model_key=model_key)
     for iteration in [0, 1, 2]:
         for optimizer in ['SGD', 'RAdam']:
+            if optimizer == 'RAdam':
+                batch_size = 12
             things = ['Optimizer_{}'.format(optimizer)]
             things.append('{}_Iteration'.format(iteration))
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
