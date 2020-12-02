@@ -20,10 +20,10 @@ def return_model_and_things(model, out_path, things):
         return model, out_path
     else:
 
-        for blocks_in_dense in [2, 3, 4]:
-            for dense_conv_blocks in [2, 3, 4]:
-                for dense_layers in [2, 3, 4]:
-                    for num_dense_connections in [128]:
+        for blocks_in_dense in [3]:
+            for dense_conv_blocks in [3]:
+                for dense_layers in [3]:
+                    for num_dense_connections in [256]:
                         for filters in [16]:
                             for growth_rate in [16]:
                                 all_list = 'blocks_in_dense_{}.dense_conv_blocks_{}.dense_layers_{}.' \
