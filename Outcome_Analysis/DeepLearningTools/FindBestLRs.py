@@ -12,12 +12,12 @@ from tensorflow_addons.optimizers import RectifiedAdam
 
 
 def return_model_and_things(model_base, out_path, things):
-    for blocks_in_dense in [3, 4]:
-        for dense_conv_blocks in [3, 4]:
-            for dense_layers in [3]:
-                for num_dense_connections in [256]:
-                    for filters in [16, 32]:
-                        for growth_rate in [16, 32]:
+    for blocks_in_dense in [3]:
+        for dense_conv_blocks in [3]:
+            for dense_layers in [1]:
+                for num_dense_connections in [512]:
+                    for filters in [32]:
+                        for growth_rate in [32]:
                             all_list = 'blocks_in_dense_{}.dense_conv_blocks_{}.dense_layers_{}.' \
                                        'num_dense_connections{}.filters_{}.' \
                                        'growth_rate_{}'.format(blocks_in_dense, dense_conv_blocks, dense_layers,
@@ -40,7 +40,7 @@ def find_best_lr(batch_size=24, model_key=0):
     max_lr = 1e-1
     model_base = return_model(model_key=model_key)
     for iteration in [0, 1, 2]:
-        for optimizer in ['SGD', 'Adam']:
+        for optimizer in ['SGD']:
             if optimizer != 'SGD':
                 batch_size = 12
             things = ['Optimizer_{}'.format(optimizer)]

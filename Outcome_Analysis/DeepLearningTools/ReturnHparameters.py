@@ -12,7 +12,6 @@ def return_list_of_models(model_key=0):
         dictionary = [
             # base_dict0(min_lr=8e-6, max_lr=2e-3, step_factor=5),
             base_dict0(min_lr=8e-6, max_lr=2e-3, step_factor=10, opt='SGD'),
-            base_dict0(min_lr=1e-6, max_lr=1e-3, step_factor=10, opt='Adam'),
             # base_dict0(min_lr=8e-6, max_lr=2e-3, step_factor=20)
         ]
     elif model_key == 1:
@@ -63,6 +62,10 @@ def return_list_of_models(model_key=0):
             base_dict0(blocks_in_dense=4, dense_conv_blocks=4, dense_layers=3, num_dense_connections=256, filters=32,
                        growth_rate=16, min_lr=1e-6, max_lr=1e-1, step_factor=10, opt='SGD'),
             base_dict0(blocks_in_dense=4, dense_conv_blocks=4, dense_layers=3, num_dense_connections=256, filters=32,
+                       growth_rate=32, min_lr=1e-6, max_lr=1e-1, step_factor=10, opt='SGD'),
+        ]
+        dictionary = [
+            base_dict0(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=1, num_dense_connections=512, filters=32,
                        growth_rate=32, min_lr=1e-6, max_lr=1e-1, step_factor=10, opt='SGD'),
         ]
     model_dictionary = {model_key: dictionary}
