@@ -4,6 +4,7 @@ import tensorflow as tf
 from Deep_Learning.Base_Deeplearning_Code.Plot_And_Scroll_Images.Plot_Scroll_Images import plot_scroll_Image
 from Deep_Learning.Base_Deeplearning_Code.Finding_Optimization_Parameters.LR_Finder import LearningRateFinder
 from tensorflow.keras.callbacks import TensorBoard
+from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators, return_paths
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
 import os
@@ -39,11 +40,11 @@ def find_best_lr(batch_size=24, model_key=0):
     min_lr = 1e-6
     max_lr = 1e-1
     model_base = return_model(model_key=model_key)
+    # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
+    loss = CosineLoss()
     for iteration in [0, 1, 2]:
         for optimizer in ['SGD']:
-            if optimizer != 'SGD':
-                batch_size = 12
-            things = ['Optimizer_{}'.format(optimizer)]
+            things = ['Optimizer_{}'.format(optimizer), 'CosineLoss']
             things.append('{}_Iteration'.format(iteration))
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
             if not isinstance(model_base, types.FunctionType):
@@ -72,7 +73,7 @@ def find_best_lr(batch_size=24, model_key=0):
                 lr_opt = RectifiedAdam
             LearningRateFinder(epochs=10, model=model, metrics=['accuracy'],
                                out_path=out_path, optimizer=lr_opt,
-                               loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
+                               loss=loss,
                                steps_per_epoch=10000 // (10 * batch_size),
                                train_generator=train_generator.data_set, lower_lr=min_lr, high_lr=max_lr)
             tf.keras.backend.clear_session()
