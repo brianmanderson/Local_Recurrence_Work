@@ -8,7 +8,8 @@ from tensorboard.plugins.hparams.keras import Callback
 
 
 def run_model(model, train_generator, validation_generator, min_lr, max_lr, model_path, tensorboard_path, trial_id,
-              optimizer, hparams=None, step_factor=8, epochs=120):
+              optimizer, hparams=None, step_factor=8, epochs=120,
+              loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False)):
     checkpoint_path = os.path.join(model_path, 'cp-best.cpkt')
     checkpoint = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, monitor='val_loss', mode='min', verbose=1,
                                                     save_freq='epoch', save_best_only=True, save_weights_only=True)
@@ -25,7 +26,7 @@ def run_model(model, train_generator, validation_generator, min_lr, max_lr, mode
         callbacks += [hp_callback]
     callbacks += [checkpoint]
     print('\n\n\n\nRunning {}\n\n\n\n'.format(tensorboard_path))
-    model.compile(optimizer, loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
+    model.compile(optimizer, loss=loss,
                   metrics=[tf.keras.metrics.CategoricalAccuracy()])
     model.fit(train_generator.data_set, epochs=epochs, steps_per_epoch=len(train_generator),
               validation_data=validation_generator.data_set, validation_steps=len(validation_generator),
