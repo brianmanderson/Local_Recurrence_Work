@@ -41,7 +41,7 @@ def find_best_lr(batch_size=24, model_key=0):
     model_base = return_model(model_key=model_key)
     for iteration in [0, 1, 2]:
         for optimizer in ['SGD', 'Adam']:
-            if optimizer == 'RAdam':
+            if optimizer != 'SGD':
                 batch_size = 12
             things = ['Optimizer_{}'.format(optimizer)]
             things.append('{}_Iteration'.format(iteration))
