@@ -33,7 +33,7 @@ def run_2d_model(batch_size=24, model_key=0):
         features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
                          'num_dense_connections', 'filters', 'growth_rate', 'Optimizer')
     model_base = return_model(model_key=model_key)
-    for cv_id in range(5):
+    for cv_id in range(1):
         _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                         cross_validation_id=cv_id,
                                                                         cache=True)
