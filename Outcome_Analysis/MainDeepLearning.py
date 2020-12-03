@@ -10,7 +10,7 @@ if len(sys.argv) > 1:
     model_key = int(sys.argv[2])
 else:
     gpu = 0
-model_key = 0
+model_key = 3
 print('Running on {} for key {}'.format(gpu, model_key))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
