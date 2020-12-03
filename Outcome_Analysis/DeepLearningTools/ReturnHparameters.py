@@ -66,9 +66,7 @@ def return_list_of_models(model_key=0):
         ]
         dictionary = [
             base_dict0(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=1, num_dense_connections=512, filters=32,
-                       growth_rate=32, min_lr=1e-4, max_lr=5e-3, step_factor=10, opt='SGD'),
-            base_dict0(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=1, num_dense_connections=512, filters=32,
-                       growth_rate=32, min_lr=1e-4, max_lr=1e-3, step_factor=10, opt='SGD'),
+                       growth_rate=32, min_lr=1.1e-4, max_lr=1.1e-2, step_factor=10, opt='SGD')
         ]
     model_dictionary = {model_key: dictionary}
     return model_dictionary
