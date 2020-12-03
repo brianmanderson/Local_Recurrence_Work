@@ -53,9 +53,9 @@ def run_2d_model(batch_size=24, model_key=0):
                     opt = tf.keras.optimizers.Adam()
                 elif model_parameters['Optimizer'] == 'RAdam':
                     opt = RectifiedAdam()
-                if model['Loss'] == 'CCE':
+                if model_parameters['Loss'] == 'CCE':
                     loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
-                elif model['Loss'] == 'CosineLoss':
+                elif model_parameters['Loss'] == 'CosineLoss':
                     loss = CosineLoss()
                 model_parameters['cv_id'] = cv_id
                 current_run_df = pd.DataFrame(model_parameters, index=[0])
