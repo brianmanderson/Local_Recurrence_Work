@@ -39,7 +39,7 @@ def find_best_lr(batch_size=24, model_key=0):
     min_lr = 1e-6
     max_lr = 1e-1
     model_base = return_model(model_key=model_key)
-    for iteration in [0, 1, 2]:
+    for iteration in [0, 1, 2, 3]:
         for optimizer in ['SGD', 'RAdam']:
             if optimizer == 'RAdam':
                 batch_size = 12
