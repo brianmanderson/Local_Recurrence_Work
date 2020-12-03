@@ -70,7 +70,13 @@ def return_list_of_models(model_key=0):
             base_dict0(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=1, num_dense_connections=512, filters=32,
                        growth_rate=32, min_lr=1e-5, max_lr=3e-3, step_factor=10, opt='SGD', loss='CosineLoss'),
             base_dict0(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=1, num_dense_connections=512, filters=32,
-                       growth_rate=32, min_lr=1e-5, max_lr=3e-4, step_factor=10, opt='SGD', loss='CosineLoss')
+                       growth_rate=32, min_lr=1e-5, max_lr=3e-4, step_factor=10, opt='SGD', loss='CosineLoss'),
+            base_dict0(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=1, num_dense_connections=512, filters=32,
+                       growth_rate=32, min_lr=1e-6, max_lr=3e-5, step_factor=10, opt='SGD', loss='CosineLoss'),
+            base_dict0(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=1, num_dense_connections=512, filters=32,
+                       growth_rate=32, min_lr=5e-6, max_lr=6e-5, step_factor=10, opt='SGD', loss='CosineLoss'),
+            base_dict0(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=1, num_dense_connections=512, filters=32,
+                       growth_rate=32, min_lr=1e-7, max_lr=3e-6, step_factor=10, opt='SGD', loss='CosineLoss')
         ]
     model_dictionary = {model_key: dictionary}
     return model_dictionary
