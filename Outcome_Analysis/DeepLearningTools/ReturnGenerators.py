@@ -6,7 +6,7 @@ from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Modul
 
 
 def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outputs': ('annotation',)},
-                      cross_validation_id=0, cache=False, evaluate=False, is_pretrained=True,
+                      cross_validation_id=0, cache=False, evaluate=False, model_key=0,
                       build_keys=('primary_image','secondary_image_deformed', 'primary_liver')):
     """
     :param batch_size:
@@ -16,7 +16,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     :return: base_path, morfeus_drive, train_generator, validation_generator
     """
     cache_add = ''
-    if not is_pretrained:  # If it's not pretrained, just pass 2 images
+    if model_key > 2:  # If it's not pretrained, just pass 2 images
         cache_add = 'not_pretrained'
         build_keys = ('primary_image', 'secondary_image_deformed')
     '''
