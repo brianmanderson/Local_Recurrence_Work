@@ -11,17 +11,18 @@ import numpy as np
 loss = CosineLoss()
 model_key = 3
 id = 1
-base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=24,
+base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=32,
                                                                                     cache=False, cross_validation_id=id,
                                                                                     model_key=model_key)
 x, y = next(iter(validation_generator.data_set))
-model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_{}'.format(id)
+model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_2{}'.format(id)
 model_path = os.path.join(model_path_dir, 'cp.ckpt')
-tf_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Tensorboard\TB_{}'.format(id)
+tf_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Tensorboard\TB_2{}'.format(id)
 model = return_model(model_key=model_key)
-# model = model()
+if model_key > 2:
+    model = model()
 if not os.path.exists(model_path_dir) or not os.listdir(model_path_dir):
-    # loss = tf.keras.losses.CategoricalCrossentropy()
+    loss = tf.keras.losses.CategoricalCrossentropy()
     optimizer = tf.keras.optimizers.SGD(lr=1e-4)
     checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor='val_loss', mode='min', save_best_only=True,
                                                     save_freq='epoch', save_weights_only=True, verbose=1)

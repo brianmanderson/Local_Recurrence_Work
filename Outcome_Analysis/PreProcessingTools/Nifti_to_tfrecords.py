@@ -56,7 +56,7 @@ def nifti_to_records(nifti_path):
                     values=(2.5, 2.5, 2.5)),
         DivideByValues(image_keys=('primary_image', 'secondary_image', 'secondary_image_deformed'),
                        values=(12.5, 12.5, 12.5)),
-        DistributeIntoRecurrenceCubes(images=32, rows=128, cols=128)
+        DistributeIntoRecurrenceCubes(images=32, rows=64, cols=64)
     ]
     write_tf_record(niftii_path=nifti_path, file_parser=path_parser, max_records=np.inf,
                     out_path=os.path.join(nifti_path, 'Records'),
