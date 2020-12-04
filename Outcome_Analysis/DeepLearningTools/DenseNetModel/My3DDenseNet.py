@@ -77,13 +77,13 @@ def transition_block(x, reduction, name, strides=(2, 2, 2)):
 
 def mydensenet(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=3, num_dense_connections=256, filters=16,
                growth_rate=16, **kwargs):
-    input_shape = (32, 128, 128, 3)
+    input_shape = (32, 64, 64, 2)
     img_input = layers.Input(shape=input_shape)
     x = img_input
 
     inputs = (img_input,)
 
-    x = layers.Conv3D(filters, (3, 7, 7), strides=(1, 2, 2), use_bias=False, name='conv1/conv', padding='Same')(x)
+    x = layers.Conv3D(filters, 3, use_bias=False, name='conv1/conv', padding='Same')(x)
     x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='conv1/bn')(x)
     x = layers.Activation('relu', name='conv1/relu')(x)
 

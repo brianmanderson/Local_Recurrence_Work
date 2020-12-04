@@ -16,9 +16,9 @@ def return_model_and_things(model_base, out_path, things):
     for blocks_in_dense in [3]:
         for dense_conv_blocks in [3]:
             for dense_layers in [1]:
-                for num_dense_connections in [512]:
-                    for filters in [32]:
-                        for growth_rate in [32]:
+                for num_dense_connections in [128]:
+                    for filters in [16]:
+                        for growth_rate in [16]:
                             all_list = 'blocks_in_dense_{}.dense_conv_blocks_{}.dense_layers_{}.' \
                                        'num_dense_connections{}.filters_{}.' \
                                        'growth_rate_{}'.format(blocks_in_dense, dense_conv_blocks, dense_layers,
@@ -58,7 +58,7 @@ def find_best_lr(batch_size=24, model_key=0):
                 model, out_path = return_model_and_things(model_base=model_base, out_path=out_path, things=things)
                 if model is None:
                     continue
-            _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
+            _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, model_key=model_key,
                                                                             cross_validation_id=-1, cache=True)
             os.makedirs(out_path)
             print(out_path)

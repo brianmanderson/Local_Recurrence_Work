@@ -9,14 +9,16 @@ import os
 import numpy as np
 
 loss = CosineLoss()
+model_key = 3
 id = 1
 base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=24,
-                                                                                    cache=False, cross_validation_id=id)
+                                                                                    cache=False, cross_validation_id=id,
+                                                                                    model_key=model_key)
 x, y = next(iter(validation_generator.data_set))
 model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_{}'.format(id)
 model_path = os.path.join(model_path_dir, 'cp.ckpt')
 tf_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Tensorboard\TB_{}'.format(id)
-model = return_model(model_key=0)
+model = return_model(model_key=model_key)
 # model = model()
 if not os.path.exists(model_path_dir) or not os.listdir(model_path_dir):
     # loss = tf.keras.losses.CategoricalCrossentropy()
