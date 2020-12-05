@@ -15,7 +15,7 @@ from tensorflow_addons.optimizers import RectifiedAdam
 def return_model_and_things(model_base, out_path, things):
     for blocks_in_dense in [3]:
         for dense_conv_blocks in [3]:
-            for dense_layers in [1]:
+            for dense_layers in [3]:
                 for num_dense_connections in [128]:
                     for filters in [16]:
                         for growth_rate in [16]:
@@ -34,6 +34,7 @@ def return_model_and_things(model_base, out_path, things):
                                                   num_dense_connections=num_dense_connections,filters=filters,
                                                   growth_rate=growth_rate), new_out_path
     return None, None
+
 
 def find_best_lr(batch_size=24, model_key=0):
     base_path, morfeus_drive = return_paths()

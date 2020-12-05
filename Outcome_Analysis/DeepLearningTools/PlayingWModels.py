@@ -11,7 +11,7 @@ import numpy as np
 loss = CosineLoss()
 model_key = 3
 id = 1
-base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=32,
+base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=16,
                                                                                     cache=False, cross_validation_id=id,
                                                                                     model_key=model_key)
 x, y = next(iter(validation_generator.data_set))
@@ -34,17 +34,17 @@ if not os.path.exists(model_path_dir) or not os.listdir(model_path_dir):
               validation_data=validation_generator.data_set, validation_steps=len(validation_generator),
               validation_freq=1, callbacks=callbacks)
 
-model.load_weights(model_path)
-xxx = 1
-pred_list = []
-truth_list = []
-val_iterator = iter(validation_generator.data_set)
-for i in range(len(validation_generator)):
-    print(i)
-    x, y = next(val_iterator)
-    pred = model.predict(x)
-    output_pred = np.argmax(pred)
-    pred_list.append(output_pred)
-    truth_list.append(np.argmax(y[0].numpy()))
-print(truth_list)
-print(pred_list)
+# model.load_weights(model_path)
+# xxx = 1
+# pred_list = []
+# truth_list = []
+# val_iterator = iter(validation_generator.data_set)
+# for i in range(len(validation_generator)):
+#     print(i)
+#     x, y = next(val_iterator)
+#     pred = model.predict(x)
+#     output_pred = np.argmax(pred)
+#     pred_list.append(output_pred)
+#     truth_list.append(np.argmax(y[0].numpy()))
+# print(truth_list)
+# print(pred_list)
