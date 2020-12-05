@@ -2,7 +2,7 @@ __author__ = 'Brian M Anderson'
 # Created on 11/18/2020
 
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_paths, return_generators, plot_scroll_Image
-from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
+from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss, cosine_loss
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
 import tensorflow as tf
 import os
@@ -21,18 +21,21 @@ tf_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Tensorboard\TB
 model = return_model(model_key=model_key)
 if model_key > 2:
     model = model()
-if not os.path.exists(model_path_dir) or not os.listdir(model_path_dir):
-    loss = tf.keras.losses.CategoricalCrossentropy()
-    optimizer = tf.keras.optimizers.SGD(lr=1e-4)
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor='val_loss', mode='min', save_best_only=True,
-                                                    save_freq='epoch', save_weights_only=True, verbose=1)
-    tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tf_path, profile_batch='50,100',
-                                                 write_graph=True)  # profile_batch='300,401',
-    callbacks = [checkpoint, tensorboard]
-    model.compile(optimizer, loss=loss, metrics=['accuracy'])
-    model.fit(train_generator.data_set, epochs=30, steps_per_epoch=len(train_generator),
-              validation_data=validation_generator.data_set, validation_steps=len(validation_generator),
-              validation_freq=1, callbacks=callbacks)
+# if not os.path.exists(model_path_dir) or not os.listdir(model_path_dir):
+    # loss = tf.keras.losses.CategoricalCrossentropy()
+optimizer = tf.keras.optimizers.SGD(lr=1e-3)
+checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor='val_loss', mode='min', save_best_only=True,
+                                                save_freq='epoch', save_weights_only=True, verbose=1)
+tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tf_path,# profile_batch='50,100',
+                                             write_graph=True)  # profile_batch='300,401',
+callbacks = [tensorboard]
+model.compile(optimizer, loss=loss, metrics=['accuracy'])
+# model.train_on_batch(x, y)
+# pred = model.predict(x)
+# cosine_loss(y_true=y, y_pred=pred)
+model.fit(train_generator.data_set, epochs=30, steps_per_epoch=len(train_generator),
+          validation_data=validation_generator.data_set, validation_steps=len(validation_generator),
+          validation_freq=1, callbacks=callbacks)
 
 # model.load_weights(model_path)
 # xxx = 1
