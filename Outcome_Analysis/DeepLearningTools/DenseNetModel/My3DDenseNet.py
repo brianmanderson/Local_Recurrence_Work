@@ -3,19 +3,7 @@ __author__ = 'Brian M Anderson'
 from tensorflow.keras import layers
 import tensorflow.keras.regularizers as regularizers
 from tensorflow.keras.models import Model
-
-
-def bottle_neck(x, out_filters, name):
-    """ A bottle-neck for using 3D models
-    :param x:
-    :param out_filters:
-    :param name:
-    :return:
-    """
-    x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_bn_bottleneck')(x)
-    x = layers.Activation('relu', name=name + '_bn_relu')(x)
-    x = layers.Conv3D(out_filters, 1, use_bias=False, name=name + '_bn_conv', padding='same')(x)
-    return x
+from tensorflow_addons.layers import GroupNormalization
 
 
 def conv_block_3d(x, growth_rate, name):
@@ -29,10 +17,12 @@ def conv_block_3d(x, growth_rate, name):
     Returns:
     Output tensor for the block.
     """
-    x1 = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_0_bn')(x)
+    x1 = GroupNormalization(groups=8, axis=-1, name=name + '_0_gn')(x)
+    # x1 = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_0_bn')(x)
     x1 = layers.Activation('relu', name=name + '_0_relu')(x1)
     x1 = layers.Conv3D(2 * growth_rate, 1, use_bias=False, name=name + '_1_conv', padding='same')(x1)
-    x1 = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_1_bn')(x1)
+    # x1 = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_1_bn')(x1)
+    x1 = GroupNormalization(groups=8, axis=-1, name=name + '_1_gn')(x1)
     x1 = layers.Activation('relu', name=name + '_1_relu')(x1)
     x1 = layers.Conv3D(growth_rate, 3, padding='same', use_bias=False, name=name + '_2_conv')(x1)
     x = layers.Concatenate(axis=-1, name=name + '_concat')([x, x1])
@@ -67,7 +57,8 @@ def transition_block(x, reduction, name, strides=(2, 2, 2)):
     Returns:
     output tensor for the block.
     """
-    x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_bn')(x)
+    # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_bn')(x)
+    x = GroupNormalization(groups=8, axis=-1, name=name + '_gn')(x)
     x = layers.Activation('relu', name=name + '_relu')(x)
     x = layers.Conv3D(int(x.shape[-1] * reduction), 1,
                       use_bias=False, padding='same', name=name + '_conv')(x)
@@ -83,14 +74,16 @@ def mydensenet(blocks_in_dense=3, dense_conv_blocks=3, dense_layers=3, num_dense
 
     inputs = (img_input,)
 
-    x = layers.Conv3D(filters, 3, use_bias=False, name='conv1/conv', padding='Same')(x)
-    x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='conv1/bn')(x)
+    x = layers.Conv3D(filters, (3, 7, 7), strides=2, use_bias=False, name='conv1/conv', padding='Same')(x)
+    # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='conv1/bn')(x)
+    x = GroupNormalization(groups=8, axis=-1, name='conv1/gn')(x)
     x = layers.Activation('relu', name='conv1/relu')(x)
 
     for i in range(dense_conv_blocks):
         x = dense_block3d(x=x, growth_rate=growth_rate, blocks=blocks_in_dense, name='conv{}'.format(i))
         x = transition_block(x=x, reduction=0.5, name='pool{}'.format(i))
-    x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
+    # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
+    x = GroupNormalization(groups=8, axis=-1, name='gn')(x)
     x = layers.Activation('relu', name='relu')(x)
 
     x = layers.AveragePooling3D(pool_size=(2, 2, 2), name='final_average_pooling')(x)
