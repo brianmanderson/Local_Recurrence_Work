@@ -39,7 +39,7 @@ def return_model_and_things(model_base, out_path, things):
 def find_best_lr(batch_size=24, model_key=0):
     base_path, morfeus_drive = return_paths()
     min_lr = 1e-6
-    max_lr = 5e-1
+    max_lr = 1
     model_base = return_model(model_key=model_key)
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
@@ -75,7 +75,7 @@ def find_best_lr(batch_size=24, model_key=0):
             LearningRateFinder(epochs=10, model=model, metrics=['accuracy'],
                                out_path=out_path, optimizer=lr_opt,
                                loss=loss,
-                               steps_per_epoch=10000 // (10 * batch_size),
+                               steps_per_epoch=1000,
                                train_generator=train_generator.data_set, lower_lr=min_lr, high_lr=max_lr)
             tf.keras.backend.clear_session()
             return None # repeat!
