@@ -72,8 +72,6 @@ def find_best_lr(batch_size=24, model_key=0):
                 lr_opt = tf.keras.optimizers.Adam
             elif optimizer == 'RAdam':
                 lr_opt = RectifiedAdam
-            x, y = next(iter(train_generator.data_set))
-            print(x[0].shape)
             LearningRateFinder(epochs=10, model=model, metrics=['accuracy'],
                                out_path=out_path, optimizer=lr_opt,
                                loss=loss,
