@@ -16,7 +16,7 @@ import numpy as np
 
 
 def run_2d_model(batch_size=24, model_key=0):
-    epochs = 500
+    epochs = 3000
     model_dictionary = return_list_of_models(model_key=model_key)
     list_of_models = np.asarray(model_dictionary[model_key])  # A list of models to attempt to run
     perm = np.arange(len(list_of_models))
