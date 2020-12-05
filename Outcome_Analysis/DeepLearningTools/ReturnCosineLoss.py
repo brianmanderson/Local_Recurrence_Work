@@ -1,6 +1,6 @@
 __author__ = 'Brian M Anderson'
 # Created on 12/3/2020
-from tensorflow.python.keras.losses import LossFunctionWrapper, losses_utils, nn, math_ops
+from tensorflow.python.keras.losses import LossFunctionWrapper, losses_utils, nn, math_ops, cosine_similarity
 
 
 def cosine_loss(y_true, y_pred, axis=-1):
@@ -8,13 +8,9 @@ def cosine_loss(y_true, y_pred, axis=-1):
     :param y_true: Tensor of true targets.
     :param y_pred: Tensor of predicted targets.
     :param axis: Axis along which to determine similarity.
-    :return: Cosine loss, scale from 0 to 1 with 1 being no overlap
+    :return: Cosine loss, scale from 0 to 1, with 1 being no overlap
     """
-    y_true = nn.l2_normalize(y_true, axis=axis)
-    y_pred = nn.l2_normalize(y_pred, axis=axis)
-    cos = y_pred * y_true
-    loss = 1 - math_ops.reduce_sum(cos, axis=axis)
-    return loss
+    return 1 + cosine_similarity(y_true=y_true, y_pred=y_pred, axis=axis)
 
 
 class CosineLoss(LossFunctionWrapper):
