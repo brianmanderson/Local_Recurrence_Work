@@ -38,9 +38,9 @@ def return_list_of_models(model_key=0):
                          'step_factor': step_factor, 'Model_Type': model_key, 'Optimizer': opt, 'Loss': loss})
         dictionary = [
             base_dict0(blocks_in_dense=3, dense_conv_blocks=2, dense_layers=2, num_dense_connections=256, filters=16,
-                       growth_rate=16, min_lr=1e-3, max_lr=1, step_factor=10, opt='SGD', loss='CosineLoss'),
+                       growth_rate=16, min_lr=1e-3, max_lr=5, step_factor=10, opt='SGD', loss='CosineLoss'),
             base_dict0(blocks_in_dense=3, dense_conv_blocks=2, dense_layers=2, num_dense_connections=256, filters=16,
-                       growth_rate=16, min_lr=1e-3, max_lr=7e-1, step_factor=10, opt='SGD', loss='CosineLoss')
+                       growth_rate=16, min_lr=1e-3, max_lr=10, step_factor=10, opt='SGD', loss='CosineLoss')
             ]
     model_dictionary = {model_key: dictionary}
     return model_dictionary
