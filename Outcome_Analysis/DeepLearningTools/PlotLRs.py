@@ -21,6 +21,8 @@ def down_folder(input_path, base_input_path='',output_path=''):
         return True
     if iterations_found:
         paths = [os.path.join(input_path, i) for i in folders if i.find('Iteration') != -1]
+        if '2_Iteration' not in folders:
+            return False
         try:
             print(input_path)
             desc = ''.join(input_path.split(base_input_path)[-1].split('\\'))
