@@ -60,7 +60,7 @@ def find_best_lr(batch_size=24, model_key=0):
                 if model is None:
                     continue
             _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, model_key=model_key,
-                                                                            cross_validation_id=-1, cache=False)
+                                                                            cross_validation_id=-1, cache=True)
             os.makedirs(out_path)
             print(out_path)
             k = TensorBoard(log_dir=out_path, profile_batch=0, write_graph=True)
