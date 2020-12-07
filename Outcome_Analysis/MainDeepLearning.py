@@ -20,7 +20,7 @@ from tensorflow.keras import mixed_precision
 # mixed_precision.set_global_policy('mixed_float16')
 
 batch_size = 16
-find_lr = False
+find_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -35,7 +35,7 @@ if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_key=model_key)
 
-evaluate_model = True
+evaluate_model = False
 if evaluate_model:
     from tensorflow.keras.models import load_model
     import numpy as np
