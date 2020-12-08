@@ -24,7 +24,7 @@ def add_metrics_to_excel():
         out_dictionary['epoch_categorical_accuracy'].append(base_dictionary[key]['epoch_categorical_accuracy'])
     new_df = pd.DataFrame(out_dictionary)
     new_df.set_index('Model_Index')
-    df = pd.merge(left=df, right=new_df, left_on='Model_Index', right_on='Model_Index')
+    df.update(new_df)
     df.to_excel(excel_path, index=0)
     return None
 
