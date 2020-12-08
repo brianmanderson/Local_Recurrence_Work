@@ -40,10 +40,6 @@ def run_2d_model(batch_size=24, model_key=0):
                                                                         cache=True, model_key=model_key)
         for iteration in range(5):
             for model_parameters in list_of_models:
-                if isinstance(model_base, types.FunctionType):
-                    model = model_base(**model_parameters)
-                else:
-                    model = model_base
                 base_df = pd.read_excel(excel_path)
                 base_df.set_index('Model_Index')
                 model_parameters['Iteration'] = iteration
@@ -64,6 +60,10 @@ def run_2d_model(batch_size=24, model_key=0):
                 if contained:
                     print("Already ran this one")
                     continue
+                if isinstance(model_base, types.FunctionType):
+                    model = model_base(**model_parameters)
+                else:
+                    model = model_base
                 current_model_indexes = base_df['Model_Index']
                 model_index = 0
                 while model_index in current_model_indexes:
