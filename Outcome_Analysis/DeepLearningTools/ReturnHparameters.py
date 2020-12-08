@@ -85,6 +85,12 @@ def return_list_of_models(model_key=0):
                        growth_rate=32, min_lr=2e-5, max_lr=4.4e-1, step_factor=10, opt='SGD', loss='CosineLoss'),
             base_dict0(blocks_in_dense=3, dense_conv_blocks=2, dense_layers=3, num_dense_connections=256, filters=32,
                        growth_rate=32, min_lr=2e-5, max_lr=4.4e-1, step_factor=10, opt='SGD', loss='CosineLoss'),
+            base_dict0(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=0, num_dense_connections=256, filters=32,
+                       growth_rate=32, min_lr=2e-5, max_lr=2e-2, step_factor=10, opt='SGD', loss='CosineLoss'),
+            base_dict0(blocks_in_dense=2, dense_conv_blocks=3, dense_layers=0, num_dense_connections=256, filters=32,
+                       growth_rate=32, min_lr=2e-5, max_lr=8.7e-2, step_factor=10, opt='SGD', loss='CosineLoss'),
+            base_dict0(blocks_in_dense=2, dense_conv_blocks=3, dense_layers=2, num_dense_connections=256, filters=32,
+                       growth_rate=32, min_lr=2e-5, max_lr=.72, step_factor=10, opt='SGD', loss='CosineLoss'),
         ]
     model_dictionary = {model_key: dictionary}
     return model_dictionary
