@@ -306,9 +306,39 @@ def get_contour_points_from_roi(geometry):
         return None
 
 
+def map_outside_ablation(rois_in_case, case, examination, patient_dict):
+    for roi in ['GTV', 'GTV_Rigid']:
+        outside_roi = '{}_Outside_Ablation'.format(roi)
+        if outside_roi not in rois_in_case:
+            case.PatientModel.CreateRoi(Name=outside_roi, Color="Blue", Type="Organ", TissueName=None,
+                                        RbeCellTypeName=None, RoiMaterial=None)
+        case.PatientModel.RegionsOfInterest[outside_roi].CreateAlgebraGeometry(
+            Examination=examination, Algorithm="Auto", ExpressionA={ 'Operation': "Union",
+                                                                     'SourceRoiNames': [roi], 'MarginSettings':
+                                                                         {'Type': "Expand", 'Superior': 0, 'Inferior': 0,
+                                                                          'Anterior': 0, 'Posterior': 0, 'Right': 0,
+                                                                          'Left': 0 } },
+            ExpressionB={ 'Operation': "Union", 'SourceRoiNames': [r"Ablation"],
+                          'MarginSettings': { 'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0,
+                                              'Posterior': 0, 'Right': 0, 'Left': 0 } },
+            ResultOperation="Subtraction",
+            ResultMarginSettings={ 'Type': "Expand", 'Superior': 0, 'Inferior': 0, 'Anterior': 0, 'Posterior': 0,
+                                   'Right': 0, 'Left': 0 })
+        volume_inside = case.PatientModel.StructureSets[examination.Name].RoiGeometries[roi].GetRoiVolume()
+        if not case.PatientModel.StructureSets[examination.Name].RoiGeometries[outside_roi].HasContours():
+            volume_outside = 0
+        else:
+            volume_outside = case.PatientModel.StructureSets[examination.Name].RoiGeometries[outside_roi].GetRoiVolume()
+        print('For {}, outside volume is: {}, percentage outside is {}'.format(roi, volume_outside,
+                                                                               volume_outside/volume_inside*100))
+        patient_dict['Volume_Outside_{}_cc'.format(roi)] = [volume_outside]
+        patient_dict['%_Outside_{}'.format(roi)] = [volume_outside / volume_inside * 100]
+    return None
+
+
 def main():
     excel_path = r'\\mymdafiles\di_data1\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work' \
-                 r'\DTA_Results_Recurrence_and_Non_Recurrence.xlsx'
+                 r'\DTA_Results_Recurrence_and_Non_Recurrence_Fillable.xlsx'
     MRN_dictionary, df = return_MRN_dictionary(excel_path)
     df.set_index('MRN', inplace=True)
     patient_changer = ChangePatient()
@@ -377,10 +407,12 @@ def main():
         patient.Save()
         print(out_dta)
         patient_dict['Rigid_DTA'] = [out_dta['Min DTA']]
+        map_outside_ablation(rois_in_case=rois_in_case, case=case,
+                             examination=case.Examinations[secondary_exam], patient_dict=patient_dict)
         patient_df = pd.DataFrame(patient_dict)
         print(patient_dict)
-        # df.update(patient_df.set_index('MRN'))
-        # df.to_excel(excel_path)
+        df.update(patient_df.set_index('MRN'))
+        df.to_excel(excel_path)
 
 
 if __name__ == '__main__':
