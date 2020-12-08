@@ -13,10 +13,10 @@ from tensorflow_addons.optimizers import RectifiedAdam
 
 
 def return_model_and_things(model_base, out_path, things):
-    for blocks_in_dense in [2, 4]:
-        for dense_conv_blocks in [1, 3]:
-            for dense_layers in [1, 3]:
-                for num_dense_connections in [128, 256]:
+    for blocks_in_dense in [2, 3]:
+        for dense_conv_blocks in [2, 3]:
+            for dense_layers in [0, 1, 2]:
+                for num_dense_connections in [256]:
                     for filters in [32]:
                         for growth_rate in [32]:
                             all_list = 'blocks_in_dense_{}.dense_conv_blocks_{}.dense_layers_{}.' \

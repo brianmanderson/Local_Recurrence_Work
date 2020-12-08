@@ -15,12 +15,14 @@ print('Running on {} for key {}'.format(gpu, model_key))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
 
-from tensorflow.keras import mixed_precision
-
-# mixed_precision.set_global_policy('mixed_float16')
+if os.path.exists(r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence'):
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
+    import shutil
+    base_path, morfeus_drive = return_paths()
+    shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
 
 batch_size = 16
-find_lr = False
+find_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -30,11 +32,47 @@ if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_key=model_key)
 
+add_metrics_to_excel = False
+if add_metrics_to_excel:
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.AddMetricsToExcel import add_metrics_to_excel
+    add_metrics_to_excel()
+    xxx = 1
+
+view_results_with_r = False
+if view_results_with_r:
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
+    import shutil
+    from plotnine import *
+    import pandas as pd
+    import numpy as np
+    base_path, morfeus_drive = return_paths()
+    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
+    df = pd.read_excel(excel_path)
+    df = df.dropna()
+    df.epoch_loss = np.where((df.epoch_categorical_accuracy < .51), 1, df.epoch_loss)
+    df.epoch_loss = np.where((df.epoch_loss > .6), .6, df.epoch_loss)
+    xxx = 1
+    (ggplot(df) + aes(x='blocks_in_dense', y='epoch_loss') + facet_wrap('dense_conv_blocks',
+                                                                        labeller='label_both') + geom_point(
+        mapping=aes(color='epoch_categorical_accuracy')) + xlab('blocks_in_dense') + ylab('Validation Loss') +
+     ggtitle('Validation Loss vs Blocks in Dense, and Dense Convolution Blocks') + scale_colour_gradient(low='blue',
+                                                                                                      high='red'))
+
+    (ggplot(df) + aes(x='dense_layers', y='epoch_loss') + facet_wrap('blocks_in_dense',
+                                                                        labeller='label_both') + geom_point(
+        mapping=aes(color='dense_layers')) + xlab('blocks_in_dense') + ylab('Validation Loss') +
+     ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
+                                                                                                      high='red'))
+
+    (ggplot(data) + aes(x='layers', y='log_epoch_loss') + facet_wrap('conv_lambda', labeller='label_both') + geom_point(
+        mapping=aes(color='num_conv_blocks')) + xlab('Layers') + ylab('Validation Loss') +
+     ggtitle('Validation Loss vs Number of Layers, Filters, and Max Filters') + scale_colour_gradient(low='blue',
+                                                                                                      high='red'))
 evaluate_model = False
 if evaluate_model:
     from tensorflow.keras.models import load_model
