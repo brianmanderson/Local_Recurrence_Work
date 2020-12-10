@@ -22,7 +22,7 @@ if os.path.exists(r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrenc
     shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
 
 batch_size = 16
-find_lr = False
+find_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -32,7 +32,7 @@ if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_key=model_key)
@@ -51,7 +51,7 @@ if view_results_with_r:
     import pandas as pd
     import numpy as np
     base_path, morfeus_drive = return_paths()
-    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
+    excel_path = os.path.join(morfeus_drive, 'Reduced_Parameters.xlsx')
     df = pd.read_excel(excel_path)
     df = df.dropna()
     df.epoch_loss = np.where((df.epoch_categorical_accuracy < .51), 1, df.epoch_loss)
