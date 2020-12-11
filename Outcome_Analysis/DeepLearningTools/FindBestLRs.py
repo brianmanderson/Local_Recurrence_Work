@@ -29,10 +29,16 @@ def return_model_and_things(model_base, out_path, things):
                             if os.path.exists(new_out_path):
                                 continue
                             else:
-                                return model_base(blocks_in_dense=blocks_in_dense,
-                                                  dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
-                                                  num_dense_connections=num_dense_connections,filters=filters,
-                                                  growth_rate=growth_rate), new_out_path
+                                try:
+                                    model = model_base(blocks_in_dense=blocks_in_dense,
+                                                      dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
+                                                      num_dense_connections=num_dense_connections,filters=filters,
+                                                      growth_rate=growth_rate)
+                                    return model, new_out_path
+                                except:
+                                    os.makedirs(new_out_path)
+                                    print('Failed to make model')
+                                    continue
     return None, None
 
 
