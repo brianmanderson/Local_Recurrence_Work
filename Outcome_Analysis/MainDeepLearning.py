@@ -22,7 +22,7 @@ if os.path.exists(r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrenc
     shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
 
 batch_size = 16
-find_lr = True
+find_lr = False
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -32,7 +32,7 @@ if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-run_the_2D_model = False
+run_the_2D_model = True
 if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_key=model_key)
@@ -119,5 +119,10 @@ if evaluate_model:
     total = len(truth)
     missed = total - correct
     accuracy = correct/total * 100
+    correct_recurred = np.sum(truth[::2] == final_pred[::2]) / len(truth[::2]) * 100
+    correct_non_recurred = np.sum(truth[1::2] == final_pred[1::2]) / len(truth[1::2]) * 100
     print('Guessed {}% correct'.format(accuracy))
+    print('Guessed {}% of the recurrence correct'.format(correct_recurred))
+    print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
+    recurred_truth = truth[0::2]
     xxx = 1
