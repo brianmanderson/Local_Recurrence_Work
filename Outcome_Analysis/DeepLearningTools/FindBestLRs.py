@@ -14,7 +14,7 @@ from tensorflow_addons.optimizers import RectifiedAdam
 
 def return_model_and_things(model_base, out_path, things):
     for blocks_in_dense in [3]:
-        for dense_conv_blocks in [2, 3]:
+        for dense_conv_blocks in [1, 2, 3]:
             for dense_layers in [2, 3]:
                 for num_dense_connections in [256]:
                     for filters in [8]:
