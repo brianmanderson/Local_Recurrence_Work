@@ -22,7 +22,7 @@ if os.path.exists(r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrenc
     shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
 
 batch_size = 16
-find_lr = False
+find_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -32,7 +32,7 @@ if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_key=model_key)
@@ -73,6 +73,25 @@ if view_results_with_r:
         mapping=aes(color='num_conv_blocks')) + xlab('Layers') + ylab('Validation Loss') +
      ggtitle('Validation Loss vs Number of Layers, Filters, and Max Filters') + scale_colour_gradient(low='blue',
                                                                                                       high='red'))
+
+view_gradients = False
+if view_gradients:
+    from tensorflow.keras.models import load_model
+    import numpy as np
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators, plot_scroll_Image
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
+    from Deep_Learning.Base_Deeplearning_Code.Visualizing_Model.Visualize_Model import ModelVisualizationClass
+    model_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_Index_140\final_model.h5'
+    model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
+    _, _, train_generator, val_generator = return_generators(batch_size=8, cross_validation_id=0, model_key=model_key)
+    visualizer = ModelVisualizationClass(model=model, save_images=True,
+                                         out_path=r'H:\Deeplearning_Recurrence_Work\Activation_Images')
+    x, y = next(iter(val_generator.data_set))
+    visualizer.predict_on_tensor(x)
+    visualizer.plot_activations()
+    xxx = 1
+
 evaluate_model = False
 if evaluate_model:
     from tensorflow.keras.models import load_model
@@ -80,7 +99,7 @@ if evaluate_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
-    model_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_Index_13\final_model.h5'
+    model_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_Index_140\final_model.h5'
     model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
     # model = return_model(model_key=0)
     # model.load_weights(model_path)
