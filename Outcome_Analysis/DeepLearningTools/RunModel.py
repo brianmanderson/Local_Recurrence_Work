@@ -20,7 +20,7 @@ def run_model(model, train_generator, validation_generator, min_lr, max_lr, mode
                           lr_decay=0.9, mult_factor=2, gentle_start_epochs=step_factor * 2, gentle_fraction=0.1)
     add_lr = Add_Images_and_LR(log_dir=tensorboard_path, add_images=False)
     early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=1000, verbose=True)
-    callbacks = [tensorboard, lrate, add_lr, early_stop]
+    callbacks = [tensorboard, lrate, add_lr]
     if hparams is not None:
         hp_callback = Callback(tensorboard_path, hparams=hparams, trial_id='Trial_ID:{}'.format(trial_id))
         callbacks += [hp_callback]
