@@ -34,10 +34,10 @@ def run_2d_model(batch_size=24, model_key=0):
         features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
                          'num_dense_connections', 'filters', 'growth_rate', 'Optimizer', 'min_lr', 'max_lr', 'Loss')
     model_base = return_model(model_key=model_key)
-    for cv_id in range(5):
-        _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
-                                                                        cross_validation_id=cv_id,
-                                                                        cache=True, model_key=model_key)
+    for cv_id in range(0):
+        # _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
+        #                                                                 cross_validation_id=cv_id,
+        #                                                                 cache=True, model_key=model_key)
         for iteration in range(6, 10):
             for model_parameters in list_of_models:
                 base_df = pd.read_excel(excel_path)
@@ -60,10 +60,10 @@ def run_2d_model(batch_size=24, model_key=0):
                 if contained:
                     print("Already ran this one")
                     continue
-                if isinstance(model_base, types.FunctionType):
-                    model = model_base(**model_parameters)
-                else:
-                    model = model_base
+                # if isinstance(model_base, types.FunctionType):
+                #     model = model_base(**model_parameters)
+                # else:
+                #     model = model_base
                 current_model_indexes = base_df['Model_Index']
                 model_index = 0
                 while model_index in current_model_indexes:
