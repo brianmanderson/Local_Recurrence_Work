@@ -19,7 +19,7 @@ if os.path.exists(r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrenc
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
     import shutil
     base_path, morfeus_drive = return_paths()
-    shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
+    # shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
 
 batch_size = 16
 find_lr = False
@@ -32,7 +32,7 @@ if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_key=model_key)
@@ -43,6 +43,51 @@ if add_metrics_to_excel:
     add_metrics_to_excel()
     xxx = 1
 
+review_models_via_cv = True
+if review_models_via_cv:
+    import pandas as pd
+    import numpy as np
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
+    base_path, morfeus_drive = return_paths()
+    path_base = os.path.join(morfeus_drive, 'Tensorflow')
+    excel_path = os.path.join(morfeus_drive, 'ModelParameters_Averaged.xlsx')
+    df = pd.read_excel(excel_path)
+    compare_list = ('Model_Type', 'min_lr', 'max_lr', 'blocks_in_dense',
+                    'dense_conv_blocks', 'dense_layers', 'num_dense_connections', 'filters', 'growth_rate')
+    metric = 'epoch_loss'
+    already_done_arrays = None
+    for index in range(df.shape[0]):
+        current_run = df.loc[index]
+        all_runs = df
+        for key in compare_list:
+            all_runs = all_runs.loc[all_runs[key] == current_run[key]]
+        if already_done_arrays is None:
+            already_done_arrays = all_runs[list(compare_list)].values[0]
+        else:
+            unique_run = all_runs[list(compare_list)].values[0]
+            if np.max([np.min(i == unique_run) for i in already_done_arrays]):
+                continue
+            already_done_arrays = np.stack([already_done_arrays, unique_run], axis=0)
+        unique_cvs = np.unique(all_runs.cv_id.values)
+        best_values = []
+        for cv in unique_cvs:
+            cv_runs = all_runs.loc[all_runs.cv_id == cv]
+            best_values.append(np.min(cv_runs['epoch_loss']))
+        single_run = all_runs.loc[0:1]
+        single_run.loc[0, 'cv_id'] = 'averaged'
+        single_run.loc[0, 'Iteration'] = -1
+        single_run.loc[0, 'epoch_loss'] = np.mean(best_values)
+        single_run.loc[0, 'Model_Index'] = np.max(df.Model_Index) + 1
+        df.set_index('Model_Index', inplace=True)
+        single_run.set_index('Model_Index', inplace=True)
+        df.update(single_run)
+        df = df.reset_index()
+        df.to_excel(excel_path, index=0)
+
+
+    unique_models = np.unique(base_array, axis=-1)
+    base_array = data_frame[list(features_list)].values
+    xxx = 1
 view_results_with_r = False
 if view_results_with_r:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
