@@ -32,7 +32,7 @@ if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-run_the_2D_model = False
+run_the_2D_model = True
 if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_key=model_key)
@@ -43,7 +43,7 @@ if add_metrics_to_excel:
     add_metrics_to_excel()
     xxx = 1
 
-review_models_via_cv = True
+review_models_via_cv = False
 if review_models_via_cv:
     import pandas as pd
     import numpy as np
@@ -61,33 +61,30 @@ if review_models_via_cv:
         all_runs = df
         for key in compare_list:
             all_runs = all_runs.loc[all_runs[key] == current_run[key]]
-        if already_done_arrays is None:
-            already_done_arrays = all_runs[list(compare_list)].values[0]
-        else:
-            unique_run = all_runs[list(compare_list)].values[0]
-            if np.max([np.min(i == unique_run) for i in already_done_arrays]):
-                continue
-            already_done_arrays = np.stack([already_done_arrays, unique_run], axis=0)
+        if all_runs.loc[all_runs.cv_id == -1].shape[0] != 0:
+            continue
         unique_cvs = np.unique(all_runs.cv_id.values)
-        best_values = []
+        if len(unique_cvs) != 5:
+            continue
+        best_loss = []
+        best_accuracy = []
+        best_run = all_runs
         for cv in unique_cvs:
             cv_runs = all_runs.loc[all_runs.cv_id == cv]
-            best_values.append(np.min(cv_runs['epoch_loss']))
-        single_run = all_runs.loc[0:1]
-        single_run.loc[0, 'cv_id'] = 'averaged'
-        single_run.loc[0, 'Iteration'] = -1
-        single_run.loc[0, 'epoch_loss'] = np.mean(best_values)
-        single_run.loc[0, 'Model_Index'] = np.max(df.Model_Index) + 1
-        df.set_index('Model_Index', inplace=True)
-        single_run.set_index('Model_Index', inplace=True)
-        df.update(single_run)
-        df = df.reset_index()
+            best_run = cv_runs.loc[cv_runs.epoch_loss == np.min(cv_runs.epoch_loss)]
+            best_loss.append(best_run.epoch_loss.values[0])
+            best_accuracy.append(best_run.epoch_categorical_accuracy.values[0])
+        best_run.at[best_run.index[0], 'cv_id'] = -1
+        best_run.at[best_run.index[0], 'Iteration'] = -1
+        best_run.at[best_run.index[0], 'epoch_loss'] = np.mean(best_loss)
+        best_run.at[best_run.index[0], 'epoch_categorical_accuracy'] = np.mean(best_accuracy)
+        best_run.at[best_run.index[0], 'Model_Index'] = np.max(df.Model_Index) + 1
+        best_run.at[best_run.index[0], 'epoch_loss_std'] = np.std(best_loss)
+        best_run.at[best_run.index[0], 'epoch_categorical_accuracy_std'] = np.std(best_accuracy)
+        df = pd.concat([df, best_run], axis=0, ignore_index=True)
         df.to_excel(excel_path, index=0)
-
-
-    unique_models = np.unique(base_array, axis=-1)
-    base_array = data_frame[list(features_list)].values
     xxx = 1
+
 view_results_with_r = False
 if view_results_with_r:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths

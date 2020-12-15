@@ -13,8 +13,8 @@ def add_metrics_to_excel():
     path_base = os.path.join(morfeus_drive, 'Tensorflow')
     excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
     df = pd.read_excel(excel_path)
-    df.set_index('Model_Index')
-    iterate_paths_add_to_dictionary(path=path_base, all_dictionaries=base_dictionary, final_val=True,
+    df.set_index('Model_Index', inplace=True)
+    iterate_paths_add_to_dictionary(path=path_base, all_dictionaries=base_dictionary, fraction_start=0.5,
                                     metric_name_and_criteria={'epoch_loss': np.min,
                                                               'epoch_categorical_accuracy': np.max})
     out_dictionary = {'Model_Index': [], 'epoch_loss': [], 'epoch_categorical_accuracy': []}
@@ -23,8 +23,9 @@ def add_metrics_to_excel():
         out_dictionary['epoch_loss'].append(base_dictionary[key]['epoch_loss'])
         out_dictionary['epoch_categorical_accuracy'].append(base_dictionary[key]['epoch_categorical_accuracy'])
     new_df = pd.DataFrame(out_dictionary)
-    new_df.set_index('Model_Index')
+    new_df.set_index('Model_Index', inplace=True)
     df.update(new_df)
+    df = df.reset_index()
     df.to_excel(excel_path, index=0)
     return None
 
