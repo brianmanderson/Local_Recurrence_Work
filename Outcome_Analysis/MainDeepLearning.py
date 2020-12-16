@@ -10,7 +10,7 @@ if len(sys.argv) > 1:
     model_key = int(sys.argv[2])
 else:
     gpu = 0
-model_key = 3
+model_key = 0
 print('Running on {} for key {}'.format(gpu, model_key))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
@@ -22,7 +22,7 @@ if os.path.exists(r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrenc
     # shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
 
 batch_size = 16
-find_lr = False
+find_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -43,7 +43,7 @@ if add_metrics_to_excel:
     add_metrics_to_excel()
     xxx = 1
 
-review_models_via_cv = True
+review_models_via_cv = False
 if review_models_via_cv:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Find_Mean_Std_Across_CV_Groups import \
         add_mean_std_across_cv_groups
