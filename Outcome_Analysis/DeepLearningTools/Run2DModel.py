@@ -47,6 +47,8 @@ def run_2d_model(batch_size=24, model_key=0):
                     continue
                 model_base = return_model(model_key=run_df.loc[index, 'Model_Type'])
                 model_parameters = run_df.squeeze().to_dict()
+                model_parameters['Model_Index'] = int(model_parameters['Model_Index'])
+                model_parameters['Model_Type'] = int(model_parameters['Model_Index'])
                 opt = tf.keras.optimizers.SGD()
                 loss = tf.keras.losses.CategoricalCrossentropy()
                 if model_parameters['Loss'] == 'CosineLoss':
@@ -62,7 +64,7 @@ def run_2d_model(batch_size=24, model_key=0):
                     model_index += 1
                 run_df.at[index, 'Model_Index'] = model_index
                 base_df = base_df.append(run_df)
-                base_df.to_excel(excel_path, index=0)
+                # base_df.to_excel(excel_path, index=0)
                 model_path = os.path.join(base_path, 'Models', 'Model_Index_{}'.format(model_index))
                 tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
                                                 'Model_Index_{}'.format(model_index))
