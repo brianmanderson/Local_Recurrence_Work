@@ -70,7 +70,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
             ]
             if validation_recurrence_path is not None:
                 validation_processors += [
-                    {'cache': os.path.join(val_path[0], 'cache'.format(cache_add))}
+                    {'cache': os.path.join(val_path[0], 'cache{}'.format(cache_add))}
                 ]
         train_processors += [
             CombineKeys(image_keys=build_keys, output_key='combined'),
