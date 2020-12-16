@@ -32,7 +32,7 @@ if plot_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
     plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates')
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_key=model_key)
@@ -43,47 +43,11 @@ if add_metrics_to_excel:
     add_metrics_to_excel()
     xxx = 1
 
-review_models_via_cv = False
+review_models_via_cv = True
 if review_models_via_cv:
-    import pandas as pd
-    import numpy as np
-    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
-    base_path, morfeus_drive = return_paths()
-    path_base = os.path.join(morfeus_drive, 'Tensorflow')
-    excel_path = os.path.join(morfeus_drive, 'ModelParameters_Averaged.xlsx')
-    df = pd.read_excel(excel_path)
-    compare_list = ('Model_Type', 'min_lr', 'max_lr', 'blocks_in_dense',
-                    'dense_conv_blocks', 'dense_layers', 'num_dense_connections', 'filters', 'growth_rate')
-    metric = 'epoch_loss'
-    already_done_arrays = None
-    for index in range(df.shape[0]):
-        current_run = df.loc[index]
-        all_runs = df
-        for key in compare_list:
-            all_runs = all_runs.loc[all_runs[key] == current_run[key]]
-        if all_runs.loc[all_runs.cv_id == -1].shape[0] != 0:
-            continue
-        unique_cvs = np.unique(all_runs.cv_id.values)
-        if len(unique_cvs) != 5:
-            continue
-        best_loss = []
-        best_accuracy = []
-        best_run = all_runs
-        for cv in unique_cvs:
-            cv_runs = all_runs.loc[all_runs.cv_id == cv]
-            best_run = cv_runs.loc[cv_runs.epoch_loss == np.min(cv_runs.epoch_loss)]
-            best_loss.append(best_run.epoch_loss.values[0])
-            best_accuracy.append(best_run.epoch_categorical_accuracy.values[0])
-        best_run.at[best_run.index[0], 'cv_id'] = -1
-        best_run.at[best_run.index[0], 'Iteration'] = -1
-        best_run.at[best_run.index[0], 'epoch_loss'] = np.mean(best_loss)
-        best_run.at[best_run.index[0], 'epoch_categorical_accuracy'] = np.mean(best_accuracy)
-        best_run.at[best_run.index[0], 'Model_Index'] = np.max(df.Model_Index) + 1
-        best_run.at[best_run.index[0], 'epoch_loss_std'] = np.std(best_loss)
-        best_run.at[best_run.index[0], 'epoch_categorical_accuracy_std'] = np.std(best_accuracy)
-        df = pd.concat([df, best_run], axis=0, ignore_index=True)
-        df.to_excel(excel_path, index=0)
-    xxx = 1
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Find_Mean_Std_Across_CV_Groups import \
+        add_mean_std_across_cv_groups
+    add_mean_std_across_cv_groups()
 
 view_results_with_r = False
 if view_results_with_r:
