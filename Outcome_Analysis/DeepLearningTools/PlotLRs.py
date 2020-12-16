@@ -1,41 +1,35 @@
 __author__ = 'Brian M Anderson'
 # Created on 11/24/2020
 from Deep_Learning.Base_Deeplearning_Code.Finding_Optimization_Parameters.LR_Finder import make_plot, os
-
-
-def down_folder(input_path, base_input_path='',output_path=''):
-    folders = []
-    files = []
-    for _, folders, files in os.walk(input_path):
-        break
-    iterations_found = False
-    for folder in folders:
-        if folder.find('Iteration') == -1:
-            delete = down_folder(os.path.join(input_path, folder),base_input_path=base_input_path,output_path=output_path)
-            if delete:
-                os.removedirs(os.path.join(input_path,folder)) # Delete empty folders
-        else:
-            iterations_found = True
-            break
-    if not folders and not files:
-        return True
-    if iterations_found:
-        paths = [os.path.join(input_path, i) for i in folders if i.find('Iteration') != -1]
-        if '2_Iteration' not in folders:
-            return False
-        try:
-            print(input_path)
-            desc = ''.join(input_path.split(base_input_path)[-1].split('\\'))
-            save_path = os.path.join(output_path,'Outputs')
-            make_plot(paths, metric_list=['loss'], title=desc, save_path=save_path, plot=False,
-                      auto_rates=True, beta=0.96)
-        except:
-            xxx = 1
-    return False
+from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
+import pandas as pd
 
 
 def plot_lrs(input_path):
-    down_folder(input_path,base_input_path=input_path, output_path=input_path)
+    base_path, morfeus_drive = return_paths()
+    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
+    for root, folders, files in os.walk(input_path):
+        paths = [os.path.join(root, i) for i in folders if i.find('Iteration') != -1]
+        if paths:
+            print(root)
+            desc = ''.join(root.split(input_path)[-1].split('\\'))
+            save_path = os.path.join(input_path, 'Outputs')
+            try:
+                out_lr_dict = make_plot(paths, metric_list=['loss'], title=desc, save_path=save_path, plot=False,
+                                        auto_rates=True, beta=0.96)
+                if excel_path is not None:
+                    base_df = pd.read_excel(excel_path)
+                    model_index = int(os.path.split(paths[0])[0].split('Model_Index_')[-1])
+                    index = base_df.loc[base_df.Model_Index == int(model_index)]
+                    if index.shape[0] > 0:
+                        index = index.index[0]
+                        if pd.isnull(base_df.loc[index, 'min_lr']):
+                            base_df.at[index, 'min_lr'] = out_lr_dict['loss']['min_lr']
+                            base_df.at[index, 'max_lr'] = out_lr_dict['loss']['max_lr']
+                            base_df.to_excel(excel_path, index=0)
+            except:
+                xxx = 1
+    return None
 
 
 if __name__ == '__main__':
