@@ -47,8 +47,11 @@ def run_2d_model(batch_size=24, model_key=0):
                     continue
                 model_base = return_model(model_key=run_df.loc[index, 'Model_Type'])
                 model_parameters = run_df.squeeze().to_dict()
-                model_parameters['Model_Index'] = int(model_parameters['Model_Index'])
-                model_parameters['Model_Type'] = int(model_parameters['Model_Index'])
+                for key in model_parameters.keys():
+                    if type(model_parameters[key]) is np.int64:
+                        model_parameters[key] = int(model_parameters[key])
+                    elif type(model_parameters[key]) is np.float64:
+                        model_parameters[key] = float(model_parameters[key])
                 opt = tf.keras.optimizers.SGD()
                 loss = tf.keras.losses.CategoricalCrossentropy()
                 if model_parameters['Loss'] == 'CosineLoss':
