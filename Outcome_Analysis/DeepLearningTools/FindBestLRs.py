@@ -14,7 +14,7 @@ import types
 from tensorflow_addons.optimizers import RectifiedAdam
 
 
-def return_model_and_things(model_base, out_path, things, excel_path):
+def return_model_and_things(model_base, out_path, iteration, excel_path):
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                     'filters', 'growth_rate', 'step_factor', 'Loss', 'Optimizer')
     for blocks_in_dense in [5, 8]:
@@ -28,15 +28,6 @@ def return_model_and_things(model_base, out_path, things, excel_path):
                                        'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0],
                                        'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['SGD']}
                             current_run_df = pd.DataFrame(new_run)
-                            all_list = 'blocks_in_dense_{}.dense_conv_blocks_{}.dense_layers_{}.' \
-                                       'num_dense_connections{}.filters_{}.' \
-                                       'growth_rate_{}'.format(blocks_in_dense, dense_conv_blocks, dense_layers,
-                                                               num_dense_connections, filters, growth_rate)
-                            new_out_path = os.path.join(out_path, all_list)
-                            for thing in things:
-                                new_out_path = os.path.join(new_out_path, thing)
-                            if os.path.exists(new_out_path):
-                                continue
                             base_df = pd.read_excel(excel_path)
                             contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
                                                              features_list=compare_keys)
@@ -48,6 +39,14 @@ def return_model_and_things(model_base, out_path, things, excel_path):
                                 current_run_df.set_index('Model_Index')
                                 base_df = base_df.append(current_run_df)
                                 base_df.to_excel(excel_path, index=0)
+                            else:
+                                for key in compare_keys:
+                                    base_df = base_df.loc[base_df[key] == current_run_df[key].values[0]]
+                                model_index = base_df.Model_Index.values[0]
+                            new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
+                                                        '{}_Iteration'.format(iteration))
+                            if os.path.exists(new_out_path):
+                                continue
                             try:
                                 model = model_base(blocks_in_dense=blocks_in_dense,
                                                   dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
@@ -70,18 +69,12 @@ def find_best_lr(batch_size=24, model_key=0):
     model_base = return_model(model_key=model_key)
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
-    for iteration in [6]:
+    features_list = ('Model_Type', 'Optimizer', 'step_factor')
+    for iteration in [0, 1, 2]:
         for optimizer in ['SGD']:
-            things = ['Optimizer_{}'.format(optimizer), 'CosineLoss']
-            things.append('{}_Iteration'.format(iteration))
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
             if not isinstance(model_base, types.FunctionType):
                 model = model_base
-                for thing in things:
-                    out_path = os.path.join(out_path, thing)
-                if os.path.exists(out_path):
-                    print('already done')
-                    continue
                 base_df = pd.read_excel(excel_path)
                 current_run = {'Model_Type': [model_key], 'run?': [0], 'step_factor': [10], 'Loss': ['CosineLoss'],
                                'Optimizer': ['SGD']}
@@ -96,8 +89,16 @@ def find_best_lr(batch_size=24, model_key=0):
                     current_run_df.set_index('Model_Index')
                     base_df = base_df.append(current_run_df)
                     base_df.to_excel(excel_path, index=0)
+                else:
+                    for key in features_list:
+                        base_df = base_df.loc[base_df[key] == current_run_df[key].values[0]]
+                    model_index = base_df.Model_Index.values[0]
+                out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
+                                        '{}_Iteration'.format(iteration))
+                if os.path.exists(out_path):
+                    continue
             else:
-                model, out_path = return_model_and_things(model_base=model_base, out_path=out_path, things=things,
+                model, out_path = return_model_and_things(model_base=model_base, out_path=out_path, iteration=iteration,
                                                           excel_path=excel_path)
                 if model is None:
                     continue
