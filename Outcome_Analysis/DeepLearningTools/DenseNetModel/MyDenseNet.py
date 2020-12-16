@@ -210,15 +210,16 @@ def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128
     x = img_input
 
     inputs = (img_input,)
+    strides = (1, 2, 2)
+    if include_3d:
+        strides = (2, 2, 2)
 
     x = layers.Conv2D(64, 7, strides=2, use_bias=False, name='conv1/conv', padding='Same')(x)
     x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='conv1/bn')(x)
     x = layers.Activation('relu', name='conv1/relu')(x)
-    x = layers.MaxPooling3D((1, 3, 3), strides=(1, 2, 2), name='pool1')(x)
+    x = layers.MaxPooling3D(pool_size=strides, name='pool1')(x)
 
-    strides = (1, 2, 2)
-    if include_3d:
-        strides = (2, 2, 2)
+
     x = dense_block(x, blocks[0], name='conv2')
     # if include_3d:
     #     x = dense_block3d(x=x, blocks=blocks[0], name='3d_conv2')
@@ -238,7 +239,7 @@ def DenseNet(blocks, include_top=False, weights='imagenet', input_shape=(32, 128
     x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
     x = layers.Activation('relu', name='relu')(x)
 
-    x = layers.AveragePooling3D(pool_size=strides, name='final_average_pooling')(x)
+    x = layers.MaxPooling3D(pool_size=strides, name='final_max_pooling')(x)
     x = layers.Flatten()(x)
     x = layers.Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.001))(x)
     x = layers.Dropout(0.5)(x)
