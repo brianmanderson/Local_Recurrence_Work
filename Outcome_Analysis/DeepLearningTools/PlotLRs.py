@@ -16,7 +16,7 @@ def plot_lrs(input_path):
             save_path = os.path.join(input_path, 'Outputs')
             try:
                 out_lr_dict = make_plot(paths, metric_list=['loss'], title=desc, save_path=save_path, plot=False,
-                                        auto_rates=True, beta=0.96)
+                                        auto_rates=True, beta=0.96, plot_show=False)
                 if excel_path is not None:
                     base_df = pd.read_excel(excel_path)
                     model_index = int(os.path.split(paths[0])[0].split('Model_Index_')[-1])
@@ -29,7 +29,7 @@ def plot_lrs(input_path):
                             base_df.to_excel(excel_path, index=0)
             except:
                 xxx = 1
-    return None
+    return True
 
 
 if __name__ == '__main__':

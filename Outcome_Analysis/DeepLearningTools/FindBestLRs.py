@@ -121,7 +121,8 @@ def find_best_lr(batch_size=24, model_key=0):
                                steps_per_epoch=1000,
                                train_generator=train_generator.data_set, lower_lr=min_lr, high_lr=max_lr)
             tf.keras.backend.clear_session()
-            return None # repeat!
+            return False # repeat!
+    return True
 
 
 if __name__ == '__main__':
