@@ -16,7 +16,7 @@ from tensorflow_addons.optimizers import RectifiedAdam
 
 def return_model_and_things(model_base, out_path, iteration, excel_path):
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
-                    'filters', 'growth_rate', 'step_factor', 'Loss', 'Optimizer')
+                    'filters', 'growth_rate', 'step_factor', 'Loss', 'Optimizer', 'reduction')
     for blocks_in_dense in [5, 8]:
         for dense_conv_blocks in [5, 8]:
             for dense_layers in [0, 3, 5]:
