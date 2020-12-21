@@ -22,41 +22,42 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
             for dense_layers in [0, 3, 5]:
                 for num_dense_connections in [256]:
                     for filters in [8, 16]:
-                        for growth_rate in [32]:
-                            new_run = {'blocks_in_dense': [blocks_in_dense], 'dense_conv_blocks': [dense_conv_blocks],
-                                       'dense_layers': [dense_layers], 'num_dense_connections': [num_dense_connections],
-                                       'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0],
-                                       'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['SGD']}
-                            current_run_df = pd.DataFrame(new_run)
-                            base_df = pd.read_excel(excel_path)
-                            contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
-                                                             features_list=compare_keys)
-                            if not contained:
-                                model_index = 0
-                                while model_index in base_df['Model_Index'].values:
-                                    model_index += 1
-                                current_run_df.insert(0, column='Model_Index', value=model_index)
-                                current_run_df.set_index('Model_Index')
-                                base_df = base_df.append(current_run_df)
-                                base_df.to_excel(excel_path, index=0)
-                            else:
-                                for key in compare_keys:
-                                    base_df = base_df.loc[base_df[key] == current_run_df[key].values[0]]
-                                model_index = base_df.Model_Index.values[0]
-                            new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
-                                                        '{}_Iteration'.format(iteration))
-                            if os.path.exists(new_out_path):
-                                continue
-                            try:
-                                model = model_base(blocks_in_dense=blocks_in_dense,
-                                                  dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
-                                                  num_dense_connections=num_dense_connections,filters=filters,
-                                                  growth_rate=growth_rate)
-                                return model, new_out_path
-                            except:
-                                os.makedirs(new_out_path)
-                                print('Failed to make model')
-                                continue
+                        for reduction in [0.75, 1.0]:
+                            for growth_rate in [32]:
+                                new_run = {'blocks_in_dense': [blocks_in_dense], 'dense_conv_blocks': [dense_conv_blocks],
+                                           'dense_layers': [dense_layers], 'num_dense_connections': [num_dense_connections],
+                                           'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0], 'reduction': [reduction],
+                                           'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['SGD']}
+                                current_run_df = pd.DataFrame(new_run)
+                                base_df = pd.read_excel(excel_path)
+                                contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
+                                                                 features_list=compare_keys)
+                                if not contained:
+                                    model_index = 0
+                                    while model_index in base_df['Model_Index'].values:
+                                        model_index += 1
+                                    current_run_df.insert(0, column='Model_Index', value=model_index)
+                                    current_run_df.set_index('Model_Index')
+                                    base_df = base_df.append(current_run_df)
+                                    base_df.to_excel(excel_path, index=0)
+                                else:
+                                    for key in compare_keys:
+                                        base_df = base_df.loc[base_df[key] == current_run_df[key].values[0]]
+                                    model_index = base_df.Model_Index.values[0]
+                                new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
+                                                            '{}_Iteration'.format(iteration))
+                                if os.path.exists(new_out_path):
+                                    continue
+                                try:
+                                    model = model_base(blocks_in_dense=blocks_in_dense,
+                                                      dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
+                                                      num_dense_connections=num_dense_connections,filters=filters,
+                                                      growth_rate=growth_rate)
+                                    return model, new_out_path
+                                except:
+                                    os.makedirs(new_out_path)
+                                    print('Failed to make model')
+                                    continue
 
     return None, None
 
