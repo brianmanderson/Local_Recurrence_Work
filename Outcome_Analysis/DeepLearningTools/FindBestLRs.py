@@ -17,13 +17,13 @@ from tensorflow_addons.optimizers import RectifiedAdam
 def return_model_and_things(model_base, out_path, iteration, excel_path):
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                     'filters', 'growth_rate', 'step_factor', 'Loss', 'Optimizer', 'reduction')
-    for blocks_in_dense in [5, 8]:
-        for dense_conv_blocks in [5, 8]:
-            for dense_layers in [0, 3, 5]:
+    for blocks_in_dense in [3]:
+        for dense_conv_blocks in [3]:
+            for dense_layers in [3]:
                 for num_dense_connections in [256]:
-                    for filters in [8, 16]:
-                        for reduction in [0.75, 1.0]:
-                            for growth_rate in [32]:
+                    for filters in [8]:
+                        for reduction in [0.5]:
+                            for growth_rate in [8]:
                                 new_run = {'blocks_in_dense': [blocks_in_dense], 'dense_conv_blocks': [dense_conv_blocks],
                                            'dense_layers': [dense_layers], 'num_dense_connections': [num_dense_connections],
                                            'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0], 'reduction': [reduction],
@@ -44,15 +44,18 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                     for key in compare_keys:
                                         base_df = base_df.loc[base_df[key] == current_run_df[key].values[0]]
                                     model_index = base_df.Model_Index.values[0]
+                                    if 'epoch_loss' in base_df.columns:
+                                        if not pd.isnull(base_df['epoch_loss'][base_df.index.values[0]]):
+                                            continue  # If it isn't null, it was already done
                                 new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
                                                             '{}_Iteration'.format(iteration))
                                 if os.path.exists(new_out_path):
                                     continue
                                 try:
                                     model = model_base(blocks_in_dense=blocks_in_dense,
-                                                      dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
-                                                      num_dense_connections=num_dense_connections,filters=filters,
-                                                      growth_rate=growth_rate)
+                                                       dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
+                                                       num_dense_connections=num_dense_connections,filters=filters,
+                                                       growth_rate=growth_rate)
                                     return model, new_out_path
                                 except:
                                     os.makedirs(new_out_path)

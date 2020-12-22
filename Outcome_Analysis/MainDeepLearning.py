@@ -10,7 +10,7 @@ if len(sys.argv) > 1:
     model_key = int(sys.argv[2])
 else:
     gpu = 0
-model_key = 0
+model_key = 3
 print('Running on {} for key {}'.format(gpu, model_key))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
@@ -32,7 +32,10 @@ add_lr = True
 added_lr = False
 if add_lr and finished_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
-    added_lr = plot_lrs(input_path=r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Learning_Rates\Model_Key_0')
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths, os
+    base_path, morfeus_drive = return_paths()
+    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
+    added_lr = plot_lrs(input_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3'))
 
 run_the_2D_model = False
 if run_the_2D_model and added_lr:
