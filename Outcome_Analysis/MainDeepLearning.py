@@ -28,7 +28,7 @@ if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     finished_lr = find_best_lr(batch_size=batch_size, model_key=model_key)
 
-add_lr = True
+add_lr = False
 added_lr = False
 if add_lr and finished_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs
