@@ -25,7 +25,7 @@ def run_2d_model(batch_size=24, model_key=0):
     if model_key == 3:
         compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'cv_id', 'blocks_in_dense',
                         'dense_conv_blocks', 'dense_layers', 'num_dense_connections', 'filters', 'growth_rate',
-                        'Optimizer', 'Loss')
+                        'Optimizer', 'Loss', 'reduction')
         features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
                          'num_dense_connections', 'filters', 'growth_rate', 'Optimizer', 'min_lr', 'max_lr', 'Loss')
     iterations = [0, 1, 2, 3]

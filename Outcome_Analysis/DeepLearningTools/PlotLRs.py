@@ -12,7 +12,7 @@ def plot_lrs(input_path):
         paths = [os.path.join(root, i) for i in folders if i.find('Iteration') != -1]
         if paths:
             print(root)
-            desc = ''.join(root.split(input_path)[-1].split('\\'))
+            desc = os.path.split(root)[-1]
             save_path = os.path.join(input_path, 'Outputs')
             try:
                 out_lr_dict = make_plot(paths, metric_list=['loss'], title=desc, save_path=save_path, plot=False,
