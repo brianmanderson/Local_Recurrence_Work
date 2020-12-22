@@ -27,7 +27,8 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                 new_run = {'blocks_in_dense': [blocks_in_dense], 'dense_conv_blocks': [dense_conv_blocks],
                                            'dense_layers': [dense_layers], 'num_dense_connections': [num_dense_connections],
                                            'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0], 'reduction': [reduction],
-                                           'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['SGD']}
+                                           'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['SGD'],
+                                           'Model_Type': [3]}
                                 current_run_df = pd.DataFrame(new_run)
                                 base_df = pd.read_excel(excel_path)
                                 contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
@@ -54,8 +55,8 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                 try:
                                     model = model_base(blocks_in_dense=blocks_in_dense,
                                                        dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
-                                                       num_dense_connections=num_dense_connections,filters=filters,
-                                                       growth_rate=growth_rate)
+                                                       num_dense_connections=num_dense_connections, filters=filters,
+                                                       growth_rate=growth_rate, reduction=reduction)
                                     return model, new_out_path
                                 except:
                                     os.makedirs(new_out_path)
