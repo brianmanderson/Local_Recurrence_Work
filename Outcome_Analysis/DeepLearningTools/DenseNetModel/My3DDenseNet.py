@@ -19,11 +19,11 @@ def conv_block_3d(x, growth_rate, name):
     """
     x1 = GroupNormalization(groups=2, axis=-1, name=name + '_0_gn')(x)
     # x1 = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_0_bn')(x)
-    x1 = layers.Activation('relu', name=name + '_0_relu')(x1)
+    x1 = layers.Activation('selu', name=name + '_0_selu')(x1)
     x1 = layers.Conv3D(2 * growth_rate, 1, use_bias=False, name=name + '_1_conv', padding='same')(x1)
     # x1 = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_1_bn')(x1)
     x1 = GroupNormalization(groups=2, axis=-1, name=name + '_1_gn')(x1)
-    x1 = layers.Activation('relu', name=name + '_1_relu')(x1)
+    x1 = layers.Activation('selu', name=name + '_1_selu')(x1)
     x1 = layers.Conv3D(growth_rate, 3, padding='same', use_bias=False, name=name + '_2_conv')(x1)
     x = layers.Concatenate(axis=-1, name=name + '_concat')([x, x1])
     return x
@@ -59,7 +59,7 @@ def transition_block(x, reduction, name, strides=(2, 2, 2)):
     """
     # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_bn')(x)
     x = GroupNormalization(groups=2, axis=-1, name=name + '_gn')(x)
-    x = layers.Activation('relu', name=name + '_relu')(x)
+    x = layers.Activation('selu', name=name + '_selu')(x)
     x = layers.Conv3D(int(x.shape[-1] * reduction), 1,
                       use_bias=False, padding='same', name=name + '_conv')(x)
     x = layers.AveragePooling3D(strides, strides=strides, name=name + '_pool')(x)
@@ -87,19 +87,19 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
     x = layers.Conv3D(filters, (3, 7, 7), strides=2, use_bias=False, name='conv1/conv', padding='Same')(x)
     # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='conv1/bn')(x)
     x = GroupNormalization(groups=2, axis=-1, name='conv1/gn')(x)
-    x = layers.Activation('relu', name='conv1/relu')(x)
+    x = layers.Activation('selu', name='conv1/selu')(x)
 
     for i in range(dense_conv_blocks):
         x = dense_block3d(x=x, growth_rate=growth_rate, blocks=blocks_in_dense, name='conv{}'.format(i))
         x = transition_block(x=x, reduction=reduction, name='pool{}'.format(i))
     # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
     x = GroupNormalization(groups=2, axis=-1, name='gn')(x)
-    x = layers.Activation('relu', name='relu')(x)
+    x = layers.Activation('selu', name='selu')(x)
 
     x = layers.AveragePooling3D(pool_size=(2, 2, 2), name='final_average_pooling')(x)
     x = layers.Flatten()(x)
     for i in range(dense_layers):
-        x = layers.Dense(num_dense_connections, activation='relu', kernel_regularizer=regularizers.l2(0.001))(x)
+        x = layers.Dense(num_dense_connections, activation='selu', kernel_regularizer=regularizers.l2(0.001))(x)
         x = layers.Dropout(0.5)(x)
     x = layers.Dense(2, activation='softmax', name='prediction', dtype='float32')(x)
     model = Model(inputs=inputs, outputs=(x,), name='my_3d_densenet')
