@@ -17,6 +17,7 @@ from tensorflow_addons.optimizers import RectifiedAdam
 def return_model_and_things(model_base, out_path, iteration, excel_path):
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                     'filters', 'growth_rate', 'step_factor', 'Loss', 'Optimizer', 'reduction')
+    base_df = pd.read_excel(excel_path)
     for blocks_in_dense in [1, 3, 5]:
         for dense_conv_blocks in [1, 3, 5]:
             for dense_layers in [1, 3, 5, 7]:
@@ -30,7 +31,10 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                            'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['SGD'],
                                            'Model_Type': [3]}
                                 current_run_df = pd.DataFrame(new_run)
-                                base_df = pd.read_excel(excel_path)
+                                contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
+                                                                 features_list=compare_keys)
+                                if not contained:  # Check it once more with the latest version..
+                                    base_df = pd.read_excel(excel_path)
                                 contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
                                                                  features_list=compare_keys)
                                 if not contained:
