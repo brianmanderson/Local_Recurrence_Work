@@ -60,6 +60,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
             ExpandDimension(axis=-1, image_keys=build_keys),
             Cast_Data(key_type_dict={'primary_liver': 'float32'})
         ]
+        train_processors += [Normalize_Images(mean_val=0, std_val=0.5, image_key='primary_image')]
         validation_processors = [
             ExpandDimension(axis=-1, image_keys=build_keys),
             Cast_Data(key_type_dict={'primary_liver': 'float32'})
