@@ -109,6 +109,10 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         validation_generator.data_set = validation_dataset.unbatch().batch(1)
         validation_generator.total_examples += validation_no_recurrence_generator.total_examples
     generators = [validation_generator]
+    x, y = next(iter(train_generator.data_set))
+    print(tf.reduce_min(x[0]))
+    print(tf.reduce_max(x[0]))
+    xxx = 1
     # generators += [train_generator]
     if evaluate:
         for generator in generators:
