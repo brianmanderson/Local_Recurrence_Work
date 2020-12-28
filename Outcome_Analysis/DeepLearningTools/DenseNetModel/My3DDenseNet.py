@@ -78,6 +78,13 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
     :param kwargs:
     :return:
     """
+    blocks_in_dense = int(blocks_in_dense)
+    dense_conv_blocks = int(dense_conv_blocks)
+    dense_layers = int(dense_layers)
+    num_dense_connections = int(num_dense_connections)
+    filters = int(filters)
+    growth_rate = int(growth_rate)
+    reduction = float(reduction)
     input_shape = (32, 64, 64, 2)
     img_input = layers.Input(shape=input_shape)
     x = img_input
