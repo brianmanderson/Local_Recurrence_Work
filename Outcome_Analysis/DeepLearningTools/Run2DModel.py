@@ -11,11 +11,11 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels impor
 import pandas as pd
 import tensorflow as tf
 import types
-from tensorflow_addons.optimizers import RectifiedAdam
 import numpy as np
 
 
-def run_2d_model(batch_size=24, model_key=0):
+def run_2d_model(batch_size=24):
+    train_generator, validation_generator = None, None
     epochs = 10001
     base_path, morfeus_drive = return_paths()
 
@@ -46,12 +46,12 @@ def run_2d_model(batch_size=24, model_key=0):
                 if contained:
                     print("Already ran this one")
                     continue
-                if model_key != model_key_base:
+                if model_key_base != model_key or train_generator is None:
                     _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                                     cross_validation_id=cv_id,
                                                                                     cache=True, model_key=model_key)
                     model_key_base = model_key
-                model_base = return_model(model_key=run_df.loc[index, 'Model_Type'])
+                model_base = return_model(model_key=model_key)
                 model_parameters = run_df.squeeze().to_dict()
                 for key in model_parameters.keys():
                     if type(model_parameters[key]) is np.int64:
