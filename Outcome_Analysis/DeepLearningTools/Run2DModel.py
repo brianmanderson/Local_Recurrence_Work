@@ -25,7 +25,7 @@ def run_2d_model(batch_size=24):
         model_key_base = -1
         base_df = pd.read_excel(excel_path)
         base_df.set_index('Model_Index')
-        potentially_not_run = base_df.loc[pd.isnull(base_df.cv_id)]
+        potentially_not_run = base_df.loc[pd.isnull(base_df.cv_id) & ~pd.isnull(base_df.min_lr)]
         for index, _ in potentially_not_run.iterrows():
             run_df = base_df.loc[[index]]
             model_key = run_df.loc[index, 'Model_Type']
