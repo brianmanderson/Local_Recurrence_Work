@@ -20,31 +20,37 @@ def run_2d_model(batch_size=24, model_key=0):
     base_path, morfeus_drive = return_paths()
 
     excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
-    compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'cv_id', 'Optimizer', 'Loss')
-    features_list = ('Model_Type', 'step_factor', 'Optimizer', 'min_lr', 'max_lr', 'Loss')
-    if model_key == 3:
-        compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'cv_id', 'blocks_in_dense',
-                        'dense_conv_blocks', 'dense_layers', 'num_dense_connections', 'filters', 'growth_rate',
-                        'Optimizer', 'Loss', 'reduction')
-        features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
-                         'num_dense_connections', 'filters', 'growth_rate', 'Optimizer', 'min_lr', 'max_lr', 'Loss')
     iterations = [0, 1, 2, 3]
     for cv_id in range(5):
-        _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
-                                                                        cross_validation_id=cv_id,
-                                                                        cache=True, model_key=model_key)
+        model_key_base = -1
         base_df = pd.read_excel(excel_path)
         base_df.set_index('Model_Index')
         potentially_not_run = base_df.loc[pd.isnull(base_df.cv_id)]
         for index, _ in potentially_not_run.iterrows():
             run_df = base_df.loc[[index]]
+            model_key = run_df.loc[index, 'Model_Type']
             run_df.at[index, 'cv_id'] = cv_id
+            compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'cv_id', 'Optimizer', 'Loss')
+            features_list = ('Model_Type', 'step_factor', 'Optimizer', 'min_lr', 'max_lr', 'Loss')
+            if model_key == 3:
+                compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'cv_id',
+                                'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
+                                'filters', 'growth_rate',
+                                'Optimizer', 'Loss', 'reduction')
+                features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
+                                 'num_dense_connections', 'filters', 'growth_rate', 'Optimizer', 'min_lr', 'max_lr',
+                                 'Loss')
             for iteration in iterations:
                 run_df.at[index, 'Iteration'] = iteration
                 contained = is_df_within_another(data_frame=base_df, current_run_df=run_df, features_list=compare_list)
                 if contained:
                     print("Already ran this one")
                     continue
+                if model_key != model_key_base:
+                    _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
+                                                                                    cross_validation_id=cv_id,
+                                                                                    cache=True, model_key=model_key)
+                    model_key_base = model_key
                 model_base = return_model(model_key=run_df.loc[index, 'Model_Type'])
                 model_parameters = run_df.squeeze().to_dict()
                 for key in model_parameters.keys():
