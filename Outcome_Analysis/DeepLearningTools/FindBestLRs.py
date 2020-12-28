@@ -33,11 +33,19 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                 current_run_df = pd.DataFrame(new_run)
                                 contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
                                                                  features_list=compare_keys)
-                                if not contained:  # Check it once more with the latest version..
-                                    base_df = pd.read_excel(excel_path)
-                                contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
-                                                                 features_list=compare_keys)
                                 if not contained:
+                                    base_df = pd.read_excel(excel_path)  # Check it once more with the latest version..
+                                    contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
+                                                                     features_list=compare_keys)
+                                if contained:
+                                    compare_df = base_df
+                                    for key in compare_keys:
+                                        compare_df = compare_df.loc[compare_df[key] == current_run_df[key].values[0]]
+                                    model_index = compare_df.Model_Index.values[0]
+                                    if 'epoch_loss' in compare_df.columns:
+                                        if not pd.isnull(compare_df['epoch_loss'][compare_df.index.values[0]]):
+                                            continue  # If it isn't null, it was already done
+                                else:
                                     model_index = 0
                                     while model_index in base_df['Model_Index'].values:
                                         model_index += 1
@@ -45,13 +53,6 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                     current_run_df.set_index('Model_Index')
                                     base_df = base_df.append(current_run_df)
                                     base_df.to_excel(excel_path, index=0)
-                                else:
-                                    for key in compare_keys:
-                                        base_df = base_df.loc[base_df[key] == current_run_df[key].values[0]]
-                                    model_index = base_df.Model_Index.values[0]
-                                    if 'epoch_loss' in base_df.columns:
-                                        if not pd.isnull(base_df['epoch_loss'][base_df.index.values[0]]):
-                                            continue  # If it isn't null, it was already done
                                 new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
                                                             '{}_Iteration'.format(iteration))
                                 if os.path.exists(new_out_path):
