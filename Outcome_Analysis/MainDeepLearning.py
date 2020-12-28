@@ -39,7 +39,7 @@ if add_lr and finished_lr:
 run_the_2D_model = True
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
-    run_2d_model(batch_size=batch_size, model_key=model_key)
+    run_2d_model(batch_size=batch_size)
 
 add_metrics_to_excel = False
 if add_metrics_to_excel:
