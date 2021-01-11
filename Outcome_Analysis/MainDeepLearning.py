@@ -36,7 +36,7 @@ if add_lr and finished_lr:
     excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
     added_lr = plot_lrs(input_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3'))
 
-run_the_2D_model = False
+run_the_2D_model = True
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -47,7 +47,7 @@ if add_metrics_to_excel:
     add_metrics_to_excel()
     xxx = 1
 
-review_models_via_cv = False
+review_models_via_cv = True
 if review_models_via_cv:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Find_Mean_Std_Across_CV_Groups import \
         add_mean_std_across_cv_groups
