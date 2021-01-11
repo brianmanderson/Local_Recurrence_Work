@@ -36,7 +36,7 @@ if add_lr and finished_lr:
     excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
     added_lr = plot_lrs(input_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3'))
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
