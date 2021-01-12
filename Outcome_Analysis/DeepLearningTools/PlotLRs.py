@@ -28,6 +28,7 @@ def plot_lrs(input_path):
                             if pd.isnull(base_df.loc[index, 'min_lr']):
                                 base_df.at[index, 'min_lr'] = out_lr_dict['loss']['min_lr']
                                 base_df.at[index, 'max_lr'] = out_lr_dict['loss']['max_lr']
+                                base_df.at[index, 'run?'] = 1
                                 base_df.to_excel(excel_path, index=0)
             except:
                 xxx = 1
