@@ -13,10 +13,16 @@ def add_metrics_to_excel():
     path_base = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_3')
     excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
     df = pd.read_excel(excel_path)
+    not_filled_df = df.loc[pd.isnull(df['epoch_loss'])]
     df.set_index('Model_Index', inplace=True)
-    iterate_paths_add_to_dictionary(path=path_base, all_dictionaries=base_dictionary, fraction_start=0.5,
-                                    metric_name_and_criteria={'epoch_loss': np.min,
-                                                              'epoch_categorical_accuracy': np.max})
+    for index in not_filled_df.index.values:
+        model_index = not_filled_df['Model_Index'][index]
+        path = os.path.join(path_base, 'Model_Index_{}'.format(model_index))
+        if not os.path.exists(path):
+            continue
+        iterate_paths_add_to_dictionary(path=path, all_dictionaries=base_dictionary, fraction_start=0.5,
+                                        metric_name_and_criteria={'epoch_loss': np.min,
+                                                                  'epoch_categorical_accuracy': np.max})
     out_dictionary = {'Model_Index': [], 'epoch_loss': [], 'epoch_categorical_accuracy': []}
     for key in base_dictionary.keys():
         out_dictionary['Model_Index'].append(int(key.split('_')[-1]))
