@@ -36,7 +36,7 @@ if add_lr and finished_lr:
     excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
     added_lr = plot_lrs(input_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3'))
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -47,7 +47,7 @@ if add_metrics_to_excel:
     add_metrics_to_excel()
     xxx = 1
 
-review_models_via_cv = True
+review_models_via_cv = False
 if review_models_via_cv:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Find_Mean_Std_Across_CV_Groups import \
         add_mean_std_across_cv_groups
@@ -61,9 +61,10 @@ if view_results_with_r:
     import pandas as pd
     import numpy as np
     base_path, morfeus_drive = return_paths()
-    excel_path = os.path.join(morfeus_drive, 'Reduced_Parameters.xlsx')
+    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
     df = pd.read_excel(excel_path)
-    df = df.dropna()
+    # df = df.dropna()
+    df = df[~pd.isnull(df['epoch_loss'])]
     df.epoch_loss = np.where((df.epoch_categorical_accuracy < .51), 1, df.epoch_loss)
     df.epoch_loss = np.where((df.epoch_loss > .6), .6, df.epoch_loss)
     xxx = 1
@@ -71,17 +72,25 @@ if view_results_with_r:
                                                                         labeller='label_both') + geom_point(
         mapping=aes(color='epoch_categorical_accuracy')) + xlab('blocks_in_dense') + ylab('Validation Loss') +
      ggtitle('Validation Loss vs Blocks in Dense, and Dense Convolution Blocks') + scale_colour_gradient(low='blue',
-                                                                                                      high='red'))
+                                                                                                         high='red'))
 
     (ggplot(df) + aes(x='dense_layers', y='epoch_loss') + facet_wrap('blocks_in_dense',
                                                                         labeller='label_both') + geom_point(
-        mapping=aes(color='dense_layers')) + xlab('blocks_in_dense') + ylab('Validation Loss') +
+        mapping=aes(color='epoch_categorical_accuracy')) + xlab('dense_layers') + ylab('Validation Loss') +
      ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
                                                                                                       high='red'))
 
-    (ggplot(data) + aes(x='layers', y='log_epoch_loss') + facet_wrap('conv_lambda', labeller='label_both') + geom_point(
-        mapping=aes(color='num_conv_blocks')) + xlab('Layers') + ylab('Validation Loss') +
-     ggtitle('Validation Loss vs Number of Layers, Filters, and Max Filters') + scale_colour_gradient(low='blue',
+    (ggplot(df) + aes(x='reduction', y='epoch_loss') + facet_wrap('filters', labeller='label_both') + geom_point(
+        mapping=aes(color='epoch_categorical_accuracy')) + xlab('reduction') + ylab('Validation Loss') +
+     ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
+                                                                                                      high='red'))
+    (ggplot(df) + aes(x='num_dense_connections', y='epoch_loss') + geom_point(
+        mapping=aes(color='epoch_categorical_accuracy')) + xlab('dense_connections') + ylab('Validation Loss') +
+     ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
+                                                                                                      high='red'))
+    (ggplot(df) + aes(x='blocks_in_dense', y='epoch_loss') + geom_point(
+        mapping=aes(color='epoch_categorical_accuracy')) + xlab('blocks_in_dense') + ylab('Validation Loss') +
+     ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
                                                                                                       high='red'))
 
 view_gradients = False
