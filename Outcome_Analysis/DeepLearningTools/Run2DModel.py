@@ -20,7 +20,7 @@ def run_2d_model(batch_size=24):
     base_path, morfeus_drive = return_paths()
 
     excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
-    iterations = [0, 1]
+    iterations = [0, 1, 2, 3]
     for cv_id in range(5):
         model_key_base = -1
         base_df = pd.read_excel(excel_path)

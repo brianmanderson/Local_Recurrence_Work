@@ -5,10 +5,13 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import
 import pandas as pd
 
 
-def plot_lrs(input_path):
-    base_path, morfeus_drive = return_paths()
-    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
-    base_df = pd.read_excel(excel_path)
+def plot_lrs(input_path, excel_path=None, add_to_excel=False, base_df=None):
+    if add_to_excel:
+        if excel_path is None:
+            base_path, morfeus_drive = return_paths()
+            excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
+        if base_df is None:
+            base_df = pd.read_excel(excel_path)
     for root, folders, files in os.walk(input_path):
         paths = [os.path.join(root, i) for i in folders if i.find('Iteration') != -1]
         if paths:
