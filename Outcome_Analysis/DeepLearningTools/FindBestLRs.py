@@ -80,7 +80,7 @@ def find_best_lr(batch_size=24, model_key=0):
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
     features_list = ('Model_Type', 'Optimizer', 'step_factor')
-    for iteration in [0, 1]:
+    for iteration in [0, 1, 2]:
         for optimizer in ['SGD']:
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
             if not isinstance(model_base, types.FunctionType):
