@@ -3,26 +3,28 @@ __author__ = 'Brian M Anderson'
 
 
 import os
-from connect import *
 import time, getpass
+from connect import *
 import pandas as pd
 
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    MRN_list, GTV_List, Ablation_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values
+    df = df.loc[df['Has_Liver'] != 1]
+    MRN_list, GTV_List, Ablation_list, Case_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values,\
+                                                   df['Case'].values
     MRN_dictionary = {}
-    for MRN, GTV, Ablation in zip(MRN_list, GTV_List, Ablation_list):
+    for MRN, GTV, Ablation, case in zip(MRN_list, GTV_List, Ablation_list, Case_list):
         if MRN not in MRN_dictionary:
-            MRN_dictionary[MRN] = []
+            MRN_dictionary[MRN] = {case: []}
         for exam in [GTV, Ablation]:
             if type(exam) is not float:
                 exam = str(exam)
                 if exam.startswith('CT'):
                     if exam.find(' ') == -1:
                         exam = 'CT {}'.format(exam.split('CT')[-1])
-                    if exam not in MRN_dictionary[MRN]:
-                        MRN_dictionary[MRN].append(exam)
+                    if exam not in MRN_dictionary[MRN][case]:
+                        MRN_dictionary[MRN][case].append(exam)
     return MRN_dictionary
 
 
@@ -202,25 +204,26 @@ def main():
                 continue
             if class_struct.patient is None:
                 continue
-            for case in class_struct.patient.Cases:
+            for case_number in MRN_dictionary[MRN_key]:
+                case_names = [i.CaseName for i in class_struct.patient.Cases]
+                case_numbers = [i.split(' ')[-1] for i in case_names]
+                case = class_struct.patient.Cases[case_names[case_numbers.index(str(case_number))]]
                 class_struct.case = case
-                for case in class_struct.patient.Cases:
-                    class_struct.case = case
-                    for exam_name in MRN_dictionary[MRN_key]:
-                        try:
-                            exam = case.Examinations[exam_name]
-                        except:
-                            break
-                        if export:
-                            if class_struct.export(exam):
-                                fid = open(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN)), 'w+')
-                                fid.close()
-                        else:
-                            if not class_struct.check_has_contours(exam):
-                                class_struct.import_data(exam)
-                                class_struct.patient.Save()
-                                fid = open(os.path.join(status_path, 'Imported_Predictions_{}.txt'.format(MRN)), 'w+')
-                                fid.close()
+                for exam_name in MRN_dictionary[MRN_key][case_number]:
+                    try:
+                        exam = case.Examinations[exam_name]
+                    except:
+                        continue
+                    if export:
+                        if class_struct.export(exam):
+                            fid = open(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN)), 'w+')
+                            fid.close()
+                    else:
+                        if not class_struct.check_has_contours(exam):
+                            class_struct.import_data(exam)
+                            class_struct.patient.Save()
+                            fid = open(os.path.join(status_path, 'Imported_Predictions_{}.txt'.format(MRN)), 'w+')
+                            fid.close()
 
 
 if __name__ == "__main__":
