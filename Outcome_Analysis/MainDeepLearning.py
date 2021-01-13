@@ -42,7 +42,7 @@ if add_lr and finished_lr:
         plot_lrs(input_path=path, excel_path=excel_path, add_to_excel=True, base_df=df)
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -117,27 +117,39 @@ if view_gradients:
     visualizer.plot_activations()
     xxx = 1
 
-evaluate_model = False
+evaluate_model = True
 if evaluate_model:
     from tensorflow.keras.models import load_model
     import numpy as np
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
-    model_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_Index_140\final_model.h5'
-    model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
+
     # model = return_model(model_key=0)
     # model.load_weights(model_path)
-    _, _, train_generator, val_generator = return_generators(batch_size=8, cross_validation_id=0, model_key=model_key)
-    val_iter = iter(val_generator.data_set)
-    truth = []
-    prediction = []
-    for i in range(len(val_generator)):
-        print(i)
-        x, y = next(val_iter)
-        truth.append(np.argmax(y[0].numpy()))
-        pred = model.predict(x)
-        prediction.append(pred)
+    model_base_path = r'H:\Deeplearning_Recurrence_Work\Models'
+    for cv_id in range(5):
+        print('Running for cv_id: {}'.format(cv_id))
+        pred_path = os.path.join(model_base_path, 'Predictions.npy')
+        truth_path = os.path.join(model_base_path, 'Truth.npy')
+        if not os.path.exists(pred_path):
+            model_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'final_model.h5')
+            model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
+            _, _, val_recur_generator, val_non_recur_generator = return_generators(cross_validation_id=cv_id,
+                                                                                   model_key=model_key,
+                                                                                   return_validation_generators=True)
+            truth = []
+            prediction = []
+            for val_generator in [val_recur_generator, val_non_recur_generator]:
+                val_iter = iter(val_generator.data_set)
+                for i in range(len(val_generator)):
+                    print(i)
+                    x, y = next(val_iter)
+                    truth.append(np.argmax(y[0].numpy()))
+                    pred = model.predict(x)
+                    prediction.append(pred)
+            np.save(file=pred_path, arr=np.squeeze(np.asarray(prediction)))
+            np.save(file=truth_path, arr=np.squeeze(np.asarray(truth)))
     final_pred = np.asarray([np.argmax(i) for i in prediction])
     truth = np.asarray(truth)
     correct = np.sum(truth == final_pred)
