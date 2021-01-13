@@ -7,7 +7,8 @@ from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Modul
 
 def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outputs': ('annotation',)},
                       cross_validation_id=0, cache=False, evaluate=False, model_key=0,
-                      build_keys=('primary_image','secondary_image_deformed', 'primary_liver')):
+                      build_keys=('primary_image','secondary_image_deformed', 'primary_liver'),
+                      return_validation_generators=False):
     """
     :param batch_size:
     :param wanted_keys:
@@ -90,7 +91,8 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         train_generator.compile_data_set(image_processors=train_processors, debug=True)
         if validation_no_recurrence_generator is not None:
             validation_generator.compile_data_set(image_processors=validation_processors, debug=True)
-
+    if return_validation_generators:
+        return base_path, morfeus_drive, validation_recurrence_generator, validation_no_recurrence_generator
     '''
     Now, we want to provide the model with examples of both recurrence and non_recurrence each time
     '''
