@@ -42,7 +42,7 @@ if add_lr and finished_lr:
         plot_lrs(input_path=path, excel_path=excel_path, add_to_excel=True, base_df=df)
     added_lr = True
 
-run_the_2D_model = False
+run_the_2D_model = True
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -116,25 +116,33 @@ if view_gradients:
     visualizer.predict_on_tensor(x)
     visualizer.plot_activations()
     xxx = 1
-
-evaluate_model = True
+"""
+0: 2
+1: 26
+2: 57
+3: 69
+4:
+"""
+evaluate_model = False
 if evaluate_model:
     from tensorflow.keras.models import load_model
     import numpy as np
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators
-    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import mydensenet
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
 
-    # model = return_model(model_key=0)
-    # model.load_weights(model_path)
+
     model_base_path = r'H:\Deeplearning_Recurrence_Work\Models'
     for cv_id in range(5):
         print('Running for cv_id: {}'.format(cv_id))
-        pred_path = os.path.join(model_base_path, 'Predictions.npy')
-        truth_path = os.path.join(model_base_path, 'Truth.npy')
+        pred_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'Predictions.npy')
+        truth_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'Truth.npy')
+        model_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'cp-best.cpkt')
         if not os.path.exists(pred_path):
-            model_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'final_model.h5')
-            model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
+            model = mydensenet(blocks_in_dense=3, dense_layers=2, dense_conv_blocks=2,
+                               filters=16, growth_rate=16, reduction=0.5, num_dense_connections=256)
+            model.load_weights(model_path)
+            # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
             _, _, val_recur_generator, val_non_recur_generator = return_generators(cross_validation_id=cv_id,
                                                                                    model_key=model_key,
                                                                                    return_validation_generators=True)
@@ -150,16 +158,27 @@ if evaluate_model:
                     prediction.append(pred)
             np.save(file=pred_path, arr=np.squeeze(np.asarray(prediction)))
             np.save(file=truth_path, arr=np.squeeze(np.asarray(truth)))
+            break
     final_pred = np.asarray([np.argmax(i) for i in prediction])
     truth = np.asarray(truth)
     correct = np.sum(truth == final_pred)
     total = len(truth)
     missed = total - correct
     accuracy = correct/total * 100
-    correct_recurred = np.sum(truth[::2] == final_pred[::2]) / len(truth[::2]) * 100
-    correct_non_recurred = np.sum(truth[1::2] == final_pred[1::2]) / len(truth[1::2]) * 100
+    correct_recurred = np.sum(truth[truth == 1] == final_pred[truth == 1]) / np.sum(truth == 1) * 100
+    correct_non_recurred = np.sum(truth[truth == 0] == final_pred[truth == 0]) / np.sum(truth == 0) * 100
     print('Guessed {}% correct'.format(accuracy))
     print('Guessed {}% of the recurrence correct'.format(correct_recurred))
     print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
     recurred_truth = truth[0::2]
     xxx = 1
+
+"""
+3 blocks in dense
+2 dense layers
+2 dense convolution blocks
+16 filters
+16 growth rate
+0.5 reduction
+256 connections
+"""

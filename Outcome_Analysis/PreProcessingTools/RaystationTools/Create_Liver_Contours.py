@@ -110,6 +110,8 @@ class create_RT_Structure():
         # self.cleanout_folder(output_path)
         print('Now waiting for RS to be made')
         self.import_RT = False
+        if not os.path.exists(output_path):
+            return None
         self.check_folder(output_path)
         print('Import RT structure!')
         if self.import_RT:
@@ -186,7 +188,7 @@ def main():
     excel_path = os.path.join(path, 'RetroAblation.xlsx')
     MRN_dictionary = return_MRN_dictionary(excel_path)
     class_struct = create_RT_Structure(roi_name='Liver')
-    for export in [True, False]:
+    for export in [False]:
         for MRN_key in MRN_dictionary.keys():
             MRN = str(MRN_key)
             while MRN[0] == '0':  # Drop the 0 from the front
@@ -215,9 +217,9 @@ def main():
                     except:
                         continue
                     if export:
-                        if class_struct.export(exam):
-                            fid = open(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN)), 'w+')
-                            fid.close()
+                        class_struct.export(exam)
+                        fid = open(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN)), 'w+')
+                        fid.close()
                     else:
                         if not class_struct.check_has_contours(exam):
                             class_struct.import_data(exam)
