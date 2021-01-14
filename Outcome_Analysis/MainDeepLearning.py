@@ -21,14 +21,14 @@ if os.path.exists(r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrenc
     base_path, morfeus_drive = return_paths()
     # shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
 batch_size = 16
-find_lr = False
-finished_lr = True
+find_lr = True
+finished_lr = False
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     finished_lr = find_best_lr(batch_size=batch_size, model_key=model_key)
 
 add_lr = False
-added_lr = True
+added_lr = False
 if add_lr and finished_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs, pd
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths, os
@@ -42,7 +42,7 @@ if add_lr and finished_lr:
         plot_lrs(input_path=path, excel_path=excel_path, add_to_excel=True, base_df=df)
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -131,9 +131,9 @@ if evaluate_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import mydensenet
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
 
-
+    aucs = []
     model_base_path = r'H:\Deeplearning_Recurrence_Work\Models'
-    for cv_id in range(5):
+    for cv_id in range(4):
         print('Running for cv_id: {}'.format(cv_id))
         pred_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'Predictions.npy')
         truth_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'Truth.npy')
@@ -151,28 +151,47 @@ if evaluate_model:
             for val_generator in [val_recur_generator, val_non_recur_generator]:
                 val_iter = iter(val_generator.data_set)
                 for i in range(len(val_generator)):
-                    print(i)
+                    # print(i)
                     x, y = next(val_iter)
                     truth.append(np.argmax(y[0].numpy()))
                     pred = model.predict(x)
                     prediction.append(pred)
             np.save(file=pred_path, arr=np.squeeze(np.asarray(prediction)))
             np.save(file=truth_path, arr=np.squeeze(np.asarray(truth)))
-            break
-    final_pred = np.asarray([np.argmax(i) for i in prediction])
-    truth = np.asarray(truth)
-    correct = np.sum(truth == final_pred)
-    total = len(truth)
-    missed = total - correct
-    accuracy = correct/total * 100
-    correct_recurred = np.sum(truth[truth == 1] == final_pred[truth == 1]) / np.sum(truth == 1) * 100
-    correct_non_recurred = np.sum(truth[truth == 0] == final_pred[truth == 0]) / np.sum(truth == 0) * 100
-    print('Guessed {}% correct'.format(accuracy))
-    print('Guessed {}% of the recurrence correct'.format(correct_recurred))
-    print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
-    recurred_truth = truth[0::2]
-    xxx = 1
-
+        else:
+            prediction, truth = np.load(pred_path), np.load(truth_path)
+            # break
+        final_pred = np.asarray([np.argmax(i) for i in prediction])
+        truth = np.asarray(truth)
+        correct = np.sum(truth == final_pred)
+        total = len(truth)
+        missed = total - correct
+        accuracy = correct/total * 100
+        correct_recurred = np.sum(truth[truth == 1] == final_pred[truth == 1]) / np.sum(truth == 1) * 100
+        correct_non_recurred = np.sum(truth[truth == 0] == final_pred[truth == 0]) / np.sum(truth == 0) * 100
+        print('Guessed {}% correct'.format(accuracy))
+        print('Guessed {}% of the recurrence correct'.format(correct_recurred))
+        print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
+        recurred_truth = truth[0::2]
+        xxx = 1
+        plot_roc = True
+        if plot_roc:
+            import matplotlib.pyplot as plt
+            import sklearn.metrics as metrics
+            fpr, tpr, threshold = metrics.roc_curve(truth, prediction[:, 1])
+            roc_auc = metrics.auc(fpr, tpr)
+            aucs.append(roc_auc)
+            plt.title('Receiver Operating Characteristic')
+            plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
+            plt.legend(loc='lower right')
+            plt.plot([0, 1], [0, 1], 'r--')
+            plt.xlim([0, 1])
+            plt.ylim([0, 1])
+            plt.ylabel('True Positive Rate')
+            plt.xlabel('False Positive Rate')
+            plt.show()
+            xxx = 1
+            plt.close()
 """
 3 blocks in dense
 2 dense layers

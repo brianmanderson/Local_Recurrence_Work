@@ -23,12 +23,12 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
             for dense_layers in [2]:
                 for num_dense_connections in [256]:
                     for filters in [16]:
-                        for reduction in [1.0]:
+                        for reduction in [0.5]:
                             for growth_rate in [16]:
                                 new_run = {'blocks_in_dense': [blocks_in_dense], 'dense_conv_blocks': [dense_conv_blocks],
                                            'dense_layers': [dense_layers], 'num_dense_connections': [num_dense_connections],
                                            'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0], 'reduction': [reduction],
-                                           'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['SGD'],
+                                           'step_factor': [10], 'Loss': ['CosineLossLinear'], 'Optimizer': ['SGD'],
                                            'Model_Type': [3]}
                                 current_run_df = pd.DataFrame(new_run)
                                 contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
