@@ -64,11 +64,11 @@ while True:
         recurrence_reader.get_mask()
         # ablation_reader.get_mask()
 
-        registered_mask = register_images_with_dicom_reg(fixed_image=sitk.Cast(recurrence_reader.dicom_handle,
-                                                                               sitk.sitkFloat32),
-                                                         moving_image=ablation_reader.annotation_handle,
-                                                         dicom_registration=reg_file, min_value=0,
-                                                         method=sitk.sitkNearestNeighbor)
+        # registered_mask = register_images_with_dicom_reg(fixed_image=sitk.Cast(recurrence_reader.dicom_handle,
+        #                                                                        sitk.sitkFloat32),
+        #                                                  moving_image=ablation_reader.annotation_handle,
+        #                                                  dicom_registration=reg_file, min_value=0,
+        #                                                  method=sitk.sitkNearestNeighbor)
 
         spacing = recurrence_reader.dicom_handle.GetSpacing()
         # mask = mask[130:160,...]
