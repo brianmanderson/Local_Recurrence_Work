@@ -9,13 +9,12 @@ import pandas as pd
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    MRN_list, primary_list, secondary_list, registered_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values, df['Registered'].values
+    df = df.loc[(pd.isnull(df['Registered'])) & (df['Has_Liver'] == 1)]
+    MRN_list, primary_list, secondary_list, case_list = df['MRN'].values, df['PreExam'].values,\
+                                                        df['Ablation_Exam'].values, df['Case'].values
     MRN_dictionary = {}
-    for MRN, primary, secondary, registered in zip(MRN_list, primary_list, secondary_list, registered_list):
+    for MRN, primary, secondary, case in zip(MRN_list, primary_list, secondary_list, case_list):
         if MRN in MRN_dictionary:
-            continue
-        registered = str(registered)
-        if registered != '1.0':
             continue
         if type(primary) is not float:
             primary = str(primary)
@@ -31,7 +30,7 @@ def return_MRN_dictionary(excel_path):
                     secondary = 'CT {}'.format(secondary.split('CT')[-1])
         else:
             continue
-        MRN_dictionary[MRN] = {'Primary': primary, 'Secondary': secondary}
+        MRN_dictionary[MRN] = {'Primary': primary, 'Secondary': secondary, 'Case_Number': case}
     return MRN_dictionary
 
 
@@ -99,6 +98,15 @@ def is_BC_roi(case, reference_examination_name, target_examination_name, roi_nam
 def create_dir(patient, case, Ref, Ablation, roi_base, rois_in_case):
     for exam_name in [Ref, Ablation]:
         simplify_contours(case, exam_name, roi_base)
+    tag = {'Group': (0x020), 'Element': (0x0052)}
+    frame_of_ref_ref = \
+        case.Examinations[Ref].GetStoredDicomTagValueForVerification(**tag)['Frame of Reference UID']
+    frame_of_ref_sec = \
+        case.Examinations[Ablation].GetStoredDicomTagValueForVerification(**tag)['Frame of Reference UID']
+    if frame_of_ref_ref == frame_of_ref_sec:
+        set_progress('Assigning secondary image to new frame of reference')
+        patient.Save()
+        case.Examinations[Ablation].AssignToNewFrameOfReference()
     use_curvature_adaptation = False
     equal_edge = 3
     smooth_iter = 1
@@ -156,11 +164,12 @@ def main():
     MRN_dictionary = return_MRN_dictionary(excel_path)
     patient_changer = ChangePatient()
     for MRN_key in MRN_dictionary.keys():
-        primary, secondary = MRN_dictionary[MRN_key]['Primary'], MRN_dictionary[MRN_key]['Secondary']
+        primary, secondary, case_num = MRN_dictionary[MRN_key]['Primary'], MRN_dictionary[MRN_key]['Secondary'],\
+                                       MRN_dictionary[MRN_key]['Case_Number']
         MRN = str(MRN_key)
         while MRN[0] == '0':  # Drop the 0 from the front
             MRN = MRN[1:]
-        out_deformation_image = os.path.join(base_export_path, '{}.mhd'.format(MRN))
+        out_deformation_image = os.path.join(base_export_path, '{}_{}_to_{}.mhd'.format(MRN, primary, secondary))
         if os.path.exists(out_deformation_image):
             print('{} was already deformed'.format(MRN))
             continue
@@ -175,6 +184,8 @@ def main():
         print(MRN)
         case = None
         for case in patient.Cases:
+            if int(case.CaseName.split(' ')[-1]) == int(case_num):
+                break
             continue
 
         already_deformed = False
@@ -186,8 +197,8 @@ def main():
                 for name in [new_reg_name, older_name, old_reg_name]:
                     if struct_reg.Name.startswith(new_reg_name) or struct_reg.Name.startswith(name):
                         already_deformed = True
-                        if not os.path.exists(out_deformation_image):
-                            struct_reg.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
+                        # if not os.path.exists(out_deformation_image):
+                        #     struct_reg.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
                         break
         if already_deformed:
             print('{} was already deformed'.format(MRN))
@@ -210,15 +221,16 @@ def main():
             print('{} did not have the contours needed'.format(MRN))
             continue
         create_dir(patient, case, primary, secondary, roi_base, rois_in_case)
+        break
         '''
         Now export the meta image
         '''
-        for top_registration in case.Registrations:
-            for structure_registration in top_registration.StructureRegistrations:
-                if structure_registration.Name.startswith(new_reg_name):
-                    if not os.path.exists(out_deformation_image):
-                        structure_registration.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
-                    break
+        # for top_registration in case.Registrations:
+        #     for structure_registration in top_registration.StructureRegistrations:
+        #         if structure_registration.Name.startswith(new_reg_name):
+        #             if not os.path.exists(out_deformation_image):
+        #                 structure_registration.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
+        #             break
 
 
 if __name__ == '__main__':
