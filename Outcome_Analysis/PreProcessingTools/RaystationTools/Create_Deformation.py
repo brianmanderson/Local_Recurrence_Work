@@ -34,6 +34,23 @@ def return_MRN_dictionary(excel_path):
     return MRN_dictionary
 
 
+def ComputeRigidRegistration(case, RefCT, AblationCT, RoiNames = None):
+    perform_rigid_reg = True
+    for registration in case.Registrations:
+        if not registration.RegistrationSource:
+            continue
+        tempout = [registration.RegistrationSource.FromExamination.Name,
+                   registration.RegistrationSource.ToExamination.Name]
+        if RefCT in tempout and AblationCT in tempout:
+            perform_rigid_reg = False
+
+    if perform_rigid_reg:
+        case.ComputeRigidImageRegistration(FloatingExaminationName=AblationCT, ReferenceExaminationName=RefCT,
+                                           UseOnlyTranslations=False, HighWeightOnBones=False, InitializeImages=True,
+                                           FocusRoisNames=RoiNames, RegistrationName=None)
+    return None
+
+
 class ChangePatient(object):
     def __init__(self):
         self.patient_db = get_current("PatientDB")
@@ -107,6 +124,7 @@ def create_dir(patient, case, Ref, Ablation, roi_base, rois_in_case):
         set_progress('Assigning secondary image to new frame of reference')
         patient.Save()
         case.Examinations[Ablation].AssignToNewFrameOfReference()
+    ComputeRigidRegistration(case=case, RefCT=Ref, AblationCT=Ablation, RoiNames=[roi_base])
     use_curvature_adaptation = False
     equal_edge = 3
     smooth_iter = 1
