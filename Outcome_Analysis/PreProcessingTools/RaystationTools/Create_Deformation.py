@@ -43,12 +43,16 @@ def return_MRN_dictionary(excel_path):
 
 
 def ComputeRigidRegistration(case, RefCT, AblationCT, RoiNames = None):
+    tag = {'Group': (0x020), 'Element': (0x0052)}
     perform_rigid_reg = True
     for registration in case.Registrations:
         if not registration.RegistrationSource:
             continue
-        tempout = [registration.RegistrationSource.FromExamination.Name,
-                   registration.RegistrationSource.ToExamination.Name]
+        to_frame_of_ref = registration.RegistrationSource.FromExamination.EquipmentInfo.FrameOfReference
+        from_frame_of_ref = registration.RegistrationSource.ToExamination.EquipmentInfo.FrameOfReference
+        tempout = [i.Name for i in case.Examinations if
+                   i.GetStoredDicomTagValueForVerification(**tag)['Frame of Reference UID'] == to_frame_of_ref or
+                   i.GetStoredDicomTagValueForVerification(**tag)['Frame of Reference UID'] == from_frame_of_ref]
         if RefCT in tempout and AblationCT in tempout:
             perform_rigid_reg = False
 
