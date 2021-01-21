@@ -192,13 +192,15 @@ def main():
         MRN = str(MRN_key)
         while MRN[0] == '0':  # Drop the 0 from the front
             MRN = MRN[1:]
-        for primary, secondary, case in zip(MRN_dictionary[MRN_key]['Primary'], MRN_dictionary[MRN_key]['Secondary'],
-                                            MRN_dictionary[MRN_key]['Case_Number']):
+        for primary, secondary, case_num in zip(MRN_dictionary[MRN_key]['Primary'],
+                                                MRN_dictionary[MRN_key]['Secondary'],
+                                                MRN_dictionary[MRN_key]['Case_Number']):
 
             out_deformation_image = os.path.join(base_export_path, '{}_{}_to_{}.mhd'.format(MRN, primary, secondary))
             if os.path.exists(out_deformation_image):
                 print('{} was already deformed'.format(MRN))
                 continue
+            patient = None
             if current_MRN != MRN:
                 try:
                     patient = patient_changer.change_patient(MRN)
