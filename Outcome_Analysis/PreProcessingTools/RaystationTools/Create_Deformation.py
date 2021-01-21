@@ -101,8 +101,6 @@ def simplify_contours(case,exam_name,roi_name):
     return None
 
 
-def is_external_roi(case, roi_name):
-
 def is_BC_roi(case, reference_examination_name, target_examination_name, roi_name):
     """
     Checks if an ROI can be used as boundary conditions. i.e., triangle mesh with the same number of vertices in both reference and target image
