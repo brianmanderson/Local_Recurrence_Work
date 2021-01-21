@@ -51,10 +51,27 @@ def ComputeRigidRegistration(case, RefCT, AblationCT, RoiNames = None):
             perform_rigid_reg = False
 
     if perform_rigid_reg:
+        create_external(case=case, ref_ct=RefCT, ablation_ct=AblationCT)
         case.ComputeRigidImageRegistration(FloatingExaminationName=AblationCT, ReferenceExaminationName=RefCT,
                                            UseOnlyTranslations=False, HighWeightOnBones=False, InitializeImages=True,
                                            FocusRoisNames=RoiNames, RegistrationName=None)
     return None
+
+
+def create_external(case, ref_ct, ablation_ct):
+    external_rois = [roi.Name for roi in case.PatientModel.RegionsOfInterest if roi.Type == 'External']
+    if not external_rois:
+        case.PatientModel.CreateRoi(Name="External", Color="Blue", Type="External",
+                                    TissueName=None, RbeCellTypeName=None,
+                                    RoiMaterial=None)
+        external_roi = 'External'
+    else:
+        external_roi = external_rois[0]
+
+    for exam_name in [ref_ct, ablation_ct]:
+        exam = case.Examinations[exam_name]
+        if not case.PatientModel.StructureSets[exam_name].RoiGeometries[external_roi].HasContours():
+            case.PatientModel.RegionsOfInterest[external_roi].CreateExternalGeometry(Examination=exam)
 
 
 class ChangePatient(object):
@@ -83,6 +100,8 @@ def simplify_contours(case,exam_name,roi_name):
                                                                 ResolveOverlappingContours=True)
     return None
 
+
+def is_external_roi(case, roi_name):
 
 def is_BC_roi(case, reference_examination_name, target_examination_name, roi_name):
     """
@@ -131,6 +150,7 @@ def create_dir(patient, case, Ref, Ablation, roi_base, rois_in_case):
         patient.Save()
         case.Examinations[Ablation].AssignToNewFrameOfReference()
     ComputeRigidRegistration(case=case, RefCT=Ref, AblationCT=Ablation, RoiNames=[roi_base])
+    patient.Save()
     use_curvature_adaptation = False
     equal_edge = 3
     smooth_iter = 1
