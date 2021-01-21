@@ -135,7 +135,7 @@ def is_BC_roi(case, reference_examination_name, target_examination_name, roi_nam
     return True
 
 
-def create_dir(patient, case, Ref, Ablation, roi_base, rois_in_case):
+def create_dir(patient, case, Ref, Ablation, roi_base):
     for exam_name in [Ref, Ablation]:
         simplify_contours(case, exam_name, roi_base)
     tag = {'Group': (0x020), 'Element': (0x0052)}
@@ -160,6 +160,9 @@ def create_dir(patient, case, Ref, Ablation, roi_base, rois_in_case):
         BC_roi_name = BC_rois[-1]
     else:
         try:
+            rois_in_case = []
+            for roi in case.PatientModel.RegionsOfInterest:
+                rois_in_case.append(roi.Name)
             smoothing = case.PatientModel.CreateBoundaryConditionsForMorfeus(
                 RoiNames=[roi_base],
                 ReferenceExaminationName=Ref, TargetExaminationName=Ablation,
