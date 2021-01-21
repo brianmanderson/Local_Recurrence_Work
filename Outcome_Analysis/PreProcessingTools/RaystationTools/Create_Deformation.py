@@ -32,6 +32,8 @@ def return_MRN_dictionary(excel_path):
                     secondary = 'CT {}'.format(secondary.split('CT')[-1])
         else:
             continue
+        if not primary.startswith('CT') or not secondary.startswith('CT'):
+            continue
         if primary not in pat_dict['Primary'] or secondary not in pat_dict['Secondary']:
             pat_dict['Primary'].append(primary)
             pat_dict['Secondary'].append(secondary)
@@ -272,7 +274,7 @@ def main():
             if not has_contours:
                 print('{} did not have the contours needed'.format(MRN))
                 continue
-            create_dir(patient, case, primary, secondary, roi_base, rois_in_case)
+            create_dir(patient, case, primary, secondary, roi_base)
             # break
             '''
             Now export the meta image
