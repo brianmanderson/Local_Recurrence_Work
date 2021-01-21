@@ -2,7 +2,7 @@ __author__ = 'Brian M Anderson'
 # Created on 11/20/2020
 
 import os
-# from connect import *
+from connect import *
 import time, getpass
 import pandas as pd
 
