@@ -2,7 +2,7 @@ __author__ = 'Brian M Anderson'
 # Created on 11/20/2020
 
 import os
-from connect import *
+# from connect import *
 import time, getpass
 import pandas as pd
 
@@ -15,7 +15,9 @@ def return_MRN_dictionary(excel_path):
     MRN_dictionary = {}
     for MRN, primary, secondary, case in zip(MRN_list, primary_list, secondary_list, case_list):
         if MRN in MRN_dictionary:
-            continue
+            pat_dict = MRN_dictionary[MRN]
+        else:
+            pat_dict = {'Primary': [], 'Secondary': [], 'Case_Number': []}
         if type(primary) is not float:
             primary = str(primary)
             if primary.startswith('CT'):
@@ -30,7 +32,11 @@ def return_MRN_dictionary(excel_path):
                     secondary = 'CT {}'.format(secondary.split('CT')[-1])
         else:
             continue
-        MRN_dictionary[MRN] = {'Primary': primary, 'Secondary': secondary, 'Case_Number': case}
+        if primary not in pat_dict['Primary'] or secondary not in pat_dict['Secondary']:
+            pat_dict['Primary'].append(primary)
+            pat_dict['Secondary'].append(secondary)
+            pat_dict['Case_Number'].append(case)
+        MRN_dictionary[MRN] = pat_dict
     return MRN_dictionary
 
 
@@ -181,74 +187,79 @@ def main():
 
     MRN_dictionary = return_MRN_dictionary(excel_path)
     patient_changer = ChangePatient()
+    current_MRN = None
     for MRN_key in MRN_dictionary.keys():
-        primary, secondary, case_num = MRN_dictionary[MRN_key]['Primary'], MRN_dictionary[MRN_key]['Secondary'],\
-                                       MRN_dictionary[MRN_key]['Case_Number']
         MRN = str(MRN_key)
         while MRN[0] == '0':  # Drop the 0 from the front
             MRN = MRN[1:]
-        out_deformation_image = os.path.join(base_export_path, '{}_{}_to_{}.mhd'.format(MRN, primary, secondary))
-        if os.path.exists(out_deformation_image):
-            print('{} was already deformed'.format(MRN))
-            continue
-        try:
-            patient = patient_changer.change_patient(MRN)
-        except:
-            continue
-        if patient is None:
-            print('{} failed to load a patient'.format(MRN))
-            continue
+        for primary, secondary, case in zip(MRN_dictionary[MRN_key]['Primary'], MRN_dictionary[MRN_key]['Secondary'],
+                                            MRN_dictionary[MRN_key]['Case_Number']):
 
-        print(MRN)
-        case = None
-        for case in patient.Cases:
-            if int(case.CaseName.split(' ')[-1]) == int(case_num):
-                break
-            continue
-
-        already_deformed = False
-        new_reg_name = 'Deform_BCs_{}_to_{}'.format(primary, secondary)
-        old_reg_name = 'Deformation_Boundary_Conditions_{}_to_{}'.format(primary, secondary)
-        older_name = 'BiomechanicalDefReg_Liver_TriMesh_{}_{}'.format(primary, secondary)
-        for top_registration in case.Registrations:
-            for struct_reg in top_registration.StructureRegistrations:
-                for name in [new_reg_name, older_name, old_reg_name]:
-                    if struct_reg.Name.startswith(new_reg_name) or struct_reg.Name.startswith(name):
-                        already_deformed = True
-                        # if not os.path.exists(out_deformation_image):
-                        #     struct_reg.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
-                        break
-        if already_deformed:
-            print('{} was already deformed'.format(MRN))
-            continue
-        rois_in_case = []
-        for roi in case.PatientModel.RegionsOfInterest:
-            rois_in_case.append(roi.Name)
-        for roi_base in ['Liver', 'Liver_BMA_Program_4']:
-            has_contours = True
-            if roi_base not in rois_in_case:
-                has_contours = False
+            out_deformation_image = os.path.join(base_export_path, '{}_{}_to_{}.mhd'.format(MRN, primary, secondary))
+            if os.path.exists(out_deformation_image):
+                print('{} was already deformed'.format(MRN))
                 continue
-            for exam in [primary, secondary]:
-                if not case.PatientModel.StructureSets[exam].RoiGeometries[roi_base].HasContours():
-                    has_contours = False
+            if current_MRN != MRN:
+                try:
+                    patient = patient_changer.change_patient(MRN)
+                    current_MRN = MRN
+                except:
+                    current_MRN = None
+                    continue
+            if patient is None:
+                print('{} failed to load a patient'.format(MRN))
+                continue
+
+            print(MRN)
+            case = None
+            for case in patient.Cases:
+                if int(case.CaseName.split(' ')[-1]) == int(case_num):
                     break
-            if has_contours:
-                break
-        if not has_contours:
-            print('{} did not have the contours needed'.format(MRN))
-            continue
-        create_dir(patient, case, primary, secondary, roi_base, rois_in_case)
-        break
-        '''
-        Now export the meta image
-        '''
-        # for top_registration in case.Registrations:
-        #     for structure_registration in top_registration.StructureRegistrations:
-        #         if structure_registration.Name.startswith(new_reg_name):
-        #             if not os.path.exists(out_deformation_image):
-        #                 structure_registration.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
-        #             break
+                continue
+
+            already_deformed = False
+            new_reg_name = 'Deform_BCs_{}_to_{}'.format(primary, secondary)
+            old_reg_name = 'Deformation_Boundary_Conditions_{}_to_{}'.format(primary, secondary)
+            older_name = 'BiomechanicalDefReg_Liver_TriMesh_{}_{}'.format(primary, secondary)
+            for top_registration in case.Registrations:
+                for struct_reg in top_registration.StructureRegistrations:
+                    for name in [new_reg_name, older_name, old_reg_name]:
+                        if struct_reg.Name.startswith(new_reg_name) or struct_reg.Name.startswith(name):
+                            already_deformed = True
+                            # if not os.path.exists(out_deformation_image):
+                            #     struct_reg.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
+                            break
+            if already_deformed:
+                print('{} was already deformed'.format(MRN))
+                continue
+            rois_in_case = []
+            for roi in case.PatientModel.RegionsOfInterest:
+                rois_in_case.append(roi.Name)
+            for roi_base in ['Liver', 'Liver_BMA_Program_4']:
+                has_contours = True
+                if roi_base not in rois_in_case:
+                    has_contours = False
+                    continue
+                for exam in [primary, secondary]:
+                    if not case.PatientModel.StructureSets[exam].RoiGeometries[roi_base].HasContours():
+                        has_contours = False
+                        break
+                if has_contours:
+                    break
+            if not has_contours:
+                print('{} did not have the contours needed'.format(MRN))
+                continue
+            create_dir(patient, case, primary, secondary, roi_base, rois_in_case)
+            # break
+            '''
+            Now export the meta image
+            '''
+            # for top_registration in case.Registrations:
+            #     for structure_registration in top_registration.StructureRegistrations:
+            #         if structure_registration.Name.startswith(new_reg_name):
+            #             if not os.path.exists(out_deformation_image):
+            #                 structure_registration.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
+            #             break
 
 
 if __name__ == '__main__':
