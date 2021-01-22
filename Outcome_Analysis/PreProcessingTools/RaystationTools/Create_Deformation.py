@@ -9,7 +9,7 @@ import pandas as pd
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    df = df.loc[(pd.isnull(df['Registered'])) & (df['Has_Liver'] == 1)]
+    df = df.loc[(df['Registered'] == 0) & (df['Has_Liver'] == 1) & (df['Has_Disease_Seg'] == 0)]
     MRN_list, primary_list, secondary_list, case_list = df['MRN'].values, df['PreExam'].values,\
                                                         df['Ablation_Exam'].values, df['Case'].values
     MRN_dictionary = {}
@@ -57,6 +57,7 @@ def ComputeRigidRegistration(case, RefCT, AblationCT, RoiNames = None):
             perform_rigid_reg = False
 
     if perform_rigid_reg:
+        set_progress('Creating external, computing rigid')
         create_external(case=case, ref_ct=RefCT, ablation_ct=AblationCT)
         case.ComputeRigidImageRegistration(FloatingExaminationName=AblationCT, ReferenceExaminationName=RefCT,
                                            UseOnlyTranslations=False, HighWeightOnBones=False, InitializeImages=True,
@@ -166,6 +167,7 @@ def create_dir(patient, case, Ref, Ablation, roi_base):
         BC_roi_name = BC_rois[-1]
     else:
         try:
+            set_progress('Creating BCs')
             rois_in_case = []
             for roi in case.PatientModel.RegionsOfInterest:
                 rois_in_case.append(roi.Name)
@@ -190,6 +192,7 @@ def create_dir(patient, case, Ref, Ablation, roi_base):
     else:
         already_done = False
     if not already_done:
+        set_progress('Running biomechanical model')
         case.PatientModel.CreateBiomechanicalDeformableRegistrationGroup(RegistrationGroupName=BioDef_Name,
                                                                          ReferenceExaminationName=Ref,
                                                                          TargetExaminationNames=[
@@ -255,8 +258,9 @@ def main():
                     for name in [new_reg_name, older_name, old_reg_name]:
                         if struct_reg.Name.startswith(new_reg_name) or struct_reg.Name.startswith(name):
                             already_deformed = True
-                            # if not os.path.exists(out_deformation_image):
-                            #     struct_reg.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
+                            if not os.path.exists(out_deformation_image):
+                                set_progress('Exporting deformed secondary image')
+                                struct_reg.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
                             break
             if already_deformed:
                 print('{} was already deformed'.format(MRN))
@@ -279,16 +283,16 @@ def main():
                 print('{} did not have the contours needed'.format(MRN))
                 continue
             create_dir(patient, case, primary, secondary, roi_base)
-            # break
             '''
             Now export the meta image
             '''
-            # for top_registration in case.Registrations:
-            #     for structure_registration in top_registration.StructureRegistrations:
-            #         if structure_registration.Name.startswith(new_reg_name):
-            #             if not os.path.exists(out_deformation_image):
-            #                 structure_registration.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
-            #             break
+            for top_registration in case.Registrations:
+                for structure_registration in top_registration.StructureRegistrations:
+                    if structure_registration.Name.startswith(new_reg_name):
+                        if not os.path.exists(out_deformation_image):
+                            structure_registration.ExportDeformedMetaImage(MetaFileName=out_deformation_image)
+                            set_progress('Exporting deformed secondary image')
+                        break
 
 
 if __name__ == '__main__':
