@@ -9,20 +9,20 @@ import numpy as np
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    df = df.loc[(df['Registered'] == -1) & (df['Has_Liver'] == 1) & (df['Has_Disease_Seg'] == 0)]
-    MRN_list, GTV_List, Ablation_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values
+    df = df.loc[(df['Registered'] == 0) & (df['Has_Disease_Seg'] == 0)]
+    MRN_list, GTV_List, Ablation_list, Case_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values, df['Case'].values
     MRN_dictionary = {}
-    for MRN, GTV, Ablation in zip(MRN_list, GTV_List, Ablation_list):
+    for MRN, GTV, Ablation, case in zip(MRN_list, GTV_List, Ablation_list, Case_list):
         if MRN not in MRN_dictionary:
-            MRN_dictionary[MRN] = []
+            MRN_dictionary[MRN] = {case: []}
         for exam in [GTV, Ablation]:
             if type(exam) is not float:
                 exam = str(exam)
                 if exam.startswith('CT'):
                     if exam.find(' ') == -1:
                         exam = 'CT {}'.format(exam.split('CT')[-1])
-                    if exam not in MRN_dictionary[MRN]:
-                        MRN_dictionary[MRN].append(exam)
+                    if exam not in MRN_dictionary[MRN][case]:
+                        MRN_dictionary[MRN][case].append(exam)
     return MRN_dictionary
 
 
@@ -67,27 +67,13 @@ def main():
             continue
         if class_struct.patient is None:
             continue
-        case = None
-        for case in class_struct.patient.Cases:
-            continue
-        export_pair = False
-        '''
-        First, check to see if one of the ROIs is present on the pre-treatment exam
-        '''
-        for exam_name in MRN_dictionary[MRN_key]:
-            try:
-                exam = case.Examinations[exam_name]
-            except:
-                continue
-            for roi in ['Retro_GTV', 'Retro_Ablation', 'Retro_GTV_Recurred']:
-                if case.PatientModel.StructureSets[exam.Name].RoiGeometries[roi].HasContours():
-                    '''
-                    If it exists, export the pre-treatment and post-treatment scan
-                    '''
-                    export_pair = True
+        for case_num in MRN_dictionary[MRN]:
+            case = None
+            for case in class_struct.patient.Cases:
+                if int(case.CaseName.split(' ')[-1]) == int(case_num):
                     break
-        if export_pair:
-            for exam_name in MRN_dictionary[MRN_key]:
+                continue
+            for exam_name in MRN_dictionary[MRN_key][case_num]:
                 try:
                     exam = case.Examinations[exam_name]
                 except:
@@ -101,9 +87,9 @@ def main():
                     os.makedirs(export_path)
                 case.ScriptableDicomExport(ExportFolderPath=export_path, Examinations=[exam.Name],
                                            RtStructureSetsForExaminations=[exam.Name])
-        else:
-            fid = open(os.path.join(status_path, '{}_None.txt'.format(MRN)), 'w+')
-            fid.close()
+            else:
+                fid = open(os.path.join(status_path, '{}_None.txt'.format(MRN)), 'w+')
+                fid.close()
 
 
 if __name__ == "__main__":
