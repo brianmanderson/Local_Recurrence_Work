@@ -56,35 +56,41 @@ def main():
 
     MRN_dictionary = return_MRN_dictionary(excel_path)
     class_struct = create_RT_Structure()
+    current_MRN = None
     for MRN_key in MRN_dictionary.keys():
         MRN = str(MRN_key)
         while MRN[0] == '0':  # Drop the 0 from the front
             MRN = MRN[1:]
         print(MRN)
-        try:
-            class_struct.ChangePatient(MRN)
-        except:
-            continue
-        if class_struct.patient is None:
-            continue
-        for case_num in MRN_dictionary[MRN]:
-            case = None
-            for case in class_struct.patient.Cases:
-                if int(case.CaseName.split(' ')[-1]) == int(case_num):
-                    break
-                continue
+        for case_num in MRN_dictionary[MRN_key]:
             for exam_name in MRN_dictionary[MRN_key][case_num]:
-                try:
-                    exam = case.Examinations[exam_name]
-                except:
-                    continue
-                export_path = os.path.join(base_export_path, MRN, case.CaseName, exam_name)
+                export_path = os.path.join(base_export_path, MRN, 'Case {}'.format(case_num), exam_name)
                 if os.path.exists(export_path) and os.listdir(export_path):
                     dicom_files = [i for i in os.listdir(export_path) if i.endswith('.dcm')]
                     if dicom_files:
                         continue  # Path already exists and has files
                 if not os.path.exists(export_path):
                     os.makedirs(export_path)
+                if current_MRN != MRN:
+                    try:
+                        class_struct.ChangePatient(MRN)
+                        current_MRN = MRN
+                    except:
+                        break
+                    if class_struct.patient is None:
+                        break
+                found_case = False
+                case = None
+                for case in class_struct.patient.Cases:
+                    if int(case.CaseName.split(' ')[-1]) == int(case_num):
+                        found_case = True
+                        break
+                if not found_case:
+                    continue
+                try:
+                    exam = case.Examinations[exam_name]
+                except:
+                    continue
                 case.ScriptableDicomExport(ExportFolderPath=export_path, Examinations=[exam.Name],
                                            RtStructureSetsForExaminations=[exam.Name])
             else:
