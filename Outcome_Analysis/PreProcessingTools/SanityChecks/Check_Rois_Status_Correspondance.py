@@ -44,7 +44,7 @@ def return_MRN_dictionary(excel_path):
 def check_rois(excel_file, dicom_export_path):
     MRN_dictionary = return_MRN_dictionary(excel_path=excel_file)
     df = pd.read_excel(excel_file, sheet_name='Refined')
-    df = df.loc[(df['Registered'] == 0) & (df['Has_Liver'] == 1) & (df['Has_Disease_Seg'] == 0)]
+    df = df.loc[(df['Registered'] == 0) & (df['Has_Disease_Seg'] == 0)]
     primary_reader = DicomReaderWriter(Contour_Names=['Retro_GTV', 'Retro_GTV_Recurred'],
                                        require_all_contours=False, arg_max=False, verbose=False)
     stats = sitk.LabelShapeStatisticsImageFilter()
@@ -54,7 +54,9 @@ def check_rois(excel_file, dicom_export_path):
         while MRN[0] == '0':  # Drop the 0 from the front
             MRN = MRN[1:]
         if MRN not in os.listdir(dicom_export_path):
+            print('Did not have {}'.format(MRN))
             continue
+        print('Running {}'.format(MRN))
         for primary, secondary, case_num in zip(MRN_dictionary[MRN_key]['Primary'],
                                                 MRN_dictionary[MRN_key]['Secondary'],
                                                 MRN_dictionary[MRN_key]['Case_Number']):
