@@ -8,7 +8,7 @@ import pandas as pd
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    df = df.loc[(df['Registered'] == 0) & (df['Has_Liver'] == 1) & (df['Has_Disease_Seg'] == 0)]
+    df = df.loc[(df['Registered'] == 0) & (df['Has_Disease_Seg'] == 0)]
     MRN_list, primary_list, secondary_list, case_list = df['MRN'].values, df['PreExam'].values,\
                                                         df['Ablation_Exam'].values, df['Case'].values
     MRN_dictionary = {}
@@ -60,7 +60,7 @@ def check_rois(excel_file, dicom_export_path):
         for primary, secondary, case_num in zip(MRN_dictionary[MRN_key]['Primary'],
                                                 MRN_dictionary[MRN_key]['Secondary'],
                                                 MRN_dictionary[MRN_key]['Case_Number']):
-            pat_df = df.loc[(df['Registered'] == 0) & (df['Has_Liver'] == 1) & (df['Has_Disease_Seg'] == 0) &
+            pat_df = df.loc[(df['Registered'] == 0) & (df['Has_Disease_Seg'] == 0) &
                             (df['MRN'] == MRN_key) & (df['Case'] == int(case_num)) & (df['PreExam'] == primary) &
                             (df['Ablation_Exam'] == secondary)]
             case_path = os.path.join(dicom_export_path, MRN, 'Case {}'.format(case_num))
