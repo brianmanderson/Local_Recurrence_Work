@@ -10,9 +10,11 @@ def create_secondary_deformed_nifti(nifti_export_path, deformation_export_path, 
     patient_df = pd.read_excel(anonymized_sheet)
     deformed_image_files = [i for i in os.listdir(deformation_export_path) if i.endswith('.mhd')]
     for deformed_image in deformed_image_files:
-        MRN = deformed_image.split('.')[0]
-        if MRN in patient_df['MRN'].values:
-            patient_id = int(patient_df['PatientID'].values[list(patient_df['MRN'].values).index(MRN)])
+        MRN, primary, _, secondary = deformed_image.strip('.mhd').split('_')
+        inside_df = patient_df.loc[(patient_df['MRN'] == int(MRN)) & (patient_df['PreExam'] == primary) & (patient_df['PostExam'] == secondary)]
+        assert inside_df.shape[0] <= 1, 'Somethings wrong here..{}'.format(MRN)
+        if inside_df.shape[0] == 1:
+            patient_id = int(inside_df['PatientID'].values[0])
             out_path = os.path.join(nifti_export_path, '{}_Secondary_Deformed.nii'.format(patient_id))
         else:
             continue

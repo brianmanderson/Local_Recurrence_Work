@@ -44,10 +44,10 @@ def return_MRN_dictionary(excel_path):
 def check_liver_volume(excel_file, dicom_export_path):
     MRN_dictionary = return_MRN_dictionary(excel_path=excel_file)
     out_df = {'MRN': [], 'Primary': [], 'Secondary': [], 'Percentage_Change': []}
-    associations = {'Liver_BMA_Program_4': 'Liver'}
-    primary_reader = DicomReaderWriter(Contour_Names=['Liver'], associations=associations,
+    associations = {'Liver_BMA_Program_4': 'Liver_BMA_Program_4'}
+    primary_reader = DicomReaderWriter(Contour_Names=['Liver_BMA_Program_4'], associations=associations,
                                        require_all_contours=False, arg_max=False, verbose=False)
-    secondary_reader = DicomReaderWriter(Contour_Names=['Liver'], associations=associations,
+    secondary_reader = DicomReaderWriter(Contour_Names=['Liver_BMA_Program_4'], associations=associations,
                                          require_all_contours=False, arg_max=False, verbose=False)
     for MRN_key in MRN_dictionary.keys():
         MRN = str(MRN_key)
