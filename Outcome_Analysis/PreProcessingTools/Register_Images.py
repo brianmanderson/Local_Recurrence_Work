@@ -127,7 +127,14 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
                     primary_reader.get_images_and_mask()
                     secondary_reader.get_images_and_mask()
                     fixed_dicom_image = sitk.Cast(primary_reader.dicom_handle, sitk.sitkFloat32)
-                    fixed_dicom_mask = primary_reader.annotation_handle
+                    mask = primary_reader.mask
+                    assert np.max(mask[..., 1] * mask[..., 2]) == 0, 'We have overlapping segmentations at {}' \
+                                                                     ' for {} to {}'.format(MRN, primary, secondary)
+                    fixed_dicom_mask = sitk.GetImageFromArray(np.argmax(mask, axis=-1).astype('int8'))
+                    fixed_dicom_mask.SetSpacing(primary_reader.dicom_handle.GetSpacing())
+                    fixed_dicom_mask.SetOrigin(primary_reader.dicom_handle.GetOrigin())
+                    fixed_dicom_mask.SetDirection(primary_reader.dicom_handle.GetDirection())
+
                     moving_dicom_image = sitk.Cast(secondary_reader.dicom_handle, sitk.sitkFloat32)
                     moving_dicom_mask = sitk.Cast(secondary_reader.annotation_handle, sitk.sitkFloat32)
                     """
@@ -146,8 +153,7 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
                                                                            dicom_registration=dicom_registration,
                                                                            min_value=0, method=sitk.sitkNearestNeighbor)
                     resampled_moving_mask = sitk.GetArrayFromImage(resampled_moving_mask)
-                    # resampled_moving_mask[resampled_moving_mask < 0.5] = 0
-                    # resampled_moving_mask[resampled_moving_mask > 0] = 1
+
                     resampled_moving_mask = sitk.GetImageFromArray(resampled_moving_mask.astype('int8'))
                     resampled_moving_mask.SetOrigin(resampled_moving_image.GetOrigin())
                     resampled_moving_mask.SetDirection(resampled_moving_image.GetDirection())
