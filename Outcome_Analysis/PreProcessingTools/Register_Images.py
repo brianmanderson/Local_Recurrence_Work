@@ -60,7 +60,7 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
             """
             Check and see if we've done this one before
             """
-            within = patient_df.loc[(patient_df['MRN'] == MRN) & (patient_df['PreExam'] == primary) &
+            within = patient_df.loc[(patient_df['MRN'].astype('str') == MRN) & (patient_df['PreExam'] == primary) &
                                     (patient_df['PostExam'] == secondary)]
             add_patient = False
             if within.shape[0] != 0:
@@ -77,7 +77,7 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
             """
             assocations = {'Liver_BMA_Program_4': 'Liver_BMA_Program_4'}
             primary_reader = DicomReaderWriter(Contour_Names=['Retro_GTV', 'Retro_GTV_Recurred', 'Liver_BMA_Program_4'],
-                                               associations=assocations, require_all_contours=False)
+                                               associations=assocations, require_all_contours=False, arg_max=False)
             secondary_reader = DicomReaderWriter(Contour_Names=['Liver_BMA_Program_4'], associations=assocations)  # Only need the liver
             print(MRN)
             case_path = os.path.join(dicom_export_path, MRN, 'Case {}'.format(case_num))
