@@ -9,7 +9,7 @@ import numpy as np
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    df = df.loc[(df['Registered'] == -1) & (df['Has_Disease_Seg'] == 0)]
+    df = df.loc[(df['Registered'] == 0) & (df['Has_Disease_Seg'] == 0)]
     MRN_list, GTV_List, Ablation_list, Case_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values, df['Case'].values
     MRN_dictionary = {}
     for MRN, GTV, Ablation, case in zip(MRN_list, GTV_List, Ablation_list, Case_list):
