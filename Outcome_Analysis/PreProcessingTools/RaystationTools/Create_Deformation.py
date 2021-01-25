@@ -9,7 +9,7 @@ import pandas as pd
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    df = df.loc[(df['Registered'] == 0) & (df['Has_Liver'] == 1) & (df['Has_Disease_Seg'] == 0)]
+    df = df.loc[(df['Registered'] == 0) & (df['Has_Disease_Seg'] == 0)]
     MRN_list, primary_list, secondary_list, case_list = df['MRN'].values, df['PreExam'].values,\
                                                         df['Ablation_Exam'].values, df['Case'].values
     MRN_dictionary = {}
@@ -268,7 +268,7 @@ def main():
             rois_in_case = []
             for roi in case.PatientModel.RegionsOfInterest:
                 rois_in_case.append(roi.Name)
-            for roi_base in ['Liver', 'Liver_BMA_Program_4']:
+            for roi_base in ['Liver_BMA_Program_4']:
                 has_contours = True
                 if roi_base not in rois_in_case:
                     has_contours = False
