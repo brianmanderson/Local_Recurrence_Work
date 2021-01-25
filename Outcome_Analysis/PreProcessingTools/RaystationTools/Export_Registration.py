@@ -12,26 +12,36 @@ import numpy as np
 
 def return_MRN_dictionary(excel_path):
     df = pd.read_excel(excel_path, sheet_name='Refined')
-    MRN_list, GTV_List, Ablation_list, Registered_list = df['MRN'].values, df['PreExam'].values,\
-                                                         df['Ablation_Exam'].values, df['Registered'].values
+    df = df.loc[(df['Registered'] == 0) & (df['Has_Disease_Seg'] == 0)]
+    MRN_list, primary_list, secondary_list, case_list = df['MRN'].values, df['PreExam'].values,\
+                                                        df['Ablation_Exam'].values, df['Case'].values
     MRN_dictionary = {}
-    for MRN, GTV, Ablation, Registered in zip(MRN_list, GTV_List, Ablation_list, Registered_list):
-        Registered = str(Registered)
-        if Registered != '1.0':
+    for MRN, primary, secondary, case in zip(MRN_list, primary_list, secondary_list, case_list):
+        if MRN in MRN_dictionary:
+            pat_dict = MRN_dictionary[MRN]
+        else:
+            pat_dict = {'Primary': [], 'Secondary': [], 'Case_Number': []}
+        if type(primary) is not float:
+            primary = str(primary)
+            if primary.startswith('CT'):
+                if primary.find(' ') == -1:
+                    primary = 'CT {}'.format(primary.split('CT')[-1])
+        else:
             continue
-        add = True
-        if type(GTV) is float or type(Ablation) is float:
-            add = False
-        if add:
-            GTV = str(GTV)
-            if GTV.startswith('CT'):
-                if GTV.find(' ') == -1:
-                    GTV = 'CT {}'.format(GTV.split('CT')[-1])
-            Ablation = str(Ablation)
-            if Ablation.startswith('CT'):
-                if Ablation.find(' ') == -1:
-                    Ablation = 'CT {}'.format(Ablation.split('CT')[-1])
-            MRN_dictionary[MRN] = {'Primary': GTV, 'Secondary': Ablation}
+        if type(secondary) is not float:
+            secondary = str(secondary)
+            if secondary.startswith('CT'):
+                if secondary.find(' ') == -1:
+                    secondary = 'CT {}'.format(secondary.split('CT')[-1])
+        else:
+            continue
+        if not primary.startswith('CT') or not secondary.startswith('CT'):
+            continue
+        if primary not in pat_dict['Primary'] or secondary not in pat_dict['Secondary']:
+            pat_dict['Primary'].append(primary)
+            pat_dict['Secondary'].append(secondary)
+            pat_dict['Case_Number'].append(case)
+        MRN_dictionary[MRN] = pat_dict
     return MRN_dictionary
 
 
@@ -65,60 +75,70 @@ def main():
 
     MRN_dictionary = return_MRN_dictionary(excel_path)
     class_struct = create_RT_Structure()
+    current_mrn = None
     for MRN_key in MRN_dictionary.keys():
-        patient_dictionary = MRN_dictionary[MRN_key]
         MRN = str(MRN_key)
         while MRN[0] == '0':  # Drop the 0 from the front
             MRN = MRN[1:]
         print(MRN)
-        try:
-            class_struct.ChangePatient(MRN)
-        except:
-            continue
-        if class_struct.patient is None:
-            continue
-        case = None
-        for case in class_struct.patient.Cases:
-            continue
-        export_path = os.path.join(base_export_path, MRN, case.CaseName, 'Registration')
-        if os.path.exists(export_path) and os.listdir(export_path):
-            dicom_files = [i for i in os.listdir(export_path) if i.endswith('.dcm') or
-                           i.startswith('SameFrameOfReference')]
-            if dicom_files:
-                print('Already has a registration')
-                continue  # Path already exists and has files
-        primary = patient_dictionary['Primary']
-        secondary = patient_dictionary['Secondary']
-        exam_names = [e.Name for e in case.Examinations]
-        if primary not in exam_names or secondary not in exam_names:
-            continue
-        if case.Examinations[primary].EquipmentInfo.FrameOfReference == \
-                case.Examinations[secondary].EquipmentInfo.FrameOfReference:
-            if not os.path.exists(export_path):
-                os.makedirs(export_path)
-            fid = open(os.path.join(export_path, 'SameFrameOfReference.txt'), 'w+')
-            fid.close()
-        else:
-            for registration in case.Registrations:
-                to_for = registration.ToFrameOfReference
-                # Frame of reference of the "From" examination.
-                from_for = registration.FromFrameOfReference
-                # Find all examinations with frame of reference that matches 'to_for'.
-                to_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == to_for]
-                # Find all examinations with frame of reference that matches 'from_for'.
-                from_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == from_for]
-                if primary in to_examinations and secondary in from_examinations:
-                    if not os.path.exists(export_path):
-                        os.makedirs(export_path)
-                    if registration.RegistrationSource is not None:
-                        exam_names = ["%s:%s" % (registration.RegistrationSource.ToExamination.Name,
-                                                 registration.RegistrationSource.FromExamination.Name)]
-                        case.ScriptableDicomExport(ExportFolderPath=export_path,
-                                                   SpatialRegistrationForExaminations=exam_names,
-                                                   IgnorePreConditionWarnings=True)
-                    else:
-                        fid = open(os.path.join(export_path, 'SameFrameOfReference.txt'), 'w+')
-                        fid.close()
+        for primary, secondary, case_num in zip(MRN_dictionary[MRN_key]['Primary'],
+                                                MRN_dictionary[MRN_key]['Secondary'],
+                                                MRN_dictionary[MRN_key]['Case_Number']):
+            export_path = os.path.join(base_export_path, MRN, 'Case {}'.format(case_num),
+                                       'Registration_{}_to_{}'.format(primary, secondary))
+            if os.path.exists(export_path) and os.listdir(export_path):
+                dicom_files = [i for i in os.listdir(export_path) if i.endswith('.dcm') or
+                               i.startswith('SameFrameOfReference')]
+                if dicom_files:
+                    print('Already done {}'.format(MRN))
+                    continue  # Path already exists and has files
+            if current_mrn != MRN:
+                try:
+                    class_struct.ChangePatient(MRN)
+                    current_mrn = MRN
+                except:
+                    break
+                if class_struct.patient is None:
+                    break
+            found_case = False
+            case = None
+            for case in class_struct.patient.Cases:
+                if int(case.CaseName.split(' ')[-1]) == int(case_num):
+                    found_case = True
+                    break
+            if not found_case:
+                continue
+            exam_names = [e.Name for e in case.Examinations]
+            if primary not in exam_names or secondary not in exam_names:
+                print('Lacking exams')
+                continue
+            if case.Examinations[primary].EquipmentInfo.FrameOfReference == \
+                    case.Examinations[secondary].EquipmentInfo.FrameOfReference:
+                if not os.path.exists(export_path):
+                    os.makedirs(export_path)
+                fid = open(os.path.join(export_path, 'SameFrameOfReference.txt'), 'w+')
+                fid.close()
+            else:
+                for registration in case.Registrations:
+                    to_for = registration.ToFrameOfReference
+                    # Frame of reference of the "From" examination.
+                    from_for = registration.FromFrameOfReference
+                    # Find all examinations with frame of reference that matches 'to_for'.
+                    to_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == to_for]
+                    # Find all examinations with frame of reference that matches 'from_for'.
+                    from_examinations = [e.Name for e in case.Examinations if e.EquipmentInfo.FrameOfReference == from_for]
+                    if primary in to_examinations and secondary in from_examinations:
+                        if not os.path.exists(export_path):
+                            os.makedirs(export_path)
+                        if registration.RegistrationSource is not None:
+                            exam_names = ["%s:%s" % (registration.RegistrationSource.ToExamination.Name,
+                                                     registration.RegistrationSource.FromExamination.Name)]
+                            case.ScriptableDicomExport(ExportFolderPath=export_path,
+                                                       SpatialRegistrationForExaminations=exam_names,
+                                                       IgnorePreConditionWarnings=True)
+                        else:
+                            fid = open(os.path.join(export_path, 'SameFrameOfReference.txt'), 'w+')
+                            fid.close()
 
 
 if __name__ == "__main__":
