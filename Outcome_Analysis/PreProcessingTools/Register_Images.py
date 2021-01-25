@@ -54,6 +54,7 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
         if MRN not in os.listdir(dicom_export_path):
             print('{} not present in collection'.format(MRN))
             continue
+        print('Running {}'.format(MRN))
         for primary, secondary, case_num in zip(MRN_dictionary[MRN_key]['Primary'],
                                                 MRN_dictionary[MRN_key]['Secondary'],
                                                 MRN_dictionary[MRN_key]['Case_Number']):
@@ -80,8 +81,10 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
             """
             assocations = {'Liver_BMA_Program_4': 'Liver_BMA_Program_4'}
             primary_reader = DicomReaderWriter(Contour_Names=['Retro_GTV', 'Retro_GTV_Recurred', 'Liver_BMA_Program_4'],
-                                               associations=assocations, require_all_contours=False, arg_max=False)
-            secondary_reader = DicomReaderWriter(Contour_Names=['Liver_BMA_Program_4'], associations=assocations)  # Only need the liver
+                                               associations=assocations, require_all_contours=False, arg_max=False,
+                                               verbose=False)
+            secondary_reader = DicomReaderWriter(Contour_Names=['Liver_BMA_Program_4'], associations=assocations,
+                                                 verbose=False)  # Only need the liver
             print(MRN)
             case_path = os.path.join(dicom_export_path, MRN, 'Case {}'.format(case_num))
             for root, directories, files in os.walk(case_path):
