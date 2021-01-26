@@ -45,6 +45,8 @@ def return_MRN_dictionary(excel_path):
 
 
 def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, anonymized_sheet):
+    stats = sitk.LabelShapeStatisticsImageFilter()
+    Connected_Component_Filter = sitk.ConnectedComponentImageFilter()
     patient_df = pd.read_excel(anonymized_sheet)
     MRN_dictionary = return_MRN_dictionary(excel_path)
     for MRN_key in MRN_dictionary.keys():
@@ -84,93 +86,109 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
                                                  verbose=False)  # Only need the liver
             print('Running {}'.format(MRN))
             case_path = os.path.join(dicom_export_path, MRN, 'Case {}'.format(case_num))
-            for root, directories, files in os.walk(case_path):
-                if 'Registration_{}_to_{}'.format(primary, secondary) in directories and primary in directories and \
-                        secondary in directories:
-                    '''
-                    Load in our registration
-                    '''
-                    registration_path = os.path.join(root, 'Registration_{}_to_{}'.format(primary, secondary))
-                    registration_file = [os.path.join(registration_path, i) for i in os.listdir(registration_path)][0]
-                    if registration_file.endswith('.dcm'):
-                        dicom_registration = pydicom.read_file(registration_file)
-                    else:
-                        dicom_registration = None
-                    '''
-                    Next, our primary and secondary images, as sitkFloat32
-                    '''
-                    primary_path = os.path.join(root, primary)
-                    secondary_path = os.path.join(root, secondary)
-                    primary_reader.walk_through_folders(primary_path)
+            directories = os.listdir(case_path)
+            if 'Registration_{}_to_{}'.format(primary, secondary) in directories and primary in directories and \
+                    secondary in directories:
+                '''
+                Load in our registration
+                '''
+                registration_path = os.path.join(case_path, 'Registration_{}_to_{}'.format(primary, secondary))
+                registration_file = [os.path.join(registration_path, i) for i in os.listdir(registration_path)][0]
+                if registration_file.endswith('.dcm'):
+                    dicom_registration = pydicom.read_file(registration_file)
+                else:
+                    dicom_registration = None
+                '''
+                Next, our primary and secondary images, as sitkFloat32
+                '''
+                primary_path = os.path.join(case_path, primary)
+                secondary_path = os.path.join(case_path, secondary)
+                primary_reader.walk_through_folders(primary_path)
+                has_liver = False
+                for roi in primary_reader.rois_in_case:
+                    roi = roi.lower()
+                    if roi in primary_reader.associations.keys() and \
+                            primary_reader.associations[roi].lower() == 'liver_bma_program_4':
+                        has_liver = True
+                        break
+                if not has_liver:
+                    print('No liver contours at {}'.format(primary_path))
+                    continue
+                else:
                     has_liver = False
-                    for roi in primary_reader.rois_in_case:
+                    secondary_reader.walk_through_folders(secondary_path)
+                    for roi in secondary_reader.rois_in_case:
                         roi = roi.lower()
-                        if roi in primary_reader.associations.keys() and \
-                                primary_reader.associations[roi].lower() == 'liver_bma_program_4':
+                        if roi in secondary_reader.associations.keys() and \
+                                secondary_reader.associations[roi].lower() == 'liver_bma_program_4':
                             has_liver = True
                             break
-                    if not has_liver:
-                        print('No liver contours at {}'.format(primary_path))
-                        continue
-                    else:
-                        has_liver = False
-                        secondary_reader.walk_through_folders(secondary_path)
-                        for roi in secondary_reader.rois_in_case:
-                            roi = roi.lower()
-                            if roi in secondary_reader.associations.keys() and \
-                                    secondary_reader.associations[roi].lower() == 'liver_bma_program_4':
-                                has_liver = True
-                                break
-                    if not has_liver:
-                        print('No liver contours at {}'.format(secondary_path))
-                        continue
-                    primary_reader.get_images_and_mask()
-                    secondary_reader.get_images_and_mask()
-                    fixed_dicom_image = sitk.Cast(primary_reader.dicom_handle, sitk.sitkFloat32)
-                    mask = primary_reader.mask
-                    assert np.max(mask[..., 1] * mask[..., 2]) == 0, 'We have overlapping segmentations at {}' \
-                                                                     ' for {} to {}'.format(MRN, primary, secondary)
-                    fixed_dicom_mask = sitk.GetImageFromArray(np.argmax(mask, axis=-1).astype('int8'))
-                    fixed_dicom_mask.SetSpacing(primary_reader.dicom_handle.GetSpacing())
-                    fixed_dicom_mask.SetOrigin(primary_reader.dicom_handle.GetOrigin())
-                    fixed_dicom_mask.SetDirection(primary_reader.dicom_handle.GetDirection())
+                if not has_liver:
+                    print('No liver contours at {}'.format(secondary_path))
+                    continue
+                primary_reader.get_images_and_mask()
+                secondary_reader.get_images_and_mask()
+                fixed_dicom_image = sitk.Cast(primary_reader.dicom_handle, sitk.sitkFloat32)
+                mask = primary_reader.mask
+                assert np.max(mask[..., 1] * mask[..., 2]) == 0, 'We have overlapping segmentations at {}' \
+                                                                 ' for {} to {}'.format(MRN, primary, secondary)
+                status_3 = mask[..., 1]
+                num_status_3 = 0
+                if np.max(status_3) > 0:
+                    status_3_image = sitk.GetImageFromArray(status_3.astype('int'))
+                    connected_image = Connected_Component_Filter.Execute(status_3_image)
+                    stats.Execute(connected_image)
+                    num_status_3 = len(stats.GetLabels())
+                status_1_or_2 = mask[..., 2]
+                num_status_1_or_2 = 0
+                if np.max(status_1_or_2) > 0:
+                    status_1_or_2_image = sitk.GetImageFromArray(status_1_or_2.astype('int'))
+                    connected_image = Connected_Component_Filter.Execute(status_1_or_2_image)
+                    stats.Execute(connected_image)
+                    num_status_1_or_2 = len(stats.GetLabels())
 
-                    moving_dicom_image = sitk.Cast(secondary_reader.dicom_handle, sitk.sitkFloat32)
-                    moving_dicom_mask = sitk.Cast(secondary_reader.annotation_handle, sitk.sitkFloat32)
-                    """
-                    Resample the moving image to register with the primary
-                    """
-                    resampled_moving_image = register_images_with_dicom_reg(fixed_image=fixed_dicom_image,
-                                                                            moving_image=moving_dicom_image,
-                                                                            dicom_registration=dicom_registration,
-                                                                            min_value=-1000, method=sitk.sitkLinear)
-                    """
-                    Resample the liver contour as well, we're using a linear sampling here because we often have large 
-                    rotations present.. cut off of 0.5 seemed appropriate
-                    """
-                    resampled_moving_mask = register_images_with_dicom_reg(fixed_image=fixed_dicom_mask,
-                                                                           moving_image=moving_dicom_mask,
-                                                                           dicom_registration=dicom_registration,
-                                                                           min_value=0, method=sitk.sitkNearestNeighbor)
-                    resampled_moving_mask = sitk.GetArrayFromImage(resampled_moving_mask)
+                fixed_dicom_mask = sitk.GetImageFromArray(np.argmax(mask, axis=-1).astype('int8'))
+                fixed_dicom_mask.SetSpacing(primary_reader.dicom_handle.GetSpacing())
+                fixed_dicom_mask.SetOrigin(primary_reader.dicom_handle.GetOrigin())
+                fixed_dicom_mask.SetDirection(primary_reader.dicom_handle.GetDirection())
 
-                    resampled_moving_mask = sitk.GetImageFromArray(resampled_moving_mask.astype('int8'))
-                    resampled_moving_mask.SetOrigin(resampled_moving_image.GetOrigin())
-                    resampled_moving_mask.SetDirection(resampled_moving_image.GetDirection())
-                    resampled_moving_mask.SetSpacing(resampled_moving_image.GetSpacing())
+                moving_dicom_image = sitk.Cast(secondary_reader.dicom_handle, sitk.sitkFloat32)
+                moving_dicom_mask = sitk.Cast(secondary_reader.annotation_handle, sitk.sitkFloat32)
+                """
+                Resample the moving image to register with the primary
+                """
+                resampled_moving_image = register_images_with_dicom_reg(fixed_image=fixed_dicom_image,
+                                                                        moving_image=moving_dicom_image,
+                                                                        dicom_registration=dicom_registration,
+                                                                        min_value=-1000, method=sitk.sitkLinear)
+                """
+                Resample the liver contour as well, we're using a linear sampling here because we often have large 
+                rotations present.. cut off of 0.5 seemed appropriate
+                """
+                resampled_moving_mask = register_images_with_dicom_reg(fixed_image=fixed_dicom_mask,
+                                                                       moving_image=moving_dicom_mask,
+                                                                       dicom_registration=dicom_registration,
+                                                                       min_value=0, method=sitk.sitkNearestNeighbor)
+                resampled_moving_mask = sitk.GetArrayFromImage(resampled_moving_mask)
 
-                    sitk.WriteImage(resampled_moving_image, os.path.join(nifti_export_path,
-                                                                         '{}_Secondary_Dicom.nii'.format(patient_id)))
-                    sitk.WriteImage(resampled_moving_mask, os.path.join(nifti_export_path,
-                                                                        '{}_Secondary_Mask.nii'.format(patient_id)))
-                    sitk.WriteImage(fixed_dicom_image, os.path.join(nifti_export_path,
-                                                                    '{}_Primary_Dicom.nii'.format(patient_id)))
-                    sitk.WriteImage(fixed_dicom_mask, os.path.join(nifti_export_path,
-                                                                   '{}_Primary_Mask.nii'.format(patient_id)))
-                    if add_patient:
-                        new_patient = {'PatientID': patient_id, 'MRN': MRN, 'PreExam': primary, 'PostExam': secondary}
-                        patient_df = patient_df.append(new_patient, ignore_index=True)
-                        patient_df.to_excel(anonymized_sheet, index=0)
+                resampled_moving_mask = sitk.GetImageFromArray(resampled_moving_mask.astype('int8'))
+                resampled_moving_mask.SetOrigin(resampled_moving_image.GetOrigin())
+                resampled_moving_mask.SetDirection(resampled_moving_image.GetDirection())
+                resampled_moving_mask.SetSpacing(resampled_moving_image.GetSpacing())
+
+                sitk.WriteImage(resampled_moving_image, os.path.join(nifti_export_path,
+                                                                     '{}_Secondary_Dicom.nii'.format(patient_id)))
+                sitk.WriteImage(resampled_moving_mask, os.path.join(nifti_export_path,
+                                                                    '{}_Secondary_Mask.nii'.format(patient_id)))
+                sitk.WriteImage(fixed_dicom_image, os.path.join(nifti_export_path,
+                                                                '{}_Primary_Dicom.nii'.format(patient_id)))
+                sitk.WriteImage(fixed_dicom_mask, os.path.join(nifti_export_path,
+                                                               '{}_Primary_Mask.nii'.format(patient_id)))
+                if add_patient:
+                    new_patient = {'PatientID': patient_id, 'MRN': MRN, 'PreExam': primary, 'PostExam': secondary,
+                                   'Recurrence_Sites': num_status_1_or_2, 'Non_Recurrence_Sites': num_status_3}
+                    patient_df = patient_df.append(new_patient, ignore_index=True)
+                    patient_df.to_excel(anonymized_sheet, index=0)
             if not os.path.exists(os.path.join(nifti_export_path, '{}_Primary_Dicom.nii'.format(patient_id))):
                 print('{} was never written!'.format(MRN))
 
