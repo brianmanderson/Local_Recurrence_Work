@@ -6,7 +6,7 @@ from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Modul
 
 
 def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outputs': ('annotation',)},
-                      cross_validation_id=0, cache=False, evaluate=False, model_key=0,
+                      all_training=False, cache=False, evaluate=False, model_key=0,
                       build_keys=('primary_image','secondary_image_deformed', 'primary_liver'),
                       return_validation_generators=False):
     """
@@ -24,21 +24,19 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
     '''
     base_path, morfeus_drive = return_paths()
-    if cross_validation_id != -1:
-        train_recurrence_path = [os.path.join(base_path, 'CrossValidation', 'CV_{}'.format(cross_validation_id),
-                                              'Train_Recurrence')]
-        validation_recurrence_path = [os.path.join(base_path, 'CrossValidation', 'CV_{}'.format(cross_validation_id),
-                                                   'Validation_Recurrence')]
+    if not all_training:
+        train_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'Recurrence')]
+        validation_recurrence_path = [os.path.join(base_path, 'Validation', 'Records', 'Recurrence')]
 
-        train_no_recurrence_path = [os.path.join(base_path, 'CrossValidation', 'CV_{}'.format(cross_validation_id),
-                                                 'Train_No_Recurrence')]
-        validation_no_recurrence_path = [os.path.join(base_path, 'CrossValidation', 'CV_{}'.format(cross_validation_id),
-                                                      'Validation_No_Recurrence')]
+        train_no_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'No_Recurrence')]
+        validation_no_recurrence_path = [os.path.join(base_path, 'Validation', 'Records', 'No_Recurrence')]
     else:
-        train_recurrence_path = [os.path.join(base_path, 'Recurrence')]
+        train_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'Recurrence'),
+                                 os.path.join(base_path, 'Validation', 'Records', 'Recurrence')]
         validation_recurrence_path = None
 
-        train_no_recurrence_path = [os.path.join(base_path, 'No_Recurrence')]
+        train_no_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'No_Recurrence'),
+                                    os.path.join(base_path, 'Validation', 'Records', 'No_Recurrence')]
         validation_no_recurrence_path = None
     train_recurrence_generator = DataGeneratorClass(record_paths=train_recurrence_path)
     train_no_recurence_generator = DataGeneratorClass(record_paths=train_no_recurrence_path)
@@ -61,7 +59,9 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
             ExpandDimension(axis=-1, image_keys=build_keys),
             Cast_Data(key_type_dict={'primary_liver': 'float32'})
         ]
-        train_processors += [Normalize_Images(mean_val=0, std_val=0.5, image_key='primary_image')]
+        # train_processors += [Normalize_Images(mean_val=0, std_val=0.5, image_key='primary_image'),
+        #                      Normalize_Images(mean_val=0, std_val=0.5, image_key='secondary_image_deformed'),
+        #                      Normalize_Images(mean_val=0, std_val=0.5, image_key='secondary_image_deformed')]
         validation_processors = [
             ExpandDimension(axis=-1, image_keys=build_keys),
             Cast_Data(key_type_dict={'primary_liver': 'float32'})
@@ -131,4 +131,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
+    base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
+                                                                                        all_training=False)
+    xxx = 1
     pass
