@@ -6,7 +6,7 @@ from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Modul
 
 
 def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outputs': ('annotation',)},
-                      all_training=False, cache=False, evaluate=False, model_key=0,
+                      all_training=False, cache=False, evaluate=False, model_key=0, cache_add=None,
                       build_keys=('primary_image','secondary_image_deformed', 'primary_liver'),
                       return_validation_generators=False):
     """
@@ -16,9 +16,9 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     :param cache:
     :return: base_path, morfeus_drive, train_generator, validation_generator
     """
-    cache_add = ''
+    if cache:
+        assert cache_add is not None, 'You need to pass something to cache_add if caching'
     if model_key > 2:  # If it's not pretrained, just pass 2 images
-        cache_add = 'not_pretrained'
         build_keys = ('primary_image', 'secondary_image_deformed')
     '''
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
@@ -131,7 +131,6 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
-                                                                                        all_training=False)
-    xxx = 1
+    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
+    #                                                                                     all_training=False)
     pass
