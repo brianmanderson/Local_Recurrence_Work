@@ -16,7 +16,7 @@ import numpy as np
 
 def run_2d_model(batch_size=24):
     train_generator, validation_generator = None, None
-    epochs = 10001
+    epochs = 5001
     base_path, morfeus_drive, excel_path = return_paths()
 
     iterations = [0, 1, 2]
