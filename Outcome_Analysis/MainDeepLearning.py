@@ -34,11 +34,12 @@ if add_lr and finished_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths, os
     base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path)
-    not_filled_df = df.loc[pd.isnull(df['min_lr']) & pd.isnull(df['cv_id'])]
+    not_filled_df = df.loc[(pd.isnull(df['min_lr'])) & (df['run?'] == 0)]
     for index in not_filled_df.index.values:
         model_index = not_filled_df['Model_Index'][index]
         path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3', 'Model_Index_{}'.format(model_index))
-        plot_lrs(input_path=path, excel_path=excel_path, add_to_excel=True, base_df=df)
+        if len(os.listdir(path)) >= 2:
+            plot_lrs(input_path=path, excel_path=excel_path, add_to_excel=True, base_df=df)
     added_lr = True
 
 run_the_2D_model = False
