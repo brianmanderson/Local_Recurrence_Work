@@ -12,7 +12,7 @@ def __init__():
 def return_paths():
     try:
         base = r'\\mymdafiles\di_data1'
-        base_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records'
+        base_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports'
         os.listdir(base_path)
         morfeus_drive = os.path.abspath(
             os.path.join(base, 'Morfeus', 'BMAnderson', 'Modular_Projects', 'Liver_Local_Recurrence_Work',
@@ -23,8 +23,8 @@ def return_paths():
         morfeus_drive = os.path.abspath(
             os.path.join(find_base_dir(), 'Morfeus', 'BMAnderson', 'Modular_Projects', 'Liver_Local_Recurrence_Work',
                          'Predicting_Recurrence'))
-
-    return base_path, morfeus_drive
+    excel_path = os.path.join(morfeus_drive, 'ModelParameters_No_CV.xlsx')
+    return base_path, morfeus_drive, excel_path
 
 
 if __name__ == '__main__':

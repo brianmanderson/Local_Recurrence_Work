@@ -17,9 +17,8 @@ import numpy as np
 def run_2d_model(batch_size=24):
     train_generator, validation_generator = None, None
     epochs = 10001
-    base_path, morfeus_drive = return_paths()
+    base_path, morfeus_drive, excel_path = return_paths()
 
-    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
     iterations = [0, 1, 2]
     for cv_id in range(5):
         model_key_base = -1

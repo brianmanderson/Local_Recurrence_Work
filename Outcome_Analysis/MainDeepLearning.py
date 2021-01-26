@@ -18,22 +18,21 @@ os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
 if os.path.exists(r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence'):
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
     import shutil
-    base_path, morfeus_drive = return_paths()
+    base_path, morfeus_drive, excel_path = return_paths()
     # shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
 batch_size = 16
-find_lr = False
-finished_lr = True
+find_lr = True
+finished_lr = False
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     finished_lr = find_best_lr(batch_size=batch_size, model_key=model_key)
 
 add_lr = False
-added_lr = True
+added_lr = False
 if add_lr and finished_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs, pd
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths, os
-    base_path, morfeus_drive = return_paths()
-    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
+    base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path)
     not_filled_df = df.loc[pd.isnull(df['min_lr']) & pd.isnull(df['cv_id'])]
     for index in not_filled_df.index.values:
@@ -42,7 +41,7 @@ if add_lr and finished_lr:
         plot_lrs(input_path=path, excel_path=excel_path, add_to_excel=True, base_df=df)
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -66,8 +65,7 @@ if view_results_with_r:
     from plotnine import *
     import pandas as pd
     import numpy as np
-    base_path, morfeus_drive = return_paths()
-    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
+    base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path)
     # df = df.dropna()
     df = df[~pd.isnull(df['epoch_loss'])]

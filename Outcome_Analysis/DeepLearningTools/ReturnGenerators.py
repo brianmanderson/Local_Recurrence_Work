@@ -23,7 +23,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     '''
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
     '''
-    base_path, morfeus_drive = return_paths()
+    base_path, morfeus_drive, excel_path = return_paths()
     if not all_training:
         train_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'Recurrence')]
         validation_recurrence_path = [os.path.join(base_path, 'Validation', 'Records', 'Recurrence')]

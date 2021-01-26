@@ -85,10 +85,10 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
     filters = int(filters)
     growth_rate = int(growth_rate)
     reduction = float(reduction)
+    dropout = float(dropout)
     input_shape = (32, 64, 64, 2)
     img_input = layers.Input(shape=input_shape)
     x = img_input
-
     inputs = (img_input,)
 
     x = layers.Conv3D(filters, (3, 7, 7), strides=2, use_bias=False, name='conv1/conv', padding='Same')(x)

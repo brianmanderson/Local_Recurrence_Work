@@ -7,8 +7,7 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import
 
 
 def add_mean_std_across_cv_groups():
-    base_path, morfeus_drive = return_paths()
-    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
+    base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path)
     compare_list = ('Model_Type', 'min_lr', 'max_lr', 'blocks_in_dense',
                     'dense_conv_blocks', 'dense_layers', 'num_dense_connections', 'filters', 'growth_rate')

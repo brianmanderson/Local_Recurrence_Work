@@ -25,62 +25,66 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                     for filters in [16]:
                         for reduction in [0.5]:
                             for growth_rate in [16]:
-                                new_run = {'blocks_in_dense': [blocks_in_dense], 'dense_conv_blocks': [dense_conv_blocks],
-                                           'dense_layers': [dense_layers], 'num_dense_connections': [num_dense_connections],
-                                           'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0], 'reduction': [reduction],
-                                           'step_factor': [10], 'Loss': ['CosineLossLinear'], 'Optimizer': ['SGD'],
-                                           'Model_Type': [3]}
-                                current_run_df = pd.DataFrame(new_run)
-                                contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
-                                                                 features_list=compare_keys)
-                                if not contained:
-                                    base_df = pd.read_excel(excel_path)  # Check it once more with the latest version..
+                                for dropout in [0.0, 0.5]:
+                                    new_run = {'blocks_in_dense': [blocks_in_dense],
+                                               'dense_conv_blocks': [dense_conv_blocks],
+                                               'dense_layers': [dense_layers],
+                                               'num_dense_connections': [num_dense_connections],
+                                               'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0],
+                                               'reduction': [reduction],
+                                               'step_factor': [10], 'Loss': ['CosineLossLinear'], 'Optimizer': ['SGD'],
+                                               'Model_Type': [3], 'Dropout': [dropout]}
+                                    current_run_df = pd.DataFrame(new_run)
                                     contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
                                                                      features_list=compare_keys)
-                                if contained:
-                                    compare_df = base_df
-                                    for key in compare_keys:
-                                        compare_df = compare_df.loc[compare_df[key] == current_run_df[key].values[0]]
-                                    model_index = compare_df.Model_Index.values[0]
-                                    if 'epoch_loss' in compare_df.columns:
-                                        if not pd.isnull(compare_df['epoch_loss'][compare_df.index.values[0]]):
-                                            continue  # If it isn't null, it was already done
-                                else:
-                                    model_index = 0
-                                    while model_index in base_df['Model_Index'].values:
-                                        model_index += 1
-                                    current_run_df.insert(0, column='Model_Index', value=model_index)
-                                    current_run_df.set_index('Model_Index')
-                                    base_df = base_df.append(current_run_df)
-                                    base_df.to_excel(excel_path, index=0)
-                                new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
-                                                            '{}_Iteration'.format(iteration))
-                                if os.path.exists(new_out_path):
-                                    continue
-                                try:
-                                    model = model_base(blocks_in_dense=blocks_in_dense,
-                                                       dense_conv_blocks=dense_conv_blocks, dense_layers=dense_layers,
-                                                       num_dense_connections=num_dense_connections, filters=filters,
-                                                       growth_rate=growth_rate, reduction=reduction)
-                                    return model, new_out_path
-                                except:
-                                    os.makedirs(new_out_path)
-                                    print('Failed to make model')
-                                    continue
+                                    if not contained:
+                                        base_df = pd.read_excel(excel_path)  # Check it once more with the latest version..
+                                        contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
+                                                                         features_list=compare_keys)
+                                    if contained:
+                                        compare_df = base_df
+                                        for key in compare_keys:
+                                            compare_df = compare_df.loc[compare_df[key] == current_run_df[key].values[0]]
+                                        model_index = compare_df.Model_Index.values[0]
+                                        if 'epoch_loss' in compare_df.columns:
+                                            if not pd.isnull(compare_df['epoch_loss'][compare_df.index.values[0]]):
+                                                continue  # If it isn't null, it was already done
+                                    else:
+                                        model_index = 0
+                                        while model_index in base_df['Model_Index'].values:
+                                            model_index += 1
+                                        current_run_df.insert(0, column='Model_Index', value=model_index)
+                                        current_run_df.set_index('Model_Index')
+                                        base_df = base_df.append(current_run_df)
+                                        base_df.to_excel(excel_path, index=0)
+                                    new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
+                                                                '{}_Iteration'.format(iteration))
+                                    if os.path.exists(new_out_path):
+                                        continue
+                                    try:
+                                        model = model_base(blocks_in_dense=blocks_in_dense,
+                                                           dense_conv_blocks=dense_conv_blocks,
+                                                           dense_layers=dense_layers, dropout=dropout,
+                                                           num_dense_connections=num_dense_connections, filters=filters,
+                                                           growth_rate=growth_rate, reduction=reduction)
+                                        return model, new_out_path
+                                    except:
+                                        os.makedirs(new_out_path)
+                                        print('Failed to make model')
+                                        continue
 
     return None, None
 
 
 def find_best_lr(batch_size=24, model_key=0):
-    base_path, morfeus_drive = return_paths()
-    excel_path = os.path.join(morfeus_drive, 'ModelParameters.xlsx')
+    base_path, morfeus_drive, excel_path = return_paths()
     min_lr = 1e-5
     max_lr = 10
     model_base = return_model(model_key=model_key)
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
     features_list = ('Model_Type', 'Optimizer', 'step_factor')
-    for iteration in [0, 1, 2, 3, 4]:
+    for iteration in [0, 1, 2]:
         for optimizer in ['SGD']:
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
             if not isinstance(model_base, types.FunctionType):
@@ -114,7 +118,8 @@ def find_best_lr(batch_size=24, model_key=0):
                     continue
             os.makedirs(out_path)
             _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, model_key=model_key,
-                                                                            cross_validation_id=-1, cache=True)
+                                                                            all_training=True, cache=True,
+                                                                            cache_add='LR_Finder')
             print(out_path)
             k = TensorBoard(log_dir=out_path, profile_batch=0, write_graph=True)
             k.set_model(model)
