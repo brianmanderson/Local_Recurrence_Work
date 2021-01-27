@@ -76,6 +76,9 @@ def run_2d_model(batch_size=24):
             tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
                                             'Model_Index_{}'.format(model_index))
             print('Saving model to {}\ntensorboard at {}'.format(model_path, tensorboard_path))
+            if os.path.exists(tensorboard_path):
+                print('This one was started since loading.. moving on')
+                continue
             hparams = return_hparams(model_parameters, features_list=features_list, excluded_keys=[])
             run_model(model=model, train_generator=train_generator, validation_generator=validation_generator,
                       min_lr=model_parameters['min_lr'], max_lr=model_parameters['max_lr'], model_path=model_path,
