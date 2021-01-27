@@ -25,7 +25,7 @@ def run_2d_model(batch_size=24):
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)]
     indexes_for_not_run = potentially_not_run.index.values
-    np.random.shuffle(indexes_for_not_run)
+    # np.random.shuffle(indexes_for_not_run)
     for index in indexes_for_not_run:
         run_df = base_df.loc[[index]]
         model_key = run_df.loc[index, 'Model_Type']
@@ -52,6 +52,17 @@ def run_2d_model(batch_size=24):
                 if contained:
                     print("Already ran this one")
                     continue
+            model_index = 0
+            tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
+                                            'Model_Index_{}'.format(model_index))
+            while model_index in base_df['Model_Index'].values or os.path.exists(tensorboard_path):
+                model_index += 1
+                tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
+                                                'Model_Index_{}'.format(model_index))
+            os.makedirs(tensorboard_path)
+            run_df.at[index, 'Model_Index'] = model_index
+            base_df = base_df.append(run_df)
+            base_df.to_excel(excel_path, index=0)
             if model_key_base != model_key or train_generator is None:
                 _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, cache_add='main',
                                                                                 cache=True, model_key=model_key)
@@ -73,19 +84,9 @@ def run_2d_model(batch_size=24):
                 model = model_base(**model_parameters)
             else:
                 model = model_base
-            model_index = 0
-            while model_index in base_df['Model_Index'].values:
-                model_index += 1
-            run_df.at[index, 'Model_Index'] = model_index
-            base_df = base_df.append(run_df)
-            base_df.to_excel(excel_path, index=0)
             model_path = os.path.join(base_path, 'Models', 'Model_Index_{}'.format(model_index))
-            tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
-                                            'Model_Index_{}'.format(model_index))
+
             print('Saving model to {}\ntensorboard at {}'.format(model_path, tensorboard_path))
-            if os.path.exists(tensorboard_path):
-                print('This one was started since loading.. moving on')
-                continue
             hparams = return_hparams(model_parameters, features_list=features_list, excluded_keys=[])
             run_model(model=model, train_generator=train_generator, validation_generator=validation_generator,
                       min_lr=model_parameters['min_lr'], max_lr=model_parameters['max_lr'], model_path=model_path,
