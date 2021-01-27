@@ -45,6 +45,13 @@ def run_2d_model(batch_size=24):
             if contained:
                 print("Already ran this one")
                 continue
+            else:
+                base_df = pd.read_excel(excel_path)
+                base_df.set_index('Model_Index')
+                contained = is_df_within_another(data_frame=base_df, current_run_df=run_df, features_list=compare_list)
+                if contained:
+                    print("Already ran this one")
+                    continue
             if model_key_base != model_key or train_generator is None:
                 _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, cache_add='main',
                                                                                 cache=True, model_key=model_key)
