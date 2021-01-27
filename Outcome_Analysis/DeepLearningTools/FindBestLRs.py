@@ -22,7 +22,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
         for dense_conv_blocks in [2, 3]:
             for dense_layers in [1, 3]:
                 for num_dense_connections in [128, 256]:
-                    for filters in [16]:
+                    for filters in [8, 16]:
                         for reduction in [0.5, 1.0]:
                             for growth_rate in [16]:
                                 for dropout in [0.0, 0.5]:
