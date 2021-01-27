@@ -5,7 +5,10 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import
 import pandas as pd
 
 
-def plot_lrs(input_path, excel_path=None, add_to_excel=False, base_df=None):
+def plot_lrs(input_path, excel_path=None, add_to_excel=False, base_df=None, save_path=None):
+    remake_save_path = False
+    if save_path is None:
+        remake_save_path = True
     if add_to_excel:
         if excel_path is None:
             base_path, morfeus_drive = return_paths()
@@ -17,9 +20,10 @@ def plot_lrs(input_path, excel_path=None, add_to_excel=False, base_df=None):
         if paths:
             print(root)
             desc = os.path.split(root)[-1]
-            save_path = os.path.join(input_path, 'Outputs')
+            if remake_save_path:
+                save_path = os.path.join(input_path, 'Outputs')
             try:
-                out_lr_dict = make_plot(paths, metric_list=['loss'], title=desc, save_path=save_path, plot=False,
+                out_lr_dict = make_plot(paths, metric_list=['loss'], title=desc, save_path=save_path, plot=True,
                                         auto_rates=True, beta=0.96, plot_show=False)
                 if excel_path is not None:
                     model_index = int(os.path.split(paths[0])[0].split('Model_Index_')[-1])

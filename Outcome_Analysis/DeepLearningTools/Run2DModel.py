@@ -25,7 +25,7 @@ def run_2d_model(batch_size=24):
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)]
     indexes_for_not_run = potentially_not_run.index.values
-    np.random.shuffle(indexes_for_not_run)
+    # np.random.shuffle(indexes_for_not_run)
     for index in indexes_for_not_run:
         run_df = base_df.loc[[index]]
         model_key = run_df.loc[index, 'Model_Type']
