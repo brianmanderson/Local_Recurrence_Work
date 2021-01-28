@@ -1,6 +1,7 @@
 __author__ = 'Brian M Anderson'
 # Created on 11/24/2020
 import tensorflow as tf
+from tensorflow.keras import metrics
 from Deep_Learning.Base_Deeplearning_Code.Plot_And_Scroll_Images.Plot_Scroll_Images import plot_scroll_Image
 from Deep_Learning.Base_Deeplearning_Code.Finding_Optimization_Parameters.LR_Finder import LearningRateFinder
 from Deep_Learning.Base_Deeplearning_Code.Finding_Optimization_Parameters.HyperParameters import is_df_within_another
@@ -18,21 +19,21 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                     'filters', 'growth_rate', 'step_factor', 'Loss', 'Optimizer', 'reduction', 'Dropout')
     base_df = pd.read_excel(excel_path)
-    for blocks_in_dense in [3, 5]:
-        for dense_conv_blocks in [2, 3]:
-            for dense_layers in [1, 3]:
-                for num_dense_connections in [128, 256]:
-                    for filters in [8, 16]:
-                        for reduction in [0.5, 1.0]:
+    for blocks_in_dense in [3]:
+        for dense_conv_blocks in [3]:
+            for dense_layers in [3]:
+                for num_dense_connections in [128]:
+                    for filters in [16]:
+                        for reduction in [1.0]:
                             for growth_rate in [16]:
-                                for dropout in [0.0, 0.5]:
+                                for dropout in [0.0]:
                                     new_run = {'blocks_in_dense': [blocks_in_dense],
                                                'dense_conv_blocks': [dense_conv_blocks],
                                                'dense_layers': [dense_layers],
                                                'num_dense_connections': [num_dense_connections],
                                                'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0],
                                                'reduction': [reduction],
-                                               'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['SGD'],
+                                               'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['Adam'],
                                                'Model_Type': [3], 'Dropout': [dropout]}
                                     current_run_df = pd.DataFrame(new_run)
                                     contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
@@ -85,13 +86,13 @@ def find_best_lr(batch_size=24, model_key=0):
     loss = CosineLoss()
     features_list = ('Model_Type', 'Optimizer', 'step_factor')
     for iteration in [0, 1]:
-        for optimizer in ['SGD']:
+        for optimizer in ['Adam']:
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
             if not isinstance(model_base, types.FunctionType):
                 model = model_base
                 base_df = pd.read_excel(excel_path)
                 current_run = {'Model_Type': [model_key], 'run?': [0], 'step_factor': [10], 'Loss': ['CosineLoss'],
-                               'Optimizer': ['SGD']}
+                               'Optimizer': ['Adam']}
                 current_run_df = pd.DataFrame(current_run)
                 contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
                                                  features_list=('Model_Type', 'Optimizer', 'step_factor'))
@@ -130,7 +131,17 @@ def find_best_lr(batch_size=24, model_key=0):
                 lr_opt = tf.keras.optimizers.Adam
             elif optimizer == 'RAdam':
                 lr_opt = RectifiedAdam
-            LearningRateFinder(epochs=10, model=model, metrics=['accuracy'],
+            METRICS = [
+                metrics.TruePositives(name='TruePositive'),
+                metrics.FalsePositives(name='FalsePositive'),
+                metrics.TrueNegatives(name='TrueNegative'),
+                metrics.FalseNegatives(name='FalseNegative'),
+                metrics.BinaryAccuracy(name='Accuracy'),
+                metrics.Precision(name='Precision'),
+                metrics.Recall(name='Recall'),
+                metrics.AUC(name='AUC'),
+            ]
+            LearningRateFinder(epochs=10, model=model, metrics=METRICS,
                                out_path=out_path, optimizer=lr_opt,
                                loss=loss,
                                steps_per_epoch=1000,

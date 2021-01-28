@@ -57,6 +57,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
         train_processors = [
             ExpandDimension(axis=-1, image_keys=build_keys),
+            ArgMax(annotation_keys=('annotation',), axis=-1),
             Cast_Data(key_type_dict={'primary_liver': 'float32'})
         ]
         # train_processors += [Normalize_Images(mean_val=0, std_val=0.5, image_key='primary_image'),
@@ -64,6 +65,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         #                      Normalize_Images(mean_val=0, std_val=0.5, image_key='secondary_image_deformed')]
         validation_processors = [
             ExpandDimension(axis=-1, image_keys=build_keys),
+            ArgMax(annotation_keys=('annotation',), axis=-1),
             Cast_Data(key_type_dict={'primary_liver': 'float32'})
         ]
         if cache:
@@ -131,6 +133,6 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
-                                                                                        all_training=False)
+    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
+    #                                                                                     all_training=False)
     pass
