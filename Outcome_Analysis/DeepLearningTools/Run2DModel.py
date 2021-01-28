@@ -20,7 +20,7 @@ def run_2d_model(batch_size=24):
     epochs = 5001
     base_path, morfeus_drive, excel_path = return_paths()
 
-    iterations = [0, 1, 2]
+    iterations = [0]
     model_key_base = -1
     base_df = pd.read_excel(excel_path)
     base_df.set_index('Model_Index')
