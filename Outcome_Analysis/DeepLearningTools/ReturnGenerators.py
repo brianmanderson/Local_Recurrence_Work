@@ -54,7 +54,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         validation_processors += [{'batch': 1}]
         validation_processors += [{'repeat'}]
 
-        validation_generator.compile_data_set(image_processors=validation_processors, debug=True)
+        validation_generator.compile_data_set(image_processors=validation_processors, debug=False)
         if return_validation_generators:
             return base_path, morfeus_drive, validation_generator
 
@@ -78,7 +78,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         if batch_size != 0:
             train_processors += [{'batch': batch_size//2}]
         train_processors += [{'repeat'}]
-        train_generator.compile_data_set(image_processors=train_processors, debug=True)
+        train_generator.compile_data_set(image_processors=train_processors, debug=False)
 
     '''
     Now, we want to provide the model with examples of both recurrence and non_recurrence each time
@@ -110,6 +110,6 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
-                                                                                        all_training=False)
+    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
+    #                                                                                     all_training=False)
     pass
