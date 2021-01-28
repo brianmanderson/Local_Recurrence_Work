@@ -112,7 +112,7 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
         x = layers.Dense(num_dense_connections, activation='selu', kernel_regularizer=regularizers.l2(0.001))(x)
         if dropout != 0.0:
             x = layers.Dropout(dropout)(x)
-    x = layers.Dense(1, activation='sigmoid', name='prediction', dtype='float32', bias_initializer=output_bias)(x)
+    x = layers.Dense(2, activation='softmax', name='prediction', dtype='float32', bias_initializer=output_bias)(x)
     model = Model(inputs=inputs, outputs=(x,), name='my_3d_densenet')
     return model
 
