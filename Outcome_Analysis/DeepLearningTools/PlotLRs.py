@@ -23,7 +23,7 @@ def plot_lrs(input_path, excel_path=None, add_to_excel=False, base_df=None, save
             if remake_save_path:
                 save_path = os.path.join(input_path, 'Outputs')
             try:
-                out_lr_dict = make_plot(paths, metric_list=['loss'], title=desc, save_path=save_path, plot=True,
+                out_lr_dict = make_plot(paths, metric_list=['AUC', 'loss'], title=desc, save_path=save_path, plot=True,
                                         auto_rates=True, beta=0.96, plot_show=False)
                 if excel_path is not None:
                     model_index = int(os.path.split(paths[0])[0].split('Model_Index_')[-1])
@@ -33,8 +33,8 @@ def plot_lrs(input_path, excel_path=None, add_to_excel=False, base_df=None, save
                         if pd.isnull(base_df.loc[index, 'min_lr']):
                             base_df = pd.read_excel(excel_path)
                             if pd.isnull(base_df.loc[index, 'min_lr']):
-                                base_df.at[index, 'min_lr'] = out_lr_dict['loss']['min_lr']
-                                base_df.at[index, 'max_lr'] = out_lr_dict['loss']['max_lr']
+                                base_df.at[index, 'min_lr'] = out_lr_dict['AUC']['min_lr']
+                                base_df.at[index, 'max_lr'] = out_lr_dict['AUC']['max_lr']
                                 base_df.at[index, 'run?'] = 1
                                 base_df.to_excel(excel_path, index=0)
             except:

@@ -23,7 +23,8 @@ def run_2d_model(batch_size=24):
     model_key_base = -1
     base_df = pd.read_excel(excel_path)
     base_df.set_index('Model_Index')
-    potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)]
+    potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr) &
+                                      (base_df['Loss'] == 'BinaryCrossEntropy')]
     indexes_for_not_run = potentially_not_run.index.values
     np.random.shuffle(indexes_for_not_run)
     for index in indexes_for_not_run:
@@ -75,12 +76,13 @@ def run_2d_model(batch_size=24):
                     model_parameters[key] = int(model_parameters[key])
                 elif type(model_parameters[key]) is np.float64:
                     model_parameters[key] = float(model_parameters[key])
-            opt = tf.keras.optimizers.SGD()
-            loss = tf.keras.losses.CategoricalCrossentropy()
+            loss = tf.keras.losses.BinaryCrossentropy()
             if model_parameters['Loss'].startswith('CosineLoss'):
                 loss = CosineLoss()
             if model_parameters['Optimizer'] == 'SGD':
                 opt = tf.keras.optimizers.SGD()
+            elif model_parameters['Optimizer'] == 'Adam':
+                opt = tf.keras.optimizers.Adam()
             if isinstance(model_base, types.FunctionType):
                 model = model_base(**model_parameters)
             else:
