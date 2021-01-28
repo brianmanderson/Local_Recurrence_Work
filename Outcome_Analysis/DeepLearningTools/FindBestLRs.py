@@ -33,7 +33,8 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                                'num_dense_connections': [num_dense_connections],
                                                'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0],
                                                'reduction': [reduction],
-                                               'step_factor': [10], 'Loss': ['CosineLoss'], 'Optimizer': ['Adam'],
+                                               'step_factor': [10], 'Loss': ['BinaryCrossEntropy'],
+                                               'Optimizer': ['Adam'],
                                                'Model_Type': [3], 'Dropout': [dropout]}
                                     current_run_df = pd.DataFrame(new_run)
                                     contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
