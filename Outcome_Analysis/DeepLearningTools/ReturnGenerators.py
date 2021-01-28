@@ -24,19 +24,13 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
     '''
     base_path, morfeus_drive, excel_path = return_paths()
-    if not all_training:
-        train_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'Recurrence')]
-        validation_recurrence_path = [os.path.join(base_path, 'Validation', 'Records', 'Recurrence')]
+    train_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'Recurrence')]
+    validation_recurrence_path = [os.path.join(base_path, 'Validation', 'Records', 'Recurrence')]
 
-        train_no_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'No_Recurrence')]
-        validation_no_recurrence_path = [os.path.join(base_path, 'Validation', 'Records', 'No_Recurrence')]
-    else:
-        train_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'Recurrence'),
-                                 os.path.join(base_path, 'Validation', 'Records', 'Recurrence')]
+    train_no_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'No_Recurrence')]
+    validation_no_recurrence_path = [os.path.join(base_path, 'Validation', 'Records', 'No_Recurrence')]
+    if all_training:
         validation_recurrence_path = None
-
-        train_no_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'No_Recurrence'),
-                                    os.path.join(base_path, 'Validation', 'Records', 'No_Recurrence')]
         validation_no_recurrence_path = None
     train_recurrence_generator = DataGeneratorClass(record_paths=train_recurrence_path)
     train_no_recurence_generator = DataGeneratorClass(record_paths=train_no_recurrence_path)
