@@ -25,70 +25,61 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     '''
     base_path, morfeus_drive, excel_path = return_paths()
     train_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'Recurrence')]
-    validation_recurrence_path = [os.path.join(base_path, 'Validation', 'Records', 'Recurrence')]
+    validation_path = [os.path.join(base_path, 'Validation', 'Records', 'Recurrence'),
+                       os.path.join(base_path, 'Validation', 'Records', 'No_Recurrence')]
 
     train_no_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'No_Recurrence')]
-    validation_no_recurrence_path = [os.path.join(base_path, 'Validation', 'Records', 'No_Recurrence')]
     if all_training:
-        validation_recurrence_path = None
-        validation_no_recurrence_path = None
+        validation_path = None
     train_recurrence_generator = DataGeneratorClass(record_paths=train_recurrence_path)
     train_no_recurence_generator = DataGeneratorClass(record_paths=train_no_recurrence_path)
 
-    validation_recurrence_generator, validation_no_recurrence_generator = None, None
-    if validation_recurrence_path is not None:
-        validation_recurrence_generator = DataGeneratorClass(record_paths=validation_recurrence_path)
-        validation_no_recurrence_generator = DataGeneratorClass(record_paths=validation_no_recurrence_path)
-
-    for train_generator, validation_generator, train_path, val_path in zip([train_recurrence_generator,
-                                                                            train_no_recurence_generator],
-                                                                           [validation_recurrence_generator,
-                                                                            validation_no_recurrence_generator],
-                                                                           [train_recurrence_path,
-                                                                            train_no_recurrence_path],
-                                                                           [validation_recurrence_path,
-                                                                            validation_no_recurrence_path]):
-
-        train_processors = [
-            ExpandDimension(axis=-1, image_keys=build_keys),
-            ArgMax(annotation_keys=('annotation',), axis=-1),
-            Cast_Data(key_type_dict={'primary_liver': 'float32'})
-        ]
-        # train_processors += [Normalize_Images(mean_val=0, std_val=0.5, image_key='primary_image'),
-        #                      Normalize_Images(mean_val=0, std_val=0.5, image_key='secondary_image_deformed'),
-        #                      Normalize_Images(mean_val=0, std_val=0.5, image_key='secondary_image_deformed')]
+    validation_generator = None
+    if validation_path is not None:
+        validation_generator = DataGeneratorClass(record_paths=validation_path)
         validation_processors = [
             ExpandDimension(axis=-1, image_keys=build_keys),
-            ArgMax(annotation_keys=('annotation',), axis=-1),
+            # ArgMax(annotation_keys=('annotation',), axis=-1),
+            Cast_Data(key_type_dict={'primary_liver': 'float32'})
+        ]
+        if cache:
+            validation_processors += [
+                {'cache': os.path.join(validation_path[0], 'cache{}'.format(cache_add))}
+            ]
+
+        validation_processors += [
+            CombineKeys(image_keys=build_keys, output_key='combined'),
+            Return_Outputs(wanted_keys)]
+
+        validation_processors += [{'batch': 1}]
+        validation_processors += [{'repeat'}]
+
+        validation_generator.compile_data_set(image_processors=validation_processors, debug=True)
+        if return_validation_generators:
+            return base_path, morfeus_drive, validation_generator
+
+    for train_generator, train_path in zip([train_recurrence_generator, train_no_recurence_generator],
+                                           [train_no_recurrence_path, train_recurrence_path]):
+        train_processors = [
+            ExpandDimension(axis=-1, image_keys=build_keys),
+            # ArgMax(annotation_keys=('annotation',), axis=-1),
             Cast_Data(key_type_dict={'primary_liver': 'float32'})
         ]
         if cache:
             train_processors += [
                 {'cache': os.path.join(train_path[0], 'cache{}'.format(cache_add))}
             ]
-            if validation_recurrence_path is not None:
-                validation_processors += [
-                    {'cache': os.path.join(val_path[0], 'cache{}'.format(cache_add))}
-                ]
         train_processors += [
             CombineKeys(image_keys=build_keys, output_key='combined'),
-            Flip_Images(keys=('combined',), flip_lr=True, flip_up_down=True, flip_3D_together=True, flip_z=True),
+            # Flip_Images(keys=('combined',), flip_lr=True, flip_up_down=True, flip_3D_together=True, flip_z=True),
             Return_Outputs(wanted_keys),
             {'shuffle': len(train_generator)}
         ]
-        validation_processors += [
-            CombineKeys(image_keys=build_keys, output_key='combined'),
-            Return_Outputs(wanted_keys)]
         if batch_size != 0:
             train_processors += [{'batch': batch_size//2}]
-            validation_processors += [{'batch': 1}]
         train_processors += [{'repeat'}]
-        validation_processors += [{'repeat'}]
         train_generator.compile_data_set(image_processors=train_processors, debug=True)
-        if validation_no_recurrence_generator is not None:
-            validation_generator.compile_data_set(image_processors=validation_processors, debug=True)
-    if return_validation_generators:
-        return base_path, morfeus_drive, validation_recurrence_generator, validation_no_recurrence_generator
+
     '''
     Now, we want to provide the model with examples of both recurrence and non_recurrence each time
     '''
@@ -98,15 +89,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     train_generator = train_recurrence_generator
     train_generator.data_set = train_dataset
     train_generator.total_examples += train_no_recurence_generator.total_examples
-    validation_generator = None
-    if validation_recurrence_generator is not None:
-        validation_generator = validation_recurrence_generator
-        validation_dataset = tf.data.Dataset.zip((validation_recurrence_generator.data_set,
-                                                  validation_no_recurrence_generator.data_set)).map(
-            lambda x, y: ((tf.concat((x[0][0], y[0][0]), axis=0),), (tf.concat((x[1][0], y[1][0]), axis=0),)),
-            num_parallel_calls=tf.data.experimental.AUTOTUNE)
-        validation_generator.data_set = validation_dataset.unbatch().batch(1)
-        validation_generator.total_examples += validation_no_recurrence_generator.total_examples
+
     generators = [validation_generator]
     # x, y = next(iter(train_generator.data_set))
     # print(tf.reduce_min(x[0]))
@@ -127,6 +110,6 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
-    #                                                                                     all_training=False)
+    base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
+                                                                                        all_training=False)
     pass
