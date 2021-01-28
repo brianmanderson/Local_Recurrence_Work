@@ -33,7 +33,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                                'num_dense_connections': [num_dense_connections],
                                                'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0],
                                                'reduction': [reduction],
-                                               'step_factor': [10], 'Loss': ['BinaryCrossEntropy'],
+                                               'step_factor': [10], 'Loss': ['CosineLoss'],
                                                'Optimizer': ['Adam'],
                                                'Model_Type': [3], 'Dropout': [dropout]}
                                     current_run_df = pd.DataFrame(new_run)
@@ -85,7 +85,6 @@ def find_best_lr(batch_size=24, model_key=0):
     model_base = return_model(model_key=model_key)
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
-    loss = tf.keras.losses.BinaryCrossentropy()
     features_list = ('Model_Type', 'Optimizer', 'step_factor')
     for iteration in [0, 1]:
         for optimizer in ['Adam']:
@@ -122,7 +121,7 @@ def find_best_lr(batch_size=24, model_key=0):
                     continue
             os.makedirs(out_path)
             _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, model_key=model_key,
-                                                                            all_training=True, cache=True,
+                                                                            all_training=True, cache=False,
                                                                             cache_add='LR_Finder')
             print(out_path)
             k = TensorBoard(log_dir=out_path, profile_batch=0, write_graph=True)
@@ -139,7 +138,7 @@ def find_best_lr(batch_size=24, model_key=0):
                 metrics.FalsePositives(name='FalsePositive'),
                 metrics.TrueNegatives(name='TrueNegative'),
                 metrics.FalseNegatives(name='FalseNegative'),
-                metrics.BinaryAccuracy(name='Accuracy'),
+                metrics.CategoricalAccuracy(name='Accuracy'),
                 metrics.Precision(name='Precision'),
                 metrics.Recall(name='Recall'),
                 metrics.AUC(name='AUC'),
