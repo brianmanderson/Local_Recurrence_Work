@@ -79,8 +79,8 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
 
 def find_best_lr(batch_size=24, model_key=0):
     base_path, morfeus_drive, excel_path = return_paths()
-    min_lr = 1e-5
-    max_lr = 10
+    min_lr = 1e-7
+    max_lr = 1
     model_base = return_model(model_key=model_key)
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
