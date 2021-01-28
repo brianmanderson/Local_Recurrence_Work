@@ -3,6 +3,7 @@ __author__ = 'Brian M Anderson'
 import tensorflow as tf
 from Deep_Learning.Base_Deeplearning_Code.Cyclical_Learning_Rate.clr_callback_TF2 import SGDRScheduler
 from Deep_Learning.Base_Deeplearning_Code.Callbacks.TF2_Callbacks import Add_Images_and_LR
+from tensorflow.keras import metrics
 import os
 from tensorboard.plugins.hparams.keras import Callback
 
@@ -27,9 +28,18 @@ def run_model(model, train_generator, validation_generator, min_lr, max_lr, mode
         hp_callback = Callback(tensorboard_path, hparams=hparams, trial_id='Trial_ID:{}'.format(trial_id))
         callbacks += [hp_callback]
     callbacks += [checkpoint]
+    METRICS = [
+        metrics.TruePositives(name='TruePositive'),
+        metrics.FalsePositives(name='FalsePositive'),
+        metrics.TrueNegatives(name='TrueNegative'),
+        metrics.FalseNegatives(name='FalseNegative'),
+        metrics.BinaryAccuracy(name='Accuracy'),
+        metrics.Precision(name='Precision'),
+        metrics.Recall(name='Recall'),
+        metrics.AUC(name='AUC'),
+    ]
     print('\n\n\n\nRunning {}\n\n\n\n'.format(tensorboard_path))
-    model.compile(optimizer, loss=loss,
-                  metrics=[tf.keras.metrics.CategoricalAccuracy()])
+    model.compile(optimizer, loss=loss, metrics=METRICS)
     model.fit(train_generator.data_set, epochs=epochs, steps_per_epoch=len(train_generator),
               validation_data=validation_generator.data_set, validation_steps=len(validation_generator),
               validation_freq=5, callbacks=callbacks)
