@@ -84,6 +84,7 @@ def find_best_lr(batch_size=24, model_key=0):
     model_base = return_model(model_key=model_key)
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
+    loss = tf.keras.losses.BinaryCrossentropy()
     features_list = ('Model_Type', 'Optimizer', 'step_factor')
     for iteration in [0, 1]:
         for optimizer in ['Adam']:
@@ -91,7 +92,8 @@ def find_best_lr(batch_size=24, model_key=0):
             if not isinstance(model_base, types.FunctionType):
                 model = model_base
                 base_df = pd.read_excel(excel_path)
-                current_run = {'Model_Type': [model_key], 'run?': [0], 'step_factor': [10], 'Loss': ['CosineLoss'],
+                current_run = {'Model_Type': [model_key], 'run?': [0], 'step_factor': [10],
+                               'Loss': ['BinaryCrossEntropy'],
                                'Optimizer': ['Adam']}
                 current_run_df = pd.DataFrame(current_run)
                 contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
