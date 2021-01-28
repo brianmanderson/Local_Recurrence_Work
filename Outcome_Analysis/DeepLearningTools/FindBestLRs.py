@@ -79,6 +79,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
 
 
 def find_best_lr(batch_size=24, model_key=0):
+    tf.random.set_seed(3141)
     base_path, morfeus_drive, excel_path = return_paths()
     min_lr = 1e-7
     max_lr = 1
