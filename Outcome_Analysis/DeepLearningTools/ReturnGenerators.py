@@ -58,28 +58,42 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         if return_validation_generators:
             return base_path, morfeus_drive, validation_generator
 
-    for train_generator, train_path in zip([train_recurrence_generator, train_no_recurence_generator],
-                                           [train_no_recurrence_path, train_recurrence_path]):
-        train_processors = [
-            ExpandDimension(axis=-1, image_keys=build_keys),
-            # ArgMax(annotation_keys=('annotation',), axis=-1),
-            Cast_Data(key_type_dict={'primary_liver': 'float32'})
+    train_processors_recurr = [
+        ExpandDimension(axis=-1, image_keys=build_keys),
+        # ArgMax(annotation_keys=('annotation',), axis=-1),
+        Cast_Data(key_type_dict={'primary_liver': 'float32'})
+    ]
+    if cache:
+        train_processors_recurr += [
+            {'cache': os.path.join(train_recurrence_path[0], 'cache{}'.format(cache_add))}
         ]
-        if cache:
-            train_processors += [
-                {'cache': os.path.join(train_path[0], 'cache{}'.format(cache_add))}
-            ]
-        train_processors += [
-            CombineKeys(image_keys=build_keys, output_key='combined'),
-            # Flip_Images(keys=('combined',), flip_lr=True, flip_up_down=True, flip_3D_together=True, flip_z=True),
-            Return_Outputs(wanted_keys),
-            {'shuffle': len(train_generator)}
-        ]
-        if batch_size != 0:
-            train_processors += [{'batch': batch_size//2}]
-        train_processors += [{'repeat'}]
-        train_generator.compile_data_set(image_processors=train_processors, debug=False)
+    train_processors_recurr += [
+        CombineKeys(image_keys=build_keys, output_key='combined'),
+        Return_Outputs(wanted_keys),
+        {'shuffle': len(train_recurrence_generator)},
+        {'batch': batch_size // 2},
+        {'repeat'}
+    ]
+    train_recurrence_generator.compile_data_set(image_processors=train_processors_recurr, debug=False)
 
+    train_processors_non_recurr = [
+        ExpandDimension(axis=-1, image_keys=build_keys),
+        # ArgMax(annotation_keys=('annotation',), axis=-1),
+        Cast_Data(key_type_dict={'primary_liver': 'float32'})
+    ]
+    if cache:
+        train_processors_non_recurr += [
+            {'cache': os.path.join(train_no_recurrence_path[0], 'cache{}'.format(cache_add))}
+        ]
+    train_processors_non_recurr += [
+        CombineKeys(image_keys=build_keys, output_key='combined'),
+        # Flip_Images(keys=('combined',), flip_lr=True, flip_up_down=True, flip_3D_together=True, flip_z=True),
+        Return_Outputs(wanted_keys),
+        {'shuffle': len(train_no_recurence_generator)},
+        {'batch': batch_size // 2},
+        {'repeat'}
+    ]
+    train_no_recurence_generator.compile_data_set(image_processors=train_processors_non_recurr, debug=False)
     '''
     Now, we want to provide the model with examples of both recurrence and non_recurrence each time
     '''
