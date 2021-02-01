@@ -47,6 +47,7 @@ def return_MRN_dictionary(excel_path):
 def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, anonymized_sheet):
     stats = sitk.LabelShapeStatisticsImageFilter()
     Connected_Component_Filter = sitk.ConnectedComponentImageFilter()
+    Connected_Component_Filter.FullyConnectedOn()
     patient_df = pd.read_excel(anonymized_sheet)
     MRN_dictionary = return_MRN_dictionary(excel_path)
     for MRN_key in MRN_dictionary.keys():
