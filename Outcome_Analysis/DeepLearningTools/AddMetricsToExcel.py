@@ -12,7 +12,7 @@ def add_metrics_to_excel():
     base_path, morfeus_drive, excel_path = return_paths()
     path_base = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_3')
     df = pd.read_excel(excel_path)
-    not_filled_df = df.loc[pd.isnull(df['epoch_loss'])]
+    not_filled_df = df.loc[(pd.isnull(df['epoch_loss'])) & (~pd.isnull(df['Iteration']))]
     df.set_index('Model_Index', inplace=True)
     for index in not_filled_df.index.values:
         model_index = not_filled_df['Model_Index'][index]
@@ -20,13 +20,14 @@ def add_metrics_to_excel():
         if not os.path.exists(path):
             continue
         iterate_paths_add_to_dictionary(path=path, all_dictionaries=base_dictionary, fraction_start=0.5,
+                                        weight_smoothing=0.8,
                                         metric_name_and_criteria={'epoch_loss': np.min,
-                                                                  'epoch_categorical_accuracy': np.max})
-    out_dictionary = {'Model_Index': [], 'epoch_loss': [], 'epoch_categorical_accuracy': []}
+                                                                  'epoch_AUC': np.max})
+    out_dictionary = {'Model_Index': [], 'epoch_loss': [], 'epoch_AUC': []}
     for key in base_dictionary.keys():
         out_dictionary['Model_Index'].append(int(key.split('_')[-1]))
         out_dictionary['epoch_loss'].append(base_dictionary[key]['epoch_loss'])
-        out_dictionary['epoch_categorical_accuracy'].append(base_dictionary[key]['epoch_categorical_accuracy'])
+        out_dictionary['epoch_AUC'].append(base_dictionary[key]['epoch_AUC'])
     new_df = pd.DataFrame(out_dictionary)
     new_df.set_index('Model_Index', inplace=True)
     df.update(new_df)
