@@ -27,10 +27,11 @@ def create_secondary_deformed_nifti(nifti_export_path, deformation_export_path, 
         else:
             print('Not found here...{}'.format(MRN))
             continue
-        if os.path.exists(out_path):
+        primary_path = os.path.join(nifti_export_path, '{}_Primary_Dicom.nii'.format(patient_id))
+        if os.path.exists(out_path) or not os.path.exists(primary_path):
             continue
         deformed_handle = sitk.ReadImage(os.path.join(deformation_export_path, deformed_image))
-        primary_handle = sitk.ReadImage(os.path.join(nifti_export_path, '{}_Primary_Dicom.nii'.format(patient_id)))
+        primary_handle = sitk.ReadImage(primary_path)
         if deformed_handle.GetSize() != primary_handle.GetSize():
             # print('These are not the same for {}...'.format(MRN))
             deformed_handle = sitk.Resample(deformed_handle, primary_handle, sitk.AffineTransform(3), sitk.sitkLinear,

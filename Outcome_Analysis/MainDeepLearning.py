@@ -20,8 +20,15 @@ if os.path.exists(r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrenc
     import shutil
     base_path, morfeus_drive, excel_path = return_paths()
     # shutil.copy(os.path.join(morfeus_drive, 'ModelParameters.xlsx'), os.path.join(base_path, 'ModelParameters.xlsx'))
+
+sanity_check = False
+if sanity_check:
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Sanity_Checks.Print_Center_Images import print_center_images
+    print_center_images()
+    xxx = 1
+
 batch_size = 16
-find_lr = False
+find_lr = True
 finished_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
@@ -43,7 +50,7 @@ if add_lr and finished_lr:
                  save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3', 'Outputs'))
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -63,7 +70,6 @@ if review_models_via_cv:
 view_results_with_r = False
 if view_results_with_r:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
-    import shutil
     from plotnine import *
     import pandas as pd
     import numpy as np
@@ -71,18 +77,18 @@ if view_results_with_r:
     df = pd.read_excel(excel_path)
     # df = df.dropna()
     df = df[~pd.isnull(df['epoch_loss'])]
-    df.epoch_loss = np.where((df.epoch_categorical_accuracy < .51), 1, df.epoch_loss)
-    df.epoch_loss = np.where((df.epoch_loss > .6), .6, df.epoch_loss)
+    # df.epoch_loss = np.where((df.epoch_AUC < .51), 1, df.epoch_loss)
+    # df.epoch_loss = np.where((df.epoch_loss > .6), .6, df.epoch_loss)
     xxx = 1
     (ggplot(df) + aes(x='blocks_in_dense', y='epoch_loss') + facet_wrap('dense_conv_blocks',
                                                                         labeller='label_both') + geom_point(
-        mapping=aes(color='epoch_categorical_accuracy')) + xlab('blocks_in_dense') + ylab('Validation Loss') +
+        mapping=aes(color='epoch_AUC')) + xlab('blocks_in_dense') + ylab('Validation Loss') +
      ggtitle('Validation Loss vs Blocks in Dense, and Dense Convolution Blocks') + scale_colour_gradient(low='blue',
                                                                                                          high='red'))
 
     (ggplot(df) + aes(x='dense_layers', y='epoch_loss') + facet_wrap('blocks_in_dense',
                                                                         labeller='label_both') + geom_point(
-        mapping=aes(color='epoch_categorical_accuracy')) + xlab('dense_layers') + ylab('Validation Loss') +
+        mapping=aes(color='epoch_AUC')) + xlab('dense_layers') + ylab('Validation Loss') +
      ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
                                                                                                       high='red'))
 
@@ -98,7 +104,17 @@ if view_results_with_r:
         mapping=aes(color='epoch_categorical_accuracy')) + xlab('blocks_in_dense') + ylab('Validation Loss') +
      ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
                                                                                                       high='red'))
-
+"""
+Best model notes
+blocks_in_dense = 5, check out 7
+Dropout = 0
+dense_conv_blocks = 3, check out 5
+dense layers = 1 beats 3
+reduction = 1
+num_dense_connections = 256, check out 512
+filters = 16, check 32?
+growth_rate = 32, check 16?
+"""
 view_gradients = False
 if view_gradients:
     from tensorflow.keras.models import load_model
@@ -132,66 +148,59 @@ if evaluate_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
 
     aucs = []
-    model_base_path = r'H:\Deeplearning_Recurrence_Work\Models'
-    for cv_id in range(4):
-        print('Running for cv_id: {}'.format(cv_id))
-        pred_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'Predictions.npy')
-        truth_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'Truth.npy')
-        model_path = os.path.join(model_base_path, 'cv_id_{}'.format(cv_id), 'cp-best.cpkt')
-        if not os.path.exists(pred_path):
-            model = mydensenet(blocks_in_dense=3, dense_layers=2, dense_conv_blocks=2,
-                               filters=16, growth_rate=16, reduction=0.5, num_dense_connections=256)
-            model.load_weights(model_path)
-            # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
-            _, _, val_recur_generator, val_non_recur_generator = return_generators(cross_validation_id=cv_id,
-                                                                                   model_key=model_key,
-                                                                                   return_validation_generators=True)
-            truth = []
-            prediction = []
-            for val_generator in [val_recur_generator, val_non_recur_generator]:
-                val_iter = iter(val_generator.data_set)
-                for i in range(len(val_generator)):
-                    # print(i)
-                    x, y = next(val_iter)
-                    truth.append(np.argmax(y[0].numpy()))
-                    pred = model.predict(x)
-                    prediction.append(pred)
-            np.save(file=pred_path, arr=np.squeeze(np.asarray(prediction)))
-            np.save(file=truth_path, arr=np.squeeze(np.asarray(truth)))
-        else:
-            prediction, truth = np.load(pred_path), np.load(truth_path)
-            # break
-        final_pred = np.asarray([np.argmax(i) for i in prediction])
-        truth = np.asarray(truth)
-        correct = np.sum(truth == final_pred)
-        total = len(truth)
-        missed = total - correct
-        accuracy = correct/total * 100
-        correct_recurred = np.sum(truth[truth == 1] == final_pred[truth == 1]) / np.sum(truth == 1) * 100
-        correct_non_recurred = np.sum(truth[truth == 0] == final_pred[truth == 0]) / np.sum(truth == 0) * 100
-        print('Guessed {}% correct'.format(accuracy))
-        print('Guessed {}% of the recurrence correct'.format(correct_recurred))
-        print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
-        recurred_truth = truth[0::2]
+    model_base_path = r'H:\Deeplearning_Recurrence_Work\Models\Model_Index_285'
+    pred_path = os.path.join(model_base_path, 'Predictions.npy')
+    truth_path = os.path.join(model_base_path, 'Truth.npy')
+    model_path = os.path.join(model_base_path, 'cp-best.cpkt')
+    if not os.path.exists(pred_path):
+        model = mydensenet(dropout=0.0, blocks_in_dense=5, dense_conv_blocks=3, dense_layers=1,
+                           reduction=1.0, num_dense_connections=256, filters=16, growth_rate=32)
+        model.load_weights(model_path)
+        # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
+        _, _, val_generator = return_generators(batch_size=8, return_validation_generators=True, model_key=3)
+        truth = []
+        prediction = []
+        val_iter = val_generator.data_set.as_numpy_iterator()
+        for i in range(len(val_generator)):
+            # print(i)
+            x, y = next(val_iter)
+            truth.append(np.argmax(y[0]))
+            pred = model.predict(x)
+            prediction.append(pred)
+        np.save(file=pred_path, arr=np.squeeze(np.asarray(prediction)))
+        np.save(file=truth_path, arr=np.squeeze(np.asarray(truth)))
+    else:
+        prediction, truth = np.load(pred_path), np.load(truth_path)
+        # break
+    final_pred = np.asarray([np.argmax(i) for i in prediction])
+    truth = np.asarray(truth)
+    correct = np.sum(truth == final_pred)
+    total = len(truth)
+    missed = total - correct
+    accuracy = correct/total * 100
+    correct_recurred = np.sum(truth[truth == 1] == final_pred[truth == 1]) / np.sum(truth == 1) * 100
+    correct_non_recurred = np.sum(truth[truth == 0] == final_pred[truth == 0]) / np.sum(truth == 0) * 100
+    print('Guessed {}% correct'.format(accuracy))
+    print('Guessed {}% of the recurrence correct'.format(correct_recurred))
+    print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
+    plot_roc = True
+    if plot_roc:
+        import matplotlib.pyplot as plt
+        import sklearn.metrics as metrics
+        fpr, tpr, threshold = metrics.roc_curve(truth, prediction[:, 1])
+        roc_auc = metrics.auc(fpr, tpr)
+        aucs.append(roc_auc)
+        plt.title('Receiver Operating Characteristic')
+        plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
+        plt.legend(loc='lower right')
+        plt.plot([0, 1], [0, 1], 'r--')
+        plt.xlim([0, 1])
+        plt.ylim([0, 1])
+        plt.ylabel('True Positive Rate')
+        plt.xlabel('False Positive Rate')
+        plt.show()
         xxx = 1
-        plot_roc = True
-        if plot_roc:
-            import matplotlib.pyplot as plt
-            import sklearn.metrics as metrics
-            fpr, tpr, threshold = metrics.roc_curve(truth, prediction[:, 1])
-            roc_auc = metrics.auc(fpr, tpr)
-            aucs.append(roc_auc)
-            plt.title('Receiver Operating Characteristic')
-            plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
-            plt.legend(loc='lower right')
-            plt.plot([0, 1], [0, 1], 'r--')
-            plt.xlim([0, 1])
-            plt.ylim([0, 1])
-            plt.ylabel('True Positive Rate')
-            plt.xlabel('False Positive Rate')
-            plt.show()
-            xxx = 1
-            plt.close()
+        plt.close()
 """
 3 blocks in dense
 2 dense layers

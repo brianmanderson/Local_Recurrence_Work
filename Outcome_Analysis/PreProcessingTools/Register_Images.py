@@ -68,7 +68,11 @@ def register_images_to_nifti(dicom_export_path, nifti_export_path, excel_path, a
             add_patient = False
             if within.shape[0] != 0:
                 patient_id = int(within['PatientID'].values[0])
-                if os.path.exists(os.path.join(nifti_export_path, '{}_Primary_Mask.nii'.format(patient_id))):
+                if os.path.exists(os.path.join(nifti_export_path, '{}_Primary_Mask.nii'.format(patient_id)))\
+                        or os.path.exists(os.path.join(nifti_export_path, 'Train',
+                                                       '{}_Primary_Mask.nii'.format(patient_id)))\
+                        or os.path.exists(os.path.join(nifti_export_path, 'Validation',
+                                                       '{}_Primary_Mask.nii'.format(patient_id))):
                     print('Already written {}'.format(MRN))
                     continue
             else:
