@@ -24,7 +24,7 @@ def plot_lrs(input_path, excel_path=None, add_to_excel=False, base_df=None, save
                 save_path = os.path.join(input_path, 'Outputs')
             try:
                 out_lr_dict = make_plot(paths, metric_list=['AUC', 'loss'], title=desc, save_path=save_path, plot=True,
-                                        auto_rates=True, beta=0.96, plot_show=False)
+                                        auto_rates=True, weight_smoothing=0.99, plot_show=False)
                 if excel_path is not None:
                     model_index = int(os.path.split(paths[0])[0].split('Model_Index_')[-1])
                     index = base_df.loc[base_df.Model_Index == int(model_index)]
