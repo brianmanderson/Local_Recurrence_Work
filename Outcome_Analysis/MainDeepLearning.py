@@ -28,8 +28,8 @@ if sanity_check:
     xxx = 1
 
 batch_size = 16
-find_lr = False
-finished_lr = True
+find_lr = True
+finished_lr = False
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     finished_lr = find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -50,7 +50,7 @@ if add_lr and finished_lr:
                  save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3', 'Outputs'))
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
