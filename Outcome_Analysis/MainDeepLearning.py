@@ -28,8 +28,8 @@ if sanity_check:
     xxx = 1
 
 batch_size = 16
-find_lr = False
-finished_lr = True
+find_lr = True
+finished_lr = False
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     finished_lr = find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -50,7 +50,7 @@ if add_lr and finished_lr:
                  save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3', 'Outputs'))
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -86,34 +86,22 @@ if view_results_with_r:
      ggtitle('Validation Loss vs Blocks in Dense, and Dense Convolution Blocks') + scale_colour_gradient(low='blue',
                                                                                                          high='red'))
 
-    (ggplot(df) + aes(x='dense_layers', y='epoch_loss') + facet_wrap('blocks_in_dense',
-                                                                        labeller='label_both') + geom_point(
-        mapping=aes(color='epoch_AUC')) + xlab('dense_layers') + ylab('Validation Loss') +
-     ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
-                                                                                                      high='red'))
-
-    (ggplot(df) + aes(x='reduction', y='epoch_loss') + facet_wrap('filters', labeller='label_both') + geom_point(
-        mapping=aes(color='epoch_categorical_accuracy')) + xlab('reduction') + ylab('Validation Loss') +
-     ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
-                                                                                                      high='red'))
-    (ggplot(df) + aes(x='num_dense_connections', y='epoch_loss') + geom_point(
-        mapping=aes(color='epoch_categorical_accuracy')) + xlab('dense_connections') + ylab('Validation Loss') +
-     ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
-                                                                                                      high='red'))
-    (ggplot(df) + aes(x='blocks_in_dense', y='epoch_loss') + geom_point(
-        mapping=aes(color='epoch_categorical_accuracy')) + xlab('blocks_in_dense') + ylab('Validation Loss') +
-     ggtitle('Validation Loss vs Number of Layers, Number of Conv Blocks, and Conv Lambda') + scale_colour_gradient(low='blue',
-                                                                                                      high='red'))
+    for variable in ['Dropout', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'reduction',
+                     'num_dense_connections', 'filters', 'growth_rate']:
+        xxx = 1
+        (ggplot(df) + aes(x='{}'.format(variable), y='epoch_loss') + geom_point(
+            mapping=aes(color='epoch_AUC')) + xlab('{}'.format(variable)) + ylab('Validation Loss')
+         + scale_colour_gradient(low='blue', high='red'))
 """
 Best model notes
-blocks_in_dense = 5, check out 7
 Dropout = 0
-dense_conv_blocks = 3, check out 5
-dense layers = 1 beats 3
+blocks_in_dense = 5, check out 7 (done)
+dense_conv_blocks = 3, check out 4
+dense_layers = 1 beats 3
 reduction = 1
-num_dense_connections = 256, check out 512
-filters = 16, check 32?
-growth_rate = 32, check 16?
+num_dense_connections = 256
+filters = 16
+growth_rate = 32, check 16 and 64
 """
 view_gradients = False
 if view_gradients:
