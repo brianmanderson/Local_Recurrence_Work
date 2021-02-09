@@ -67,7 +67,7 @@ if review_models_via_cv:
         add_mean_std_across_cv_groups
     add_mean_std_across_cv_groups()
 
-view_results_with_r = True
+view_results_with_r = False
 if view_results_with_r:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
     from plotnine import *
