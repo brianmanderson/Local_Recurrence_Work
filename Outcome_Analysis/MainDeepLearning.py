@@ -28,8 +28,8 @@ if sanity_check:
     xxx = 1
 
 batch_size = 16
-find_lr = False
-finished_lr = True
+find_lr = True
+finished_lr = False
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
     finished_lr = find_best_lr(batch_size=batch_size, model_key=model_key)
@@ -50,7 +50,7 @@ if add_lr and finished_lr:
                  save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3', 'Outputs'))
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -67,7 +67,7 @@ if review_models_via_cv:
         add_mean_std_across_cv_groups
     add_mean_std_across_cv_groups()
 
-view_results_with_r = False
+view_results_with_r = True
 if view_results_with_r:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths
     from plotnine import *
@@ -97,11 +97,11 @@ Best model notes
 Dropout = 0
 blocks_in_dense = 5, check out 1
 dense_conv_blocks = 3, check out 4
-dense_layers = 1, look at 0
+dense_layers = 0
 reduction = 1
 num_dense_connections = 256
-filters = 16
-growth_rate = 32, check 16 and 64
+filters = 8/16
+growth_rate = 16, check 8
 """
 view_gradients = False
 if view_gradients:
@@ -134,32 +134,46 @@ if evaluate_model:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import mydensenet
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
+    from tensorflow.keras import metrics, optimizers
 
     aucs = []
     model_base_path = r'H:\Deeplearning_Recurrence_Work\Models\Model_Index_285'
     pred_path = os.path.join(model_base_path, 'Predictions.npy')
     truth_path = os.path.join(model_base_path, 'Truth.npy')
     model_path = os.path.join(model_base_path, 'cp-best.cpkt')
-    if not os.path.exists(pred_path):
-        model = mydensenet(dropout=0.0, blocks_in_dense=5, dense_conv_blocks=3, dense_layers=1,
-                           reduction=1.0, num_dense_connections=256, filters=16, growth_rate=32)
-        model.load_weights(model_path)
-        # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
-        _, _, val_generator = return_generators(batch_size=8, return_validation_generators=True, model_key=3)
-        truth = []
-        prediction = []
-        val_iter = val_generator.data_set.as_numpy_iterator()
-        for i in range(len(val_generator)):
-            # print(i)
-            x, y = next(val_iter)
-            truth.append(np.argmax(y[0]))
-            pred = model.predict(x)
-            prediction.append(pred)
-        np.save(file=pred_path, arr=np.squeeze(np.asarray(prediction)))
-        np.save(file=truth_path, arr=np.squeeze(np.asarray(truth)))
-    else:
-        prediction, truth = np.load(pred_path), np.load(truth_path)
-        # break
+    # model_path = os.path.join(model_base_path, 'final_model.h5')
+    METRICS = [
+        metrics.TruePositives(name='TruePositive'),
+        metrics.FalsePositives(name='FalsePositive'),
+        metrics.TrueNegatives(name='TrueNegative'),
+        metrics.FalseNegatives(name='FalseNegative'),
+        metrics.BinaryAccuracy(name='Accuracy'),
+        metrics.Precision(name='Precision'),
+        metrics.Recall(name='Recall'),
+        metrics.AUC(name='AUC', multi_label=True),
+    ]
+
+    model = mydensenet(dropout=0.0, blocks_in_dense=5, dense_conv_blocks=3, dense_layers=1,
+                       reduction=1.0, num_dense_connections=256, filters=16, growth_rate=32)
+    model.load_weights(model_path)
+    model.compile(optimizer=optimizers.Adam(), loss=CosineLoss(), metrics=METRICS)
+    # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
+    _, _, val_generator = return_generators(batch_size=8, return_validation_generators=True, model_key=3)
+    truth = []
+    prediction = []
+    val_iter = val_generator.data_set.as_numpy_iterator()
+    for i in range(len(val_generator)):
+        # print(i)
+        x, y = next(val_iter)
+        truth.append(np.argmax(y[0]))
+        pred = model.predict(x)
+        prediction.append(pred)
+    evaluation = model.evaluate(val_generator.data_set, steps=len(val_generator))
+    prediction = np.squeeze(np.asarray(prediction))
+    truth = np.squeeze(np.asarray(truth))
+    np.save(file=pred_path, arr=prediction)
+    np.save(file=truth_path, arr=truth)
+
     final_pred = np.asarray([np.argmax(i) for i in prediction])
     truth = np.asarray(truth)
     correct = np.sum(truth == final_pred)
