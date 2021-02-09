@@ -20,9 +20,9 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                     'filters', 'growth_rate', 'step_factor', 'Loss', 'Optimizer', 'reduction', 'Dropout')
     base_df = pd.read_excel(excel_path)
     for dropout in [0.0]:
-        for blocks_in_dense in [5]:
+        for blocks_in_dense in [1, 5]:
             for dense_conv_blocks in [3]:
-                for dense_layers in [1]:
+                for dense_layers in [0, 1]:
                     for reduction in [1.0]:
                         for num_dense_connections in [256]:
                             for filters in [8, 16]:
