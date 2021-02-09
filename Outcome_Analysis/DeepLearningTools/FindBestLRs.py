@@ -21,7 +21,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
     base_df = pd.read_excel(excel_path)
     for dropout in [0.0]:
         for blocks_in_dense in [1, 3, 5]:
-            for dense_conv_blocks in [3, 4]:
+            for dense_conv_blocks in [3]:
                 for dense_layers in [0]:
                     for reduction in [1.0]:
                         for num_dense_connections in [256]:
@@ -31,7 +31,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                                'dense_conv_blocks': [dense_conv_blocks],
                                                'dense_layers': [dense_layers],
                                                'num_dense_connections': [num_dense_connections],
-                                               'filters': [filters], 'growth_rate': [growth_rate], 'run?': [0],
+                                               'filters': [filters], 'growth_rate': [growth_rate], 'run?': [2],
                                                'reduction': [reduction],
                                                'step_factor': [10], 'Loss': ['CosineLoss'],
                                                'Optimizer': ['Adam'],
