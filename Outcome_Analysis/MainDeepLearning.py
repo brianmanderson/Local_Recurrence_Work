@@ -50,7 +50,7 @@ if add_lr and finished_lr:
                  save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3', 'Outputs'))
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -76,7 +76,7 @@ if view_results_with_r:
     base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path)
     # df = df.dropna()
-    df = df[~pd.isnull(df['epoch_loss'])]
+    df = df[(~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['Loss'] == 'CosineLoss')]
     # df.epoch_loss = np.where((df.epoch_AUC < .51), 1, df.epoch_loss)
     # df.epoch_loss = np.where((df.epoch_loss > .6), .6, df.epoch_loss)
     xxx = 1
