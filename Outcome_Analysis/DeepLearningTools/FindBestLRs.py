@@ -18,7 +18,7 @@ from tensorflow_addons.optimizers import RectifiedAdam
 def return_model_and_things(model_base, out_path, iteration, excel_path):
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                     'filters', 'growth_rate', 'step_factor', 'Loss', 'Optimizer', 'reduction', 'Dropout')
-    base_df = pd.read_excel(excel_path)
+    base_df = pd.read_excel(excel_path, engine='openpyxl')
     for dropout in [0.0]:
         for blocks_in_dense in [1, 3, 5]:
             for dense_conv_blocks in [3]:
@@ -40,7 +40,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                     contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
                                                                      features_list=compare_keys)
                                     if not contained:
-                                        base_df = pd.read_excel(excel_path)  # Check it once more with the latest version..
+                                        base_df = pd.read_excel(excel_path, engine='openpyxl')  # Check it once more with the latest version..
                                         contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
                                                                          features_list=compare_keys)
                                     if contained:
@@ -92,7 +92,7 @@ def find_best_lr(batch_size=24, model_key=0):
             out_path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key))
             if not isinstance(model_base, types.FunctionType):
                 model = model_base
-                base_df = pd.read_excel(excel_path)
+                base_df = pd.read_excel(excel_path, engine='openpyxl')
                 current_run = {'Model_Type': [model_key], 'run?': [0], 'step_factor': [10],
                                'Loss': ['BinaryCrossEntropy'],
                                'Optimizer': ['Adam']}

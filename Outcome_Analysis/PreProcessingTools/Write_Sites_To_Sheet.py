@@ -10,7 +10,7 @@ from Deep_Learning.Base_Deeplearning_Code.Dicom_RT_and_Images_to_Mask.src.DicomR
 def write_sites_to_excel(nifti_export_path, excel_path):
     stats = sitk.LabelShapeStatisticsImageFilter()
     Connected_Component_Filter = sitk.ConnectedComponentImageFilter()
-    df = pd.read_excel(excel_path)
+    df = pd.read_excel(excel_path, engine='openpyxl')
     unfilled = df.loc[(pd.isnull(df['Non_Recurrence_Sites'])) | (pd.isnull(df['Recurrence_Sites']))]
     if unfilled.shape[0] > 0:
         for index in unfilled.index:

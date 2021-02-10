@@ -12,7 +12,7 @@ def distribute_train_validation(nifti_export_path, excel_path):
     for path in [train_path, validation_path]:
         if not os.path.exists(path):
             os.makedirs(path)
-    df = pd.read_excel(excel_path)
+    df = pd.read_excel(excel_path, engine='openpyxl')
     unfilled = df.loc[(pd.isnull(df['Non_Recurrence_Sites'])) | (pd.isnull(df['Recurrence_Sites']))]
     assert unfilled.shape[0] == 0, 'Run Write_Sites_To_Sheet.py, should not have a null value here'
     '''

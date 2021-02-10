@@ -11,7 +11,7 @@ def add_metrics_to_excel():
     base_dictionary = {}
     base_path, morfeus_drive, excel_path = return_paths()
     path_base = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_3')
-    df = pd.read_excel(excel_path)
+    df = pd.read_excel(excel_path, engine='openpyxl')
     not_filled_df = df.loc[(pd.isnull(df['epoch_loss'])) & (~pd.isnull(df['Iteration']))]
     df.set_index('Model_Index', inplace=True)
     for index in not_filled_df.index.values:

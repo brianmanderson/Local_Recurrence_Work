@@ -22,7 +22,7 @@ def run_2d_model(batch_size=24):
 
     iterations = [0]
     model_key_base = -1
-    base_df = pd.read_excel(excel_path)
+    base_df = pd.read_excel(excel_path, engine='openpyxl')
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)
                                       & (base_df['Optimizer'] == 'Adam') & (base_df['Loss'] == 'CosineLoss')
@@ -50,7 +50,7 @@ def run_2d_model(batch_size=24):
                 print("Already ran this one")
                 continue
             else:
-                base_df = pd.read_excel(excel_path)
+                base_df = pd.read_excel(excel_path, engine='openpyxl')
                 base_df.set_index('Model_Index')
                 contained = is_df_within_another(data_frame=base_df, current_run_df=run_df, features_list=compare_list)
                 if contained:

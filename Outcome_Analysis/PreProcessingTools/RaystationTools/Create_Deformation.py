@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def return_MRN_dictionary(excel_path):
-    df = pd.read_excel(excel_path, sheet_name='Refined')
+    df = pd.read_excel(excel_path, sheet_name='Refined', engine='openpyxl')
     df = df.loc[(df['Registered'] == 0) & (df['Has_Disease_Seg'] == 0)]
     MRN_list, primary_list, secondary_list, case_list = df['MRN'].values, df['PreExam'].values,\
                                                         df['Ablation_Exam'].values, df['Case'].values

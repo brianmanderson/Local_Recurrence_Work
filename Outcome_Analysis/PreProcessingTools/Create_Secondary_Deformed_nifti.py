@@ -7,7 +7,7 @@ from Deep_Learning.Base_Deeplearning_Code.Plot_And_Scroll_Images.Plot_Scroll_Ima
 
 
 def create_secondary_deformed_nifti(nifti_export_path, deformation_export_path, anonymized_sheet):
-    patient_df = pd.read_excel(anonymized_sheet)
+    patient_df = pd.read_excel(anonymized_sheet, engine='openpyxl')
     deformed_image_files = [i for i in os.listdir(deformation_export_path) if i.endswith('.mhd')]
     for deformed_image in deformed_image_files:
         print(deformed_image)

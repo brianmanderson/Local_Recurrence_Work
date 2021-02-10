@@ -40,7 +40,7 @@ if add_lr and finished_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.PlotLRs import plot_lrs, pd
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths, os
     base_path, morfeus_drive, excel_path = return_paths()
-    df = pd.read_excel(excel_path)
+    df = pd.read_excel(excel_path, engine='openpyxl')
     not_filled_df = df.loc[(pd.isnull(df['min_lr'])) & (df['Optimizer'] == 'Adam') & (df['Loss'] == 'CosineLoss')]
     for index in not_filled_df.index.values:
         model_index = not_filled_df['Model_Index'][index]
@@ -74,7 +74,7 @@ if view_results_with_r:
     import pandas as pd
     import numpy as np
     base_path, morfeus_drive, excel_path = return_paths()
-    df = pd.read_excel(excel_path)
+    df = pd.read_excel(excel_path, engine='openpyxl')
     # df = df.dropna()
     df = df[(~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['Loss'] == 'CosineLoss')]
     # df.epoch_loss = np.where((df.epoch_AUC < .51), 1, df.epoch_loss)
@@ -127,7 +127,7 @@ if view_gradients:
 3: 69
 4:
 """
-evaluate_model = False
+evaluate_model = True
 if evaluate_model:
     from tensorflow.keras.models import load_model
     import numpy as np
@@ -137,7 +137,7 @@ if evaluate_model:
     from tensorflow.keras import metrics, optimizers
 
     aucs = []
-    model_base_path = r'H:\Deeplearning_Recurrence_Work\Models\Model_Index_285'
+    model_base_path = r'H:\Deeplearning_Recurrence_Work\Models\Model_Index_392'
     pred_path = os.path.join(model_base_path, 'Predictions.npy')
     truth_path = os.path.join(model_base_path, 'Truth.npy')
     model_path = os.path.join(model_base_path, 'cp-best.cpkt')
@@ -153,8 +153,8 @@ if evaluate_model:
         metrics.AUC(name='AUC', multi_label=True),
     ]
 
-    model = mydensenet(dropout=0.0, blocks_in_dense=5, dense_conv_blocks=3, dense_layers=1,
-                       reduction=1.0, num_dense_connections=256, filters=16, growth_rate=32)
+    model = mydensenet(dropout=0.0, blocks_in_dense=1, dense_conv_blocks=3, dense_layers=0,
+                       reduction=1.0, num_dense_connections=256, filters=8, growth_rate=16)
     model.load_weights(model_path)
     model.compile(optimizer=optimizers.Adam(), loss=CosineLoss(), metrics=METRICS)
     # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
@@ -163,7 +163,7 @@ if evaluate_model:
     prediction = []
     val_iter = val_generator.data_set.as_numpy_iterator()
     for i in range(len(val_generator)):
-        # print(i)
+        print(i)
         x, y = next(val_iter)
         truth.append(np.argmax(y[0]))
         pred = model.predict(x)
