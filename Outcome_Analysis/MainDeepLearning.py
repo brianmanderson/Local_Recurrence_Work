@@ -127,7 +127,7 @@ if view_gradients:
 3: 69
 4:
 """
-evaluate_model = True
+evaluate_model = False
 if evaluate_model:
     from tensorflow.keras.models import load_model
     import numpy as np
