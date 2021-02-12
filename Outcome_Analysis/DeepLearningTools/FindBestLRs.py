@@ -13,27 +13,29 @@ import os
 import pandas as pd
 import types
 from tensorflow_addons.optimizers import RectifiedAdam
+from tensorflow_addons.losses import SigmoidFocalCrossEntropy
 
 
 def return_model_and_things(model_base, out_path, iteration, excel_path):
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
-                    'filters', 'growth_rate', 'step_factor', 'Loss', 'Optimizer', 'reduction', 'Dropout')
+                    'filters', 'growth_rate', 'step_factor', 'loss', 'Optimizer', 'reduction', 'Dropout')
     base_df = pd.read_excel(excel_path, engine='openpyxl')
+    loss = 'SigmoidFocal'
     for dropout in [0.0]:
-        for blocks_in_dense in [1, 3, 5]:
+        for blocks_in_dense in [1]:
             for dense_conv_blocks in [3]:
                 for dense_layers in [0]:
                     for reduction in [1.0]:
                         for num_dense_connections in [256]:
-                            for filters in [8, 16]:
-                                for growth_rate in [8, 16]:
+                            for filters in [16]:
+                                for growth_rate in [16]:
                                     new_run = {'blocks_in_dense': [blocks_in_dense],
                                                'dense_conv_blocks': [dense_conv_blocks],
                                                'dense_layers': [dense_layers],
                                                'num_dense_connections': [num_dense_connections],
                                                'filters': [filters], 'growth_rate': [growth_rate], 'run?': [2],
                                                'reduction': [reduction],
-                                               'step_factor': [10], 'Loss': ['CosineLoss'],
+                                               'step_factor': [10], 'loss': [loss],
                                                'Optimizer': ['Adam'],
                                                'Model_Type': [3], 'Dropout': [dropout]}
                                     current_run_df = pd.DataFrame(new_run)
@@ -68,7 +70,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path):
                                                            dense_conv_blocks=dense_conv_blocks,
                                                            dense_layers=dense_layers, dropout=dropout,
                                                            num_dense_connections=num_dense_connections, filters=filters,
-                                                           growth_rate=growth_rate, reduction=reduction)
+                                                           growth_rate=growth_rate, reduction=reduction, Loss=loss)
                                         return model, new_out_path
                                     except:
                                         os.makedirs(new_out_path)
@@ -86,6 +88,7 @@ def find_best_lr(batch_size=24, model_key=0):
     model_base = return_model(model_key=model_key)
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
+    loss = SigmoidFocalCrossEntropy()
     features_list = ('Model_Type', 'Optimizer', 'step_factor')
     for iteration in [0]:
         for optimizer in ['Adam']:
@@ -94,7 +97,7 @@ def find_best_lr(batch_size=24, model_key=0):
                 model = model_base
                 base_df = pd.read_excel(excel_path, engine='openpyxl')
                 current_run = {'Model_Type': [model_key], 'run?': [0], 'step_factor': [10],
-                               'Loss': ['BinaryCrossEntropy'],
+                               'loss': ['BinaryCrossEntropy'],
                                'Optimizer': ['Adam']}
                 current_run_df = pd.DataFrame(current_run)
                 contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
@@ -128,6 +131,7 @@ def find_best_lr(batch_size=24, model_key=0):
             k = TensorBoard(log_dir=out_path, profile_batch=0, write_graph=True)
             k.set_model(model)
             k.on_train_begin()
+            lr_opt = tf.keras.optimizers.Adam
             if optimizer == 'SGD':
                 lr_opt = tf.keras.optimizers.SGD
             elif optimizer == 'Adam':

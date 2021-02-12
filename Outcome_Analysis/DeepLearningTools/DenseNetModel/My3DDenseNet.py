@@ -68,7 +68,7 @@ def transition_block(x, reduction, name, strides=(2, 2, 2)):
 
 
 def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense_connections=256, filters=16,
-               growth_rate=16, reduction=0.5, dropout=0.5, output_bias=None, **kwargs): # output_bias = -0.76497
+               growth_rate=16, reduction=0.5, dropout=0.5, output_bias=None, loss=None, **kwargs):
     """
     :param blocks_in_dense: how many convolution blocks are in a single size layer
     :param dense_conv_blocks: how many dense blocks before a max pooling to occur
@@ -112,7 +112,10 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
         x = layers.Dense(num_dense_connections, activation='selu', kernel_regularizer=regularizers.l2(0.001))(x)
         if dropout != 0.0:
             x = layers.Dropout(dropout)(x)
-    x = layers.Dense(2, activation='softmax', name='prediction', dtype='float32', bias_initializer=output_bias)(x)
+    activation = 'softmax'
+    if loss == 'SigmoidFocal':
+        activation = 'sigmoid'
+    x = layers.Dense(2, activation=activation, name='prediction', dtype='float32', bias_initializer=output_bias)(x)
     model = Model(inputs=inputs, outputs=(x,), name='my_3d_densenet')
     return model
 

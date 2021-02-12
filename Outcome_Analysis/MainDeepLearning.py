@@ -41,7 +41,7 @@ if add_lr and finished_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths, os
     base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path, engine='openpyxl')
-    not_filled_df = df.loc[(pd.isnull(df['min_lr'])) & (df['Optimizer'] == 'Adam') & (df['Loss'] == 'CosineLoss')]
+    not_filled_df = df.loc[(pd.isnull(df['min_lr'])) & (df['Optimizer'] == 'Adam') & (df['loss'] == 'SigmoidFocal')]
     for index in not_filled_df.index.values:
         model_index = not_filled_df['Model_Index'][index]
         print(model_index)
@@ -76,7 +76,7 @@ if view_results_with_r:
     base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path, engine='openpyxl')
     # df = df.dropna()
-    df = df[(~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['Loss'] == 'CosineLoss')]
+    df = df[(~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['loss'] == 'CosineLoss')]
     # df.epoch_loss = np.where((df.epoch_AUC < .51), 1, df.epoch_loss)
     # df.epoch_loss = np.where((df.epoch_loss > .6), .6, df.epoch_loss)
     xxx = 1

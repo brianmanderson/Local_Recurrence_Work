@@ -8,6 +8,7 @@ from Deep_Learning.Base_Deeplearning_Code.Finding_Optimization_Parameters.HyperP
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.RunModel import run_model
 import os
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
+from tensorflow_addons.losses import SigmoidFocalCrossEntropy
 import pandas as pd
 import tensorflow as tf
 import types
@@ -25,7 +26,7 @@ def run_2d_model(batch_size=24):
     base_df = pd.read_excel(excel_path, engine='openpyxl')
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)
-                                      & (base_df['Optimizer'] == 'Adam') & (base_df['Loss'] == 'CosineLoss')
+                                      & (base_df['Optimizer'] == 'Adam') & (base_df['loss'] == 'CosineLoss')
                                       & (base_df['run?'] == 2)
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
@@ -33,16 +34,16 @@ def run_2d_model(batch_size=24):
     for index in indexes_for_not_run:
         run_df = base_df.loc[[index]]
         model_key = run_df.loc[index, 'Model_Type']
-        compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'Optimizer', 'Loss')
-        features_list = ('Model_Type', 'step_factor', 'Optimizer', 'min_lr', 'max_lr', 'Loss')
+        compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'Optimizer', 'loss')
+        features_list = ('Model_Type', 'step_factor', 'Optimizer', 'min_lr', 'max_lr', 'loss')
         if model_key == 3:
             compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration',
                             'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                             'filters', 'growth_rate', 'Dropout',
-                            'Optimizer', 'Loss', 'reduction')
+                            'Optimizer', 'loss', 'reduction')
             features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
                              'num_dense_connections', 'filters', 'growth_rate', 'Optimizer', 'min_lr', 'max_lr',
-                             'Loss', 'Dropout')
+                             'loss', 'Dropout')
         for iteration in iterations:
             run_df.at[index, 'Iteration'] = iteration
             contained = is_df_within_another(data_frame=base_df, current_run_df=run_df, features_list=compare_list)
@@ -63,11 +64,11 @@ def run_2d_model(batch_size=24):
                 model_index += 1
                 tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
                                                 'Model_Index_{}'.format(model_index))
-            os.makedirs(tensorboard_path)
+            # os.makedirs(tensorboard_path)
             run_df.at[index, 'reference'] = run_df.loc[index, 'Model_Index']
             run_df.at[index, 'Model_Index'] = model_index
             base_df = base_df.append(run_df)
-            base_df.to_excel(excel_path, index=0)
+            # base_df.to_excel(excel_path, index=0)
             if model_key_base != model_key or train_generator is None:
                 _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, cache_add='main',
                                                                                 cache=True, model_key=model_key)
@@ -80,8 +81,10 @@ def run_2d_model(batch_size=24):
                 elif type(model_parameters[key]) is np.float64:
                     model_parameters[key] = float(model_parameters[key])
             loss = tf.keras.losses.BinaryCrossentropy()
-            if model_parameters['Loss'].startswith('CosineLoss'):
+            if model_parameters['loss'].startswith('CosineLoss'):
                 loss = CosineLoss()
+            elif model_parameters['loss'].startswith('SigmoidFocal'):
+                loss = SigmoidFocalCrossEntropy()
             if model_parameters['Optimizer'] == 'SGD':
                 opt = tf.keras.optimizers.SGD()
             elif model_parameters['Optimizer'] == 'Adam':
