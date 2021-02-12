@@ -64,11 +64,11 @@ def run_2d_model(batch_size=24):
                 model_index += 1
                 tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
                                                 'Model_Index_{}'.format(model_index))
-            # os.makedirs(tensorboard_path)
+            os.makedirs(tensorboard_path)
             run_df.at[index, 'reference'] = run_df.loc[index, 'Model_Index']
             run_df.at[index, 'Model_Index'] = model_index
             base_df = base_df.append(run_df)
-            # base_df.to_excel(excel_path, index=0)
+            base_df.to_excel(excel_path, index=0)
             if model_key_base != model_key or train_generator is None:
                 _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, cache_add='main',
                                                                                 cache=True, model_key=model_key)
