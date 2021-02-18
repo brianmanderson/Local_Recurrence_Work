@@ -21,12 +21,12 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
                     'filters', 'growth_rate', 'step_factor', 'loss', 'Optimizer', 'reduction', 'Dropout')
     base_df = pd.read_excel(excel_path, engine='openpyxl')
     loss = 'CosineLoss'
-    for dropout in [0.5]:
-        for blocks_in_dense in [5]:
+    for dropout in [0]:
+        for blocks_in_dense in [7]:
             for dense_conv_blocks in [3]:
                 for dense_layers in [1]:
-                    for reduction in [.5]:
-                        for num_dense_connections in [128]:
+                    for reduction in [1]:
+                        for num_dense_connections in [256]:
                             for filters in [16]:
                                 for growth_rate in [32]:
                                     new_run = {'blocks_in_dense': [blocks_in_dense],
