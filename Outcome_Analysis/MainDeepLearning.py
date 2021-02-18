@@ -10,7 +10,7 @@ if len(sys.argv) > 1:
     model_key = int(sys.argv[2])
 else:
     gpu = 0
-model_key = 4
+model_key = 3
 print('Running on {} for key {}'.format(gpu, model_key))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
@@ -27,7 +27,7 @@ if sanity_check:
     print_center_images()
     xxx = 1
 
-batch_size = 16
+batch_size = 32
 find_lr = False
 finished_lr = True
 if find_lr:
@@ -52,7 +52,7 @@ if add_lr and finished_lr:
                  save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key), 'Outputs'))
     added_lr = True
 
-run_the_2D_model = False
+run_the_2D_model = True
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_type=model_key)
