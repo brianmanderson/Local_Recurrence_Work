@@ -18,8 +18,10 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     """
     if cache:
         assert cache_add is not None, 'You need to pass something to cache_add if caching'
-    if model_key > 2:  # If it's not pretrained, just pass 2 images
+    if model_key == 3:  # If it's not pretrained, just pass 2 images
         build_keys = ('primary_image', 'secondary_image_deformed')
+    elif model_key == 4:
+        build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')
     '''
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
     '''
@@ -124,6 +126,6 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8,
-    #                                                                                     all_training=False)
+    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=4,
+    #                                                                                     all_training=False, cache=False)
     pass
