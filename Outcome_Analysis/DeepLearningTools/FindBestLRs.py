@@ -24,9 +24,9 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
     for dropout in [0]:
         for blocks_in_dense in [5]:
             for dense_conv_blocks in [3]:
-                for dense_layers in [3]:
+                for dense_layers in [1]:
                     for reduction in [1]:
-                        for num_dense_connections in [256]:
+                        for num_dense_connections in [128]:
                             for filters in [16]:
                                 for growth_rate in [32]:
                                     new_run = {'blocks_in_dense': [blocks_in_dense],
