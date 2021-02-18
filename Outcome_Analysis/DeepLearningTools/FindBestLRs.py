@@ -20,7 +20,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                     'filters', 'growth_rate', 'step_factor', 'loss', 'Optimizer', 'reduction', 'Dropout')
     base_df = pd.read_excel(excel_path, engine='openpyxl')
-    loss = 'SigmoidFocal'
+    loss = 'CosineLoss'
     for dropout in [0.5]:
         for blocks_in_dense in [1, 7, 5]:
             for dense_conv_blocks in [3]:
