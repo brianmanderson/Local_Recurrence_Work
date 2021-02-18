@@ -88,7 +88,7 @@ def find_best_lr(batch_size=24, model_key=0):
     model_base = return_model(model_key=model_key)
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
-    loss = SigmoidFocalCrossEntropy()
+    # loss = SigmoidFocalCrossEntropy()
     features_list = ('Model_Type', 'Optimizer', 'step_factor')
     for iteration in [0]:
         for optimizer in ['Adam']:
