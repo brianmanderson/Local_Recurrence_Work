@@ -18,7 +18,7 @@ def return_model(model_key=0):
             if layer.name.find(freeze_name) == 0:
                 trainable = True
             model.layers[index].trainable = trainable
-    elif model_key == 3:
+    elif model_key > 2:
         model = mydensenet
     return model
 

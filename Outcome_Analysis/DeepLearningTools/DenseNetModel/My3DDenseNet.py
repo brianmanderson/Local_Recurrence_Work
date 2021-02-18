@@ -89,7 +89,7 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
     growth_rate = int(growth_rate)
     reduction = float(reduction)
     dropout = float(dropout)
-    input_shape = (32, 64, 64, 2)
+    input_shape = (32, 64, 64, 3)
     img_input = layers.Input(shape=input_shape)
     x = img_input
     inputs = (img_input,)
