@@ -18,7 +18,7 @@ import numpy as np
 def run_2d_model(batch_size=24, model_type=3):
     tf.random.set_seed(3141)
     train_generator, validation_generator = None, None
-    epochs = 2001
+    epochs = 10001
     base_path, morfeus_drive, excel_path = return_paths()
 
     iterations = [0, 1]
@@ -27,7 +27,7 @@ def run_2d_model(batch_size=24, model_type=3):
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)
                                       & (base_df['Optimizer'] == 'Adam') & (base_df['loss'] == 'CosineLoss')
-                                      & (base_df['run?'] == -3) & (base_df['Model_Type'] == model_type)
+                                      & (base_df['run?'] == -2)  # & (base_df['Model_Type'] == model_type)
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
     np.random.shuffle(indexes_for_not_run)
@@ -77,6 +77,9 @@ def run_2d_model(batch_size=24, model_type=3):
                 model_key_base = model_key
             model_base = return_model(model_key=model_key)
             model_parameters = run_df.squeeze().to_dict()
+            model_parameters['channels'] = 2
+            if run_df['Model_Type'] > 3:
+                model_parameters['channels'] = 3
             for key in model_parameters.keys():
                 if type(model_parameters[key]) is np.int64:
                     model_parameters[key] = int(model_parameters[key])

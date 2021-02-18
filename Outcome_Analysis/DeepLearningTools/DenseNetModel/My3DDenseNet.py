@@ -68,7 +68,7 @@ def transition_block(x, reduction, name, strides=(2, 2, 2)):
 
 
 def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense_connections=256, filters=16,
-               growth_rate=16, reduction=0.5, dropout=0.5, output_bias=None, loss=None, **kwargs):
+               growth_rate=16, reduction=0.5, dropout=0.5, output_bias=None, loss=None, channels=2, **kwargs):
     """
     :param blocks_in_dense: how many convolution blocks are in a single size layer
     :param dense_conv_blocks: how many dense blocks before a max pooling to occur
@@ -89,7 +89,7 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
     growth_rate = int(growth_rate)
     reduction = float(reduction)
     dropout = float(dropout)
-    input_shape = (32, 64, 64, 2)
+    input_shape = (32, 64, 64, channels)
     img_input = layers.Input(shape=input_shape)
     x = img_input
     inputs = (img_input,)

@@ -32,6 +32,8 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         mask_annotations = [
             MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1))
         ]
+    elif model_key == 6:
+        build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')
     '''
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
     '''
