@@ -41,7 +41,8 @@ if add_lr and finished_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths, os
     base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path, engine='openpyxl')
-    not_filled_df = df.loc[(pd.isnull(df['min_lr'])) & (df['Optimizer'] == 'Adam') & (df['loss'] == 'SigmoidFocal')]
+    not_filled_df = df.loc[(pd.isnull(df['min_lr'])) & (df['Optimizer'] == 'Adam') & (df['loss'] == 'CosineLoss')
+                           & (df['Model_Type'] == model_key)]
     for index in not_filled_df.index.values:
         model_index = not_filled_df['Model_Index'][index]
         print(model_index)
