@@ -18,10 +18,20 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     """
     if cache:
         assert cache_add is not None, 'You need to pass something to cache_add if caching'
+    expand_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')
+    mask_annotations = None
     if model_key == 3:  # If it's not pretrained, just pass 2 images
         build_keys = ('primary_image', 'secondary_image_deformed')
     elif model_key == 4:
         build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')
+        mask_annotations = [
+            MaskKeys(key_tuple=('primary_liver',), from_values_tuple=(2,), to_values_tuple=(1,))  # Disease to liver
+        ]
+    elif model_key == 5:
+        build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')
+        mask_annotations = [
+            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1))
+        ]
     '''
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
     '''
@@ -40,10 +50,12 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     if validation_path is not None:
         validation_generator = DataGeneratorClass(record_paths=validation_path)
         validation_processors = [
-            ExpandDimension(axis=-1, image_keys=build_keys),
+            ExpandDimension(axis=-1, image_keys=expand_keys),
             # ArgMax(annotation_keys=('annotation',), axis=-1),
-            Cast_Data(key_type_dict={'primary_liver': 'float32'})
+            Cast_Data(key_type_dict={'primary_liver': 'float32'}),
         ]
+        if mask_annotations is not None:
+            validation_processors += mask_annotations
         if cache:
             validation_processors += [
                 {'cache': os.path.join(validation_path[0], 'cache{}'.format(cache_add))}
@@ -61,10 +73,12 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
             return base_path, morfeus_drive, validation_generator
 
     train_processors_recurr = [
-        ExpandDimension(axis=-1, image_keys=build_keys),
+        ExpandDimension(axis=-1, image_keys=expand_keys),
         # ArgMax(annotation_keys=('annotation',), axis=-1),
         Cast_Data(key_type_dict={'primary_liver': 'float32'})
     ]
+    if mask_annotations is not None:
+        train_processors_recurr += mask_annotations
     if cache:
         train_processors_recurr += [
             {'cache': os.path.join(train_recurrence_path[0], 'cache{}'.format(cache_add))}
@@ -76,13 +90,15 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         {'batch': batch_size // 2},
         {'repeat'}
     ]
-    train_recurrence_generator.compile_data_set(image_processors=train_processors_recurr, debug=False)
+    train_recurrence_generator.compile_data_set(image_processors=train_processors_recurr, debug=True)
 
     train_processors_non_recurr = [
-        ExpandDimension(axis=-1, image_keys=build_keys),
+        ExpandDimension(axis=-1, image_keys=expand_keys),
         # ArgMax(annotation_keys=('annotation',), axis=-1),
         Cast_Data(key_type_dict={'primary_liver': 'float32'})
     ]
+    if mask_annotations is not None:
+        train_processors_non_recurr += mask_annotations
     if cache:
         train_processors_non_recurr += [
             {'cache': os.path.join(train_no_recurrence_path[0], 'cache{}'.format(cache_add))}
@@ -126,6 +142,6 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=4,
+    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=5,
     #                                                                                     all_training=False, cache=False)
     pass
