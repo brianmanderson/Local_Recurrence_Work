@@ -27,7 +27,7 @@ def run_2d_model(batch_size=24):
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)
                                       & (base_df['Optimizer'] == 'Adam') & (base_df['loss'] == 'CosineLoss')
-                                      & (base_df['run?'] == -2)
+                                      & (base_df['run?'] == -2) & (base_df['Model_Type'] == 4)
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
     np.random.shuffle(indexes_for_not_run)
@@ -36,7 +36,7 @@ def run_2d_model(batch_size=24):
         model_key = run_df.loc[index, 'Model_Type']
         compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'Optimizer', 'loss')
         features_list = ('Model_Type', 'step_factor', 'Optimizer', 'min_lr', 'max_lr', 'loss')
-        if model_key == 3:
+        if model_key > 2:
             compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration',
                             'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                             'filters', 'growth_rate', 'Dropout',
@@ -70,7 +70,8 @@ def run_2d_model(batch_size=24):
             base_df = base_df.append(run_df)
             base_df.to_excel(excel_path, index=0)
             if model_key_base != model_key or train_generator is None:
-                _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, cache_add='main',
+                _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
+                                                                                cache_add='main_{}'.format(model_key),
                                                                                 cache=True, model_key=model_key)
                 model_key_base = model_key
             model_base = return_model(model_key=model_key)

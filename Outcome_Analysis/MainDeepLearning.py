@@ -45,9 +45,10 @@ if add_lr and finished_lr:
     for index in not_filled_df.index.values:
         model_index = not_filled_df['Model_Index'][index]
         print(model_index)
-        path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3', 'Model_Index_{}'.format(model_index))
+        path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key),
+                            'Model_Index_{}'.format(model_index))
         plot_lrs(input_path=path, excel_path=excel_path, add_to_excel=True, base_df=df,
-                 save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_3', 'Outputs'))
+                 save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key), 'Outputs'))
     added_lr = True
 
 run_the_2D_model = False
