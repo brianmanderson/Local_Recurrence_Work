@@ -27,7 +27,7 @@ if sanity_check:
     print_center_images()
     xxx = 1
 
-batch_size = 32
+batch_size = 16
 find_lr = False
 finished_lr = True
 if find_lr:
