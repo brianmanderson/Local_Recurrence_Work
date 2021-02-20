@@ -18,10 +18,10 @@ import numpy as np
 def run_2d_model(batch_size=24, model_type=3):
     tf.random.set_seed(3141)
     train_generator, validation_generator = None, None
-    epochs = 10001
+    epochs = 25001
     base_path, morfeus_drive, excel_path = return_paths()
 
-    iterations = [0]
+    iterations = [0, 1]
     model_key_base = -1
     base_df = pd.read_excel(excel_path, engine='openpyxl')
     base_df.set_index('Model_Index')
