@@ -61,10 +61,15 @@ def run_2d_model(batch_size=24, model_type=3):
             model_index = 0
             tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
                                             'Model_Index_{}'.format(model_index))
-            while model_index in base_df['Model_Index'].values or os.path.exists(tensorboard_path):
-                model_index += 1
-                tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
-                                                'Model_Index_{}'.format(model_index))
+            included = True
+            while included:
+                while model_index in base_df['Model_Index'].values or os.path.exists(tensorboard_path):
+                    model_index += 1
+                    tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
+                                                    'Model_Index_{}'.format(model_index))
+                base_df = pd.read_excel(excel_path, engine='openpyxl')
+                if model_index not in base_df['Model_Index'].values:
+                    included = False
             os.makedirs(tensorboard_path)
             run_df.at[index, 'reference'] = run_df.loc[index, 'Model_Index']
             run_df.at[index, 'Model_Index'] = model_index
