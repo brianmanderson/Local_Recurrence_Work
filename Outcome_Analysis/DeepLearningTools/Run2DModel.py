@@ -21,13 +21,13 @@ def run_2d_model(batch_size=24, model_type=3):
     epochs = 13001
     base_path, morfeus_drive, excel_path = return_paths()
 
-    iterations = [0, 1, 2, 3]
+    iterations = [4, 5, 6]
     model_key_base = -1
     base_df = pd.read_excel(excel_path, engine='openpyxl')
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)
                                       & (base_df['Optimizer'] == 'Adam') & (base_df['loss'] == 'CosineLoss')
-                                      & (base_df['run?'] == -2)# & (base_df['Model_Type'] == model_type)
+                                      & (base_df['run?'] == -5)# & (base_df['Model_Type'] == model_type)
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
     np.random.shuffle(indexes_for_not_run)
