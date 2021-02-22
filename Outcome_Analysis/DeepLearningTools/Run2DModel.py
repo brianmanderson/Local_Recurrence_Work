@@ -70,11 +70,11 @@ def run_2d_model(batch_size=24, model_type=3):
                 base_df = pd.read_excel(excel_path, engine='openpyxl')
                 if model_index not in base_df['Model_Index'].values:
                     included = False
-            os.makedirs(tensorboard_path)
             run_df.at[index, 'reference'] = run_df.loc[index, 'Model_Index']
             run_df.at[index, 'Model_Index'] = model_index
             base_df = base_df.append(run_df)
             base_df.to_excel(excel_path, index=0)
+            os.makedirs(tensorboard_path)
             if model_key_base != model_key or train_generator is None:
                 _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                                 cache_add='main_{}'.format(model_key),
