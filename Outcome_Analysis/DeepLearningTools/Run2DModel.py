@@ -31,22 +31,23 @@ def run_2d_model(batch_size=24, model_type=3):
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
     np.random.shuffle(indexes_for_not_run)
-    for index in indexes_for_not_run:
-        run_df = base_df.loc[[index]]
-        model_key = run_df.loc[index, 'Model_Type']
-        compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'Optimizer', 'loss', 'batch_size')
-        features_list = ('Model_Type', 'step_factor', 'Optimizer', 'min_lr', 'max_lr', 'loss')
-        if model_key > 2:
-            compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration',
-                            'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
-                            'filters', 'growth_rate', 'Dropout',
-                            'Optimizer', 'loss', 'reduction', 'batch_size')
-            features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
-                             'num_dense_connections', 'filters', 'growth_rate', 'Optimizer', 'min_lr', 'max_lr',
-                             'loss', 'Dropout')
-        for iteration in iterations:
+    for iteration in iterations:
+        for index in indexes_for_not_run:
+            run_df = base_df.loc[[index]]
             run_df.at[index, 'Iteration'] = iteration
             run_df.at[index, 'batch_size'] = batch_size
+            model_key = run_df.loc[index, 'Model_Type']
+            compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'Optimizer', 'loss', 'batch_size')
+            features_list = ('Model_Type', 'step_factor', 'Optimizer', 'min_lr', 'max_lr', 'loss')
+            if model_key > 2:
+                compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration',
+                                'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
+                                'filters', 'growth_rate', 'Dropout',
+                                'Optimizer', 'loss', 'reduction', 'batch_size')
+                features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
+                                 'num_dense_connections', 'filters', 'growth_rate', 'Optimizer', 'min_lr', 'max_lr',
+                                 'loss', 'Dropout')
+
             contained = is_df_within_another(data_frame=base_df, current_run_df=run_df, features_list=compare_list)
             if contained:
                 print("Already ran this one")
