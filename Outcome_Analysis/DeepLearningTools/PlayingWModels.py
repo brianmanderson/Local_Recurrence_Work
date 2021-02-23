@@ -13,16 +13,16 @@ import numpy as np
 
 loss = CosineLoss()
 model_key = 5
-id = 11
+id = 13
 base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=32,
-                                                                                    cache=False,
+                                                                                    cache=True, cache_add='Playing',
                                                                                     model_key=model_key)
 x, y = next(iter(validation_generator.data_set))
 model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_2{}'.format(id)
 model_path = os.path.join(model_path_dir, 'cp.ckpt')
 tf_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Tensorboard\TB_2{}'.format(id)
 model = return_model(model_key=model_key)
-keys = {'blocks_in_dense': 2, 'dense_conv_blocks': 2, 'dense_layers': 1, 'num_dense_connections': 256, 'filters': 16,
+keys = {'blocks_in_dense': 2, 'dense_conv_blocks': 2, 'dense_layers': 1, 'num_dense_connections': 128, 'filters': 16,
         'growth_rate': 16, 'reduction': 1., 'dropout': 0.5, 'channels': 3, 'global_max': True}
 if model_key > 2:
     model = model(**keys)
@@ -46,7 +46,7 @@ model.compile(optimizer, loss=loss, metrics=METRICS)
 # model.train_on_batch(x, y)
 # pred = model.predict(x)
 # cosine_loss(y_true=y, y_pred=pred)
-model.fit(train_generator.data_set, epochs=1000, steps_per_epoch=len(train_generator),
+model.fit(train_generator.data_set, epochs=10001, steps_per_epoch=len(train_generator),
           validation_data=validation_generator.data_set, validation_steps=len(validation_generator),
           validation_freq=5, callbacks=callbacks)
 
