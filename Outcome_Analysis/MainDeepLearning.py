@@ -139,72 +139,89 @@ if evaluate_model:
     from tensorflow.keras import metrics, optimizers
 
     aucs = []
-    model_base_path = r'H:\Deeplearning_Recurrence_Work\Models\Model_Index_392'
-    pred_path = os.path.join(model_base_path, 'Predictions.npy')
-    truth_path = os.path.join(model_base_path, 'Truth.npy')
-    model_path = os.path.join(model_base_path, 'cp-best.cpkt')
-    # model_path = os.path.join(model_base_path, 'final_model.h5')
-    METRICS = [
-        metrics.TruePositives(name='TruePositive'),
-        metrics.FalsePositives(name='FalsePositive'),
-        metrics.TrueNegatives(name='TrueNegative'),
-        metrics.FalseNegatives(name='FalseNegative'),
-        metrics.BinaryAccuracy(name='Accuracy'),
-        metrics.Precision(name='Precision'),
-        metrics.Recall(name='Recall'),
-        metrics.AUC(name='AUC', multi_label=True),
-    ]
+    parameters = {994: {'Dropout': 0., 'blocks_in_dense': 7, 'dense_conv_blocks': 3, 'dense_layers': 1, 'reduction': 1,
+                        'num_dense_connections': 256, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 3,
+                        'model_key': 5},
+                  961: {'Dropout': 0.5, 'blocks_in_dense': 5, 'dense_conv_blocks': 3, 'dense_layers': 1,
+                        'reduction': 0.5, 'model_key': 3,
+                        'num_dense_connections': 128, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 2},
+                  962: {'Dropout': 0, 'blocks_in_dense': 5, 'dense_conv_blocks': 3, 'dense_layers': 3,
+                        'reduction': 1., 'model_key': 4,
+                        'num_dense_connections': 256, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 3}
+                  }
+    for model_index in parameters:
+        model_parameters = parameters[model_index]
+        for key in model_parameters.keys():
+            if type(model_parameters[key]) is np.int64:
+                model_parameters[key] = int(model_parameters[key])
+            elif type(model_parameters[key]) is np.float64:
+                model_parameters[key] = float(model_parameters[key])
+        model_base_path = r'H:\Deeplearning_Recurrence_Work\Models\Model_Index_{}'.format(model_index)
+        pred_path = os.path.join(model_base_path, 'Predictions.npy')
+        truth_path = os.path.join(model_base_path, 'Truth.npy')
+        model_path = os.path.join(model_base_path, 'cp-best.cpkt')
+        # model_path = os.path.join(model_base_path, 'final_model.h5')
+        METRICS = [
+            metrics.TruePositives(name='TruePositive'),
+            metrics.FalsePositives(name='FalsePositive'),
+            metrics.TrueNegatives(name='TrueNegative'),
+            metrics.FalseNegatives(name='FalseNegative'),
+            metrics.BinaryAccuracy(name='Accuracy'),
+            metrics.Precision(name='Precision'),
+            metrics.Recall(name='Recall'),
+            metrics.AUC(name='AUC', multi_label=True),
+        ]
 
-    model = mydensenet(dropout=0.0, blocks_in_dense=1, dense_conv_blocks=3, dense_layers=0,
-                       reduction=1.0, num_dense_connections=256, filters=8, growth_rate=16)
-    model.load_weights(model_path)
-    model.compile(optimizer=optimizers.Adam(), loss=CosineLoss(), metrics=METRICS)
-    # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
-    _, _, val_generator = return_generators(batch_size=8, return_validation_generators=True, model_key=3)
-    truth = []
-    prediction = []
-    val_iter = val_generator.data_set.as_numpy_iterator()
-    for i in range(len(val_generator)):
-        print(i)
-        x, y = next(val_iter)
-        truth.append(np.argmax(y[0]))
-        pred = model.predict(x)
-        prediction.append(pred)
-    evaluation = model.evaluate(val_generator.data_set, steps=len(val_generator))
-    prediction = np.squeeze(np.asarray(prediction))
-    truth = np.squeeze(np.asarray(truth))
-    np.save(file=pred_path, arr=prediction)
-    np.save(file=truth_path, arr=truth)
+        model = mydensenet(**model_parameters)
+        model.load_weights(model_path)
+        model.compile(optimizer=optimizers.Adam(), loss=CosineLoss(), metrics=METRICS)
+        # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
+        _, _, val_generator = return_generators(batch_size=8, return_validation_generators=True, model_key=model_parameters['model_key'])
+        truth = []
+        prediction = []
+        val_iter = val_generator.data_set.as_numpy_iterator()
+        for i in range(len(val_generator)):
+            print(i)
+            x, y = next(val_iter)
+            truth.append(np.argmax(y[0]))
+            pred = model.predict(x)
+            prediction.append(pred)
+        evaluation = model.evaluate(val_generator.data_set, steps=len(val_generator))
+        prediction = np.squeeze(np.asarray(prediction))
+        truth = np.squeeze(np.asarray(truth))
+        np.save(file=pred_path, arr=prediction)
+        np.save(file=truth_path, arr=truth)
 
-    final_pred = np.asarray([np.argmax(i) for i in prediction])
-    truth = np.asarray(truth)
-    correct = np.sum(truth == final_pred)
-    total = len(truth)
-    missed = total - correct
-    accuracy = correct/total * 100
-    correct_recurred = np.sum(truth[truth == 1] == final_pred[truth == 1]) / np.sum(truth == 1) * 100
-    correct_non_recurred = np.sum(truth[truth == 0] == final_pred[truth == 0]) / np.sum(truth == 0) * 100
-    print('Guessed {}% correct'.format(accuracy))
-    print('Guessed {}% of the recurrence correct'.format(correct_recurred))
-    print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
-    plot_roc = True
-    if plot_roc:
-        import matplotlib.pyplot as plt
-        import sklearn.metrics as metrics
-        fpr, tpr, threshold = metrics.roc_curve(truth, prediction[:, 1])
-        roc_auc = metrics.auc(fpr, tpr)
-        aucs.append(roc_auc)
-        plt.title('Receiver Operating Characteristic')
-        plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
-        plt.legend(loc='lower right')
-        plt.plot([0, 1], [0, 1], 'r--')
-        plt.xlim([0, 1])
-        plt.ylim([0, 1])
-        plt.ylabel('True Positive Rate')
-        plt.xlabel('False Positive Rate')
-        plt.show()
-        xxx = 1
-        plt.close()
+        final_pred = np.asarray([np.argmax(i) for i in prediction])
+        truth = np.asarray(truth)
+        correct = np.sum(truth == final_pred)
+        total = len(truth)
+        missed = total - correct
+        accuracy = correct/total * 100
+        correct_recurred = np.sum(truth[truth == 1] == final_pred[truth == 1]) / np.sum(truth == 1) * 100
+        correct_non_recurred = np.sum(truth[truth == 0] == final_pred[truth == 0]) / np.sum(truth == 0) * 100
+        print('Guessed {}% correct'.format(accuracy))
+        print('Guessed {}% of the recurrence correct'.format(correct_recurred))
+        print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
+        plot_roc = True
+        if plot_roc:
+            import matplotlib.pyplot as plt
+            from sklearn.metrics import roc_curve, auc
+            fpr, tpr, threshold = roc_curve(truth, prediction[:, 1])
+            roc_auc = auc(fpr, tpr)
+            aucs.append(roc_auc)
+            plt.title('Receiver Operating Characteristic')
+            color = 'b'
+            plt.plot(fpr, tpr, color, label='AUC {} = %0.2f'.format(model_parameters['model_key']) % roc_auc)
+            plt.legend(loc='lower right')
+            plt.plot([0, 1], [0, 1], 'r--')
+            plt.xlim([0, 1])
+            plt.ylim([0, 1])
+            plt.ylabel('True Positive Rate')
+            plt.xlabel('False Positive Rate')
+            plt.show()
+            xxx = 1
+            # plt.close()
 """
 3 blocks in dense
 2 dense layers
