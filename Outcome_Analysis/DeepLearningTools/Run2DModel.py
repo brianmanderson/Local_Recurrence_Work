@@ -18,16 +18,16 @@ import numpy as np
 def run_2d_model(batch_size=24, model_type=3):
     tf.random.set_seed(3141)
     train_generator, validation_generator = None, None
-    epochs = 13001
+    epochs = 10001
     base_path, morfeus_drive, excel_path = return_paths()
 
-    iterations = [4, 5, 6]
+    iterations = [0, 1]
     model_key_base = -1
     base_df = pd.read_excel(excel_path, engine='openpyxl')
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)
                                       & (base_df['Optimizer'] == 'Adam') & (base_df['loss'] == 'CosineLoss')
-                                      & (base_df['run?'] == -5)# & (base_df['Model_Type'] == model_type)
+                                      & (base_df['run?'] == -6)# & (base_df['Model_Type'] == model_type)
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
     np.random.shuffle(indexes_for_not_run)
