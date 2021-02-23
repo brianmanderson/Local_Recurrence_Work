@@ -12,8 +12,10 @@ import os
 import numpy as np
 
 loss = CosineLoss()
+# loss = tf.keras.losses.CategoricalCrossentropy()
 model_key = 5
-id = 13
+tf.random.set_seed(3141)
+id = 20
 base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=32,
                                                                                     cache=True, cache_add='Playing',
                                                                                     model_key=model_key)
@@ -22,8 +24,8 @@ model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\
 model_path = os.path.join(model_path_dir, 'cp.ckpt')
 tf_path = r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Tensorflow\Test\Model_{}'.format(id)
 model = return_model(model_key=model_key)
-keys = {'blocks_in_dense': 2, 'dense_conv_blocks': 2, 'dense_layers': 1, 'num_dense_connections': 128, 'filters': 16,
-        'growth_rate': 16, 'reduction': 1., 'dropout': 0.5, 'channels': 3, 'global_max': True}
+keys = {'blocks_in_dense': 1, 'dense_conv_blocks': 3, 'dense_layers': 1, 'num_dense_connections': 64, 'filters': 16,
+        'growth_rate': 16, 'reduction': 1., 'dropout': 0., 'channels': 3, 'global_max': True}
 if model_key > 2:
     model = model(**keys)
 # if not os.path.exists(model_path_dir) or not os.listdir(model_path_dir):
@@ -33,10 +35,10 @@ checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor='val_loss', 
                                                 save_freq='epoch', save_weights_only=True, verbose=1)
 tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tf_path,# profile_batch='50,100',
                                              write_graph=True)  # profile_batch='300,401',
-lrate = SGDRScheduler(min_lr=1e-4, max_lr=1e-3, steps_per_epoch=len(train_generator), cycle_length=500,
-                      lr_decay=0.9, mult_factor=1, gentle_start_epochs=0, gentle_fraction=1.0)
+lrate = SGDRScheduler(min_lr=1e-5, max_lr=1e-4, steps_per_epoch=len(train_generator), cycle_length=1000,
+                      lr_decay=0.5, mult_factor=1, gentle_start_epochs=0, gentle_fraction=1.0)
 add_lr = Add_Images_and_LR(log_dir=tf_path, add_images=False)
-callbacks = [tensorboard, lrate, add_lr]
+callbacks = [tensorboard, lrate, add_lr, checkpoint]
 METRICS = [
     metrics.Precision(name='Precision'),
     metrics.Recall(name='Recall'),

@@ -18,24 +18,31 @@ from tensorflow_addons.losses import SigmoidFocalCrossEntropy
 
 def return_model_and_things(model_base, out_path, iteration, excel_path, model_type=3):
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
-                    'filters', 'growth_rate', 'step_factor', 'loss', 'Optimizer', 'reduction', 'Dropout')
+                    'filters', 'growth_rate', 'step_factor', 'loss', 'Optimizer', 'reduction', 'Dropout', 'global_max')
     base_df = pd.read_excel(excel_path, engine='openpyxl')
     loss = 'CosineLoss'
+    global_max = 1
+    channels = 2
+    if model_type > 3:
+        channels = 3
     for dropout in [0]:
-        for blocks_in_dense in [5]:
-            for dense_conv_blocks in [3]:
-                for dense_layers in [1]:
+        for blocks_in_dense in [3, 5]:
+            for dense_conv_blocks in [1, 3, 5]:
+                for dense_layers in [0, 1, 3]:
                     for reduction in [1]:
-                        for num_dense_connections in [128]:
-                            for filters in [16]:
-                                for growth_rate in [32]:
+                        for num_dense_connections in [32, 64, 128]:
+                            if dense_layers == 0 and num_dense_connections > 32:
+                                continue
+                            for filters in [8]:
+                                for growth_rate in [8]:
                                     new_run = {'blocks_in_dense': [blocks_in_dense],
+                                               'global_max': [global_max],
                                                'dense_conv_blocks': [dense_conv_blocks],
                                                'dense_layers': [dense_layers],
                                                'num_dense_connections': [num_dense_connections],
-                                               'filters': [filters], 'growth_rate': [growth_rate], 'run?': [2],
+                                               'filters': [filters], 'growth_rate': [growth_rate], 'run?': [-6],
                                                'reduction': [reduction],
-                                               'step_factor': [10], 'loss': [loss],
+                                               'step_factor': [1001], 'loss': [loss],
                                                'Optimizer': ['Adam'],
                                                'Model_Type': [model_type], 'Dropout': [dropout]}
                                     current_run_df = pd.DataFrame(new_run)
@@ -66,8 +73,8 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
                                     if os.path.exists(new_out_path):
                                         continue
                                     try:
-                                        model = model_base(blocks_in_dense=blocks_in_dense,
-                                                           dense_conv_blocks=dense_conv_blocks,
+                                        model = model_base(blocks_in_dense=blocks_in_dense, global_max=global_max,
+                                                           dense_conv_blocks=dense_conv_blocks, channels=channels,
                                                            dense_layers=dense_layers, dropout=dropout,
                                                            num_dense_connections=num_dense_connections, filters=filters,
                                                            growth_rate=growth_rate, reduction=reduction, Loss=loss)
@@ -83,8 +90,8 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
 def find_best_lr(batch_size=24, model_key=0):
     tf.random.set_seed(3141)
     base_path, morfeus_drive, excel_path = return_paths()
-    min_lr = 1e-7
-    max_lr = 1
+    min_lr = 1e-6
+    max_lr = 1e-1
     model_base = return_model(model_key=model_key)
     # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
     loss = CosineLoss()
@@ -125,8 +132,8 @@ def find_best_lr(batch_size=24, model_key=0):
                     continue
             os.makedirs(out_path)
             _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, model_key=model_key,
-                                                                            all_training=True, cache=False,
-                                                                            cache_add='LR_Finder')
+                                                                            all_training=True, cache=True,
+                                                                            cache_add='LR_Finder_{}'.format(model_key))
             print(out_path)
             k = TensorBoard(log_dir=out_path, profile_batch=0, write_graph=True)
             k.set_model(model)
