@@ -42,11 +42,11 @@ def run_2d_model(batch_size=24, model_type=3):
             if model_key > 2:
                 compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration',
                                 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
-                                'filters', 'growth_rate', 'Dropout',
+                                'filters', 'growth_rate', 'Dropout', 'global_max',
                                 'Optimizer', 'loss', 'reduction', 'batch_size')
                 features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
                                  'num_dense_connections', 'filters', 'growth_rate', 'Optimizer', 'min_lr', 'max_lr',
-                                 'loss', 'Dropout')
+                                 'loss', 'Dropout', 'global_max')
 
             contained = is_df_within_another(data_frame=base_df, current_run_df=run_df, features_list=compare_list)
             if contained:
@@ -70,10 +70,10 @@ def run_2d_model(batch_size=24, model_type=3):
             run_df.at[index, 'reference'] = run_df.loc[index, 'Model_Index']
             run_df.at[index, 'Model_Index'] = model_index
             base_df = base_df.append(run_df)
-            base_df.to_excel(excel_path, index=0)
-            tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
-                                            'Model_Index_{}'.format(model_index))
-            os.makedirs(tensorboard_path)
+            # base_df.to_excel(excel_path, index=0)
+            # tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
+            #                                 'Model_Index_{}'.format(model_index))
+            # os.makedirs(tensorboard_path)
             if model_key_base != model_key or train_generator is None:
                 _, _, train_generator, validation_generator = return_generators(batch_size=batch_size,
                                                                                 cache_add='main_{}'.format(model_key),
