@@ -68,7 +68,7 @@ def transition_block(x, reduction, name, strides=(2, 2, 2)):
 
 
 def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense_connections=256, filters=16,
-               growth_rate=16, reduction=0.5, dropout=0.5, output_bias=None, loss=None, channels=2, **kwargs):
+               growth_rate=16, reduction=0.5, dropout=0.5, output_bias=None, loss=None, channels=2, global_max=False, **kwargs):
     """
     :param blocks_in_dense: how many convolution blocks are in a single size layer
     :param dense_conv_blocks: how many dense blocks before a max pooling to occur
@@ -105,9 +105,12 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
     # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
     x = GroupNormalization(groups=2, axis=-1, name='gn')(x)
     x = layers.Activation('selu', name='selu')(x)
+    if global_max:
+        x = layers.GlobalMaxPooling3D()(x)
+    else:
+        x = layers.AveragePooling3D(pool_size=(2, 2, 2), name='final_average_pooling')(x)
+        x = layers.Flatten()(x)
 
-    x = layers.AveragePooling3D(pool_size=(2, 2, 2), name='final_average_pooling')(x)
-    x = layers.Flatten()(x)
     for i in range(dense_layers):
         x = layers.Dense(num_dense_connections, activation='selu', kernel_regularizer=regularizers.l2(0.001))(x)
         if dropout != 0.0:

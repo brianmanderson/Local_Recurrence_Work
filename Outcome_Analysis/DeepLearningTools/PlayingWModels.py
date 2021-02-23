@@ -5,37 +5,45 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators i
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss, cosine_loss
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
 import tensorflow as tf
+from tensorflow.keras import metrics
 import os
 import numpy as np
 
 loss = CosineLoss()
-model_key = 3
-id = 1
-base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=16,
-                                                                                    cache=False, cross_validation_id=id,
+model_key = 5
+id = 7
+base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=32,
+                                                                                    cache=False,
                                                                                     model_key=model_key)
 x, y = next(iter(validation_generator.data_set))
 model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_2{}'.format(id)
 model_path = os.path.join(model_path_dir, 'cp.ckpt')
 tf_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Tensorboard\TB_2{}'.format(id)
 model = return_model(model_key=model_key)
+keys = {'blocks_in_dense': 2, 'dense_conv_blocks': 2, 'dense_layers': 1, 'num_dense_connections': 256, 'filters': 16,
+        'growth_rate': 16, 'reduction': 1., 'dropout': 0.5, 'channels': 3}
 if model_key > 2:
-    model = model()
+    model = model(**keys)
 # if not os.path.exists(model_path_dir) or not os.listdir(model_path_dir):
     # loss = tf.keras.losses.CategoricalCrossentropy()
-optimizer = tf.keras.optimizers.SGD(lr=1e-3)
+optimizer = tf.keras.optimizers.Adam(lr=5e-4)
 checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor='val_loss', mode='min', save_best_only=True,
                                                 save_freq='epoch', save_weights_only=True, verbose=1)
 tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tf_path,# profile_batch='50,100',
                                              write_graph=True)  # profile_batch='300,401',
 callbacks = [tensorboard]
-model.compile(optimizer, loss=loss, metrics=['accuracy'])
+METRICS = [
+    metrics.Precision(name='Precision'),
+    metrics.Recall(name='Recall'),
+    metrics.AUC(name='AUC'),
+]
+model.compile(optimizer, loss=loss, metrics=METRICS)
 # model.train_on_batch(x, y)
 # pred = model.predict(x)
 # cosine_loss(y_true=y, y_pred=pred)
-model.fit(train_generator.data_set, epochs=30, steps_per_epoch=len(train_generator),
+model.fit(train_generator.data_set, epochs=1000, steps_per_epoch=len(train_generator),
           validation_data=validation_generator.data_set, validation_steps=len(validation_generator),
-          validation_freq=1, callbacks=callbacks)
+          validation_freq=5, callbacks=callbacks)
 
 # model.load_weights(model_path)
 # xxx = 1
