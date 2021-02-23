@@ -28,7 +28,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
     for dropout in [0]:
         for blocks_in_dense in [3, 5]:
             for dense_conv_blocks in [1, 3, 5]:
-                for dense_layers in [0, 1, 3]:
+                for dense_layers in [0, 1]:
                     for reduction in [1]:
                         for num_dense_connections in [32, 64, 128]:
                             if dense_layers == 0 and num_dense_connections > 32:

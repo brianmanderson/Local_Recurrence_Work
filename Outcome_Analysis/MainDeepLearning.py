@@ -28,7 +28,7 @@ if sanity_check:
     xxx = 1
 
 batch_size = 32
-find_lr = True
+find_lr = False
 finished_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
