@@ -63,7 +63,7 @@ def transition_block(x, reduction, name, strides=(2, 2, 2)):
     x = layers.Activation('selu', name=name + '_selu')(x)
     x = layers.Conv3D(int(x.shape[-1] * reduction), 1,
                       use_bias=False, padding='same', name=name + '_conv')(x)
-    x = layers.AveragePooling3D(strides, strides=strides, name=name + '_pool')(x)
+    x = layers.MaxPooling3D(strides, strides=strides, name=name + '_pool')(x)
     return x
 
 
@@ -108,7 +108,7 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
     if global_max:
         x = layers.GlobalMaxPooling3D()(x)
     else:
-        x = layers.AveragePooling3D(pool_size=(2, 2, 2), name='final_average_pooling')(x)
+        x = layers.MaxPooling3D(pool_size=(2, 2, 2), name='final_average_pooling')(x)
         x = layers.Flatten()(x)
 
     for i in range(dense_layers):

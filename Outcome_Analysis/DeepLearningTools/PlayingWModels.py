@@ -20,7 +20,7 @@ base_path, morfeus_drive, train_generator, validation_generator = return_generat
 x, y = next(iter(validation_generator.data_set))
 model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_2{}'.format(id)
 model_path = os.path.join(model_path_dir, 'cp.ckpt')
-tf_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Tensorboard\TB_2{}'.format(id)
+tf_path = r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Tensorflow\Test\Model_{}'.format(id)
 model = return_model(model_key=model_key)
 keys = {'blocks_in_dense': 2, 'dense_conv_blocks': 2, 'dense_layers': 1, 'num_dense_connections': 128, 'filters': 16,
         'growth_rate': 16, 'reduction': 1., 'dropout': 0.5, 'channels': 3, 'global_max': True}
@@ -36,7 +36,7 @@ tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tf_path,# profile_batch='50
 lrate = SGDRScheduler(min_lr=1e-4, max_lr=1e-3, steps_per_epoch=len(train_generator), cycle_length=500,
                       lr_decay=0.9, mult_factor=1, gentle_start_epochs=0, gentle_fraction=1.0)
 add_lr = Add_Images_and_LR(log_dir=tf_path, add_images=False)
-callbacks = [tensorboard, lrate]
+callbacks = [tensorboard, lrate, add_lr]
 METRICS = [
     metrics.Precision(name='Precision'),
     metrics.Recall(name='Recall'),
