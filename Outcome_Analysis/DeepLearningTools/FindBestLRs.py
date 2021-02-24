@@ -25,12 +25,12 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
     channels = 2
     if model_type > 3:
         channels = 3
-    for dropout in [0, 0.5]:
-        for blocks_in_dense in [3, 5]:
-            for dense_conv_blocks in [1, 3, 5]:
-                for dense_layers in [3]:
+    for dropout in [0]:
+        for blocks_in_dense in [1, 2, 3]:
+            for dense_conv_blocks in [1, 2, 3]:
+                for dense_layers in [1]:
                     for reduction in [1]:
-                        for num_dense_connections in [32, 64, 128]:
+                        for num_dense_connections in [64]:
                             if dense_layers == 0 and num_dense_connections > 32:
                                 continue
                             for filters in [8]:
@@ -68,6 +68,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
                                         current_run_df.set_index('Model_Index')
                                         base_df = base_df.append(current_run_df)
                                         base_df.to_excel(excel_path, index=0)
+                                        continue
                                     new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
                                                                 '{}_Iteration'.format(iteration))
                                     if os.path.exists(new_out_path):
