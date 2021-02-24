@@ -42,7 +42,7 @@ def run_model(model, train_generator, validation_generator, min_lr, max_lr, mode
     model.compile(optimizer, loss=loss, metrics=METRICS)
     model.fit(train_generator.data_set, epochs=epochs, steps_per_epoch=len(train_generator),
               validation_data=validation_generator.data_set, validation_steps=len(validation_generator),
-              validation_freq=5, callbacks=callbacks)
+              validation_freq=10, callbacks=callbacks)
     model.save(os.path.join(model_path, 'final_model.h5'))
     tf.keras.backend.clear_session()
     return None
