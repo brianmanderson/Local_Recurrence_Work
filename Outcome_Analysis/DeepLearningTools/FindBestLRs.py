@@ -30,7 +30,7 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
             for dense_conv_blocks in [1, 2, 3]:
                 for dense_layers in [1]:
                     for reduction in [1]:
-                        for num_dense_connections in [64]:
+                        for num_dense_connections in [64, 128]:
                             if dense_layers == 0 and num_dense_connections > 32:
                                 continue
                             for filters in [8]:
