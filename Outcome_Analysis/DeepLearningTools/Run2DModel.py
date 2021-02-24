@@ -18,7 +18,7 @@ import numpy as np
 def run_2d_model(batch_size=24, model_type=3):
     tf.random.set_seed(3141)
     train_generator, validation_generator = None, None
-    epochs = 3001
+    epochs = 100001
     base_path, morfeus_drive, excel_path = return_paths()
 
     iterations = [0, 1]
