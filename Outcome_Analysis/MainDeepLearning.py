@@ -88,11 +88,12 @@ if view_results_with_r:
      ggtitle('Validation Loss vs Blocks in Dense, and Dense Convolution Blocks') + scale_colour_gradient(low='blue',
                                                                                                          high='red'))
 
-    for variable in ['Dropout', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'reduction',
+    for variable in ['Dropout', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'reduction', 'step_factor',
                      'num_dense_connections', 'filters', 'growth_rate']:
         xxx = 1
-        (ggplot(df) + aes(x='{}'.format(variable), y='epoch_loss') + geom_point(
-            mapping=aes(color='epoch_AUC')) + xlab('{}'.format(variable)) + ylab('Validation Loss') + scale_y_log10()
+        (ggplot(df) + aes(x='{}'.format(variable), y='epoch_loss') + geom_point(mapping=aes(color='epoch_AUC')) +
+         facet_wrap('Model_Type', labeller='label_both') +
+         xlab('{}'.format(variable)) + ylab('Validation Loss') + scale_y_log10()
          + scale_colour_gradient(low='blue', high='red'))
 """
 Best model notes

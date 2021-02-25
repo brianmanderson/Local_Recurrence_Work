@@ -25,65 +25,66 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
     channels = 2
     if model_type > 3:
         channels = 3
-    for dropout in [0]:
-        for blocks_in_dense in [1, 2, 3]:
-            for dense_conv_blocks in [1, 2, 3]:
-                for dense_layers in [1]:
-                    for reduction in [1]:
-                        for num_dense_connections in [64, 128]:
-                            if dense_layers == 0 and num_dense_connections > 32:
-                                continue
-                            for filters in [8]:
-                                for growth_rate in [8]:
-                                    new_run = {'blocks_in_dense': [blocks_in_dense],
-                                               'global_max': [global_max],
-                                               'dense_conv_blocks': [dense_conv_blocks],
-                                               'dense_layers': [dense_layers],
-                                               'num_dense_connections': [num_dense_connections],
-                                               'filters': [filters], 'growth_rate': [growth_rate], 'run?': [-6],
-                                               'reduction': [reduction],
-                                               'step_factor': [1001], 'loss': [loss],
-                                               'Optimizer': ['Adam'],
-                                               'Model_Type': [model_type], 'Dropout': [dropout]}
-                                    current_run_df = pd.DataFrame(new_run)
-                                    contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
-                                                                     features_list=compare_keys)
-                                    if not contained:
-                                        base_df = pd.read_excel(excel_path, engine='openpyxl')  # Check it once more with the latest version..
+    for dropout in [0, 0.5]:
+        for step_factor in [2000, 10000]:
+            for blocks_in_dense in [1]:
+                for dense_conv_blocks in [1, 2]:
+                    for dense_layers in [1, 2]:
+                        for reduction in [1]:
+                            for num_dense_connections in [128, 256]:
+                                if dense_layers == 0 and num_dense_connections > 32:
+                                    continue
+                                for filters in [16, 32]:
+                                    for growth_rate in [16, 32]:
+                                        new_run = {'blocks_in_dense': [blocks_in_dense],
+                                                   'global_max': [global_max],
+                                                   'dense_conv_blocks': [dense_conv_blocks],
+                                                   'dense_layers': [dense_layers],
+                                                   'num_dense_connections': [num_dense_connections],
+                                                   'filters': [filters], 'growth_rate': [growth_rate], 'run?': [-6],
+                                                   'reduction': [reduction],
+                                                   'step_factor': [step_factor], 'loss': [loss],
+                                                   'Optimizer': ['Adam'],
+                                                   'Model_Type': [model_type], 'Dropout': [dropout]}
+                                        current_run_df = pd.DataFrame(new_run)
                                         contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
                                                                          features_list=compare_keys)
-                                    if contained:
-                                        compare_df = base_df
-                                        for key in compare_keys:
-                                            compare_df = compare_df.loc[compare_df[key] == current_run_df[key].values[0]]
-                                        model_index = compare_df.Model_Index.values[0]
-                                        if 'epoch_loss' in compare_df.columns:
-                                            if not pd.isnull(compare_df['epoch_loss'][compare_df.index.values[0]]):
-                                                continue  # If it isn't null, it was already done
-                                    else:
-                                        model_index = 0
-                                        while model_index in base_df['Model_Index'].values:
-                                            model_index += 1
-                                        current_run_df.insert(0, column='Model_Index', value=model_index)
-                                        current_run_df.set_index('Model_Index')
-                                        base_df = base_df.append(current_run_df)
-                                        base_df.to_excel(excel_path, index=0)
-                                        continue
-                                    new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
-                                                                '{}_Iteration'.format(iteration))
-                                    if os.path.exists(new_out_path):
-                                        continue
-                                    try:
-                                        model = model_base(blocks_in_dense=blocks_in_dense, global_max=global_max,
-                                                           dense_conv_blocks=dense_conv_blocks, channels=channels,
-                                                           dense_layers=dense_layers, dropout=dropout,
-                                                           num_dense_connections=num_dense_connections, filters=filters,
-                                                           growth_rate=growth_rate, reduction=reduction, Loss=loss)
-                                        return model, new_out_path
-                                    except:
-                                        os.makedirs(new_out_path)
-                                        print('Failed to make model')
-                                        continue
+                                        if not contained:
+                                            base_df = pd.read_excel(excel_path, engine='openpyxl')  # Check it once more with the latest version..
+                                            contained = is_df_within_another(data_frame=base_df, current_run_df=current_run_df,
+                                                                             features_list=compare_keys)
+                                        if contained:
+                                            compare_df = base_df
+                                            for key in compare_keys:
+                                                compare_df = compare_df.loc[compare_df[key] == current_run_df[key].values[0]]
+                                            model_index = compare_df.Model_Index.values[0]
+                                            if 'min_lr' in compare_df.columns:
+                                                if not pd.isnull(compare_df['min_lr'][compare_df.index.values[0]]):
+                                                    continue  # If it isn't null, it was already done
+                                        else:
+                                            model_index = 0
+                                            while model_index in base_df['Model_Index'].values:
+                                                model_index += 1
+                                            current_run_df.insert(0, column='Model_Index', value=model_index)
+                                            current_run_df.set_index('Model_Index')
+                                            base_df = base_df.append(current_run_df)
+                                            base_df.to_excel(excel_path, index=0)
+                                            # continue
+                                        new_out_path = os.path.join(out_path, 'Model_Index_{}'.format(model_index),
+                                                                    '{}_Iteration'.format(iteration))
+                                        if os.path.exists(new_out_path):
+                                            continue
+                                        try:
+                                            model = model_base(blocks_in_dense=blocks_in_dense, global_max=global_max,
+                                                               dense_conv_blocks=dense_conv_blocks, channels=channels,
+                                                               dense_layers=dense_layers, dropout=dropout,
+                                                               num_dense_connections=num_dense_connections, filters=filters,
+                                                               growth_rate=growth_rate, reduction=reduction, Loss=loss)
+                                            return model, new_out_path
+                                        except:
+                                            os.makedirs(new_out_path)
+                                            print('Failed to make model')
+                                            continue
 
     return None, None
 
