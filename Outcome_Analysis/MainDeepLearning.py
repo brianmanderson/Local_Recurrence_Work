@@ -141,12 +141,12 @@ if evaluate_model:
     aucs = []
     parameters = {994: {'Dropout': 0., 'blocks_in_dense': 7, 'dense_conv_blocks': 3, 'dense_layers': 1, 'reduction': 1,
                         'num_dense_connections': 256, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 3,
-                        'model_key': 5},
-                  961: {'Dropout': 0.5, 'blocks_in_dense': 5, 'dense_conv_blocks': 3, 'dense_layers': 1,
-                        'reduction': 0.5, 'model_key': 3,
-                        'num_dense_connections': 128, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 2},
+                        'model_key': 5, 'color': 'b', 'description': 'Disease'},
+                  # 961: {'Dropout': 0.5, 'blocks_in_dense': 5, 'dense_conv_blocks': 3, 'dense_layers': 1,
+                  #       'reduction': 0.5, 'model_key': 3,
+                  #       'num_dense_connections': 128, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 2},
                   962: {'Dropout': 0, 'blocks_in_dense': 5, 'dense_conv_blocks': 3, 'dense_layers': 3,
-                        'reduction': 1., 'model_key': 4,
+                        'reduction': 1., 'model_key': 4, 'color': 'r', 'description': 'Liver',
                         'num_dense_connections': 256, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 3}
                   }
     for model_index in parameters:
@@ -211,8 +211,9 @@ if evaluate_model:
             roc_auc = auc(fpr, tpr)
             aucs.append(roc_auc)
             plt.title('Receiver Operating Characteristic')
-            color = 'b'
-            plt.plot(fpr, tpr, color, label='AUC {} = %0.2f'.format(model_parameters['model_key']) % roc_auc)
+            desc = model_parameters['description']
+            color = model_parameters['color']
+            plt.plot(fpr, tpr, color, label='AUC {} = %0.2f'.format(desc) % roc_auc)
             plt.legend(loc='lower right')
             plt.plot([0, 1], [0, 1], 'r--')
             plt.xlim([0, 1])
@@ -222,6 +223,7 @@ if evaluate_model:
             plt.show()
             xxx = 1
             # plt.close()
+xxx = 1
 """
 3 blocks in dense
 2 dense layers
