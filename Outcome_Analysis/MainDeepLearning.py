@@ -78,7 +78,10 @@ if view_results_with_r:
     base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path, engine='openpyxl')
     # df = df.dropna()
-    df = df[(~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['loss'] == 'CosineLoss') & (df['run?'] == -6)]
+    df = df[
+        (~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['loss'] == 'CosineLoss') & (df['run?'] == -6)
+        & (df['Model_Type'] == 5)
+            ]
     # df.epoch_loss = np.where((df.epoch_AUC < .51), 1, df.epoch_loss)
     # df.epoch_loss = np.where((df.epoch_loss > .6), .6, df.epoch_loss)
     xxx = 1
@@ -92,7 +95,7 @@ if view_results_with_r:
                      'num_dense_connections', 'filters', 'growth_rate']:
         xxx = 1
         (ggplot(df) + aes(x='{}'.format(variable), y='epoch_loss') + geom_point(mapping=aes(color='epoch_AUC')) +
-         facet_wrap('Model_Type', labeller='label_both') +
+         #facet_wrap('Model_Type', labeller='label_both') +
          xlab('{}'.format(variable)) + ylab('Validation Loss') + scale_y_log10()
          + scale_colour_gradient(low='blue', high='red'))
 """
@@ -140,14 +143,14 @@ if evaluate_model:
     from tensorflow.keras import metrics, optimizers
 
     aucs = []
-    parameters = {994: {'Dropout': 0., 'blocks_in_dense': 7, 'dense_conv_blocks': 3, 'dense_layers': 1, 'reduction': 1,
-                        'num_dense_connections': 256, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 3,
-                        'model_key': 5, 'color': 'b', 'description': 'Disease'},
+    parameters = {1431: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+                        'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
+                        'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary + GTV'},
                   # 961: {'Dropout': 0.5, 'blocks_in_dense': 5, 'dense_conv_blocks': 3, 'dense_layers': 1,
                   #       'reduction': 0.5, 'model_key': 3,
                   #       'num_dense_connections': 128, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 2},
                   962: {'Dropout': 0, 'blocks_in_dense': 5, 'dense_conv_blocks': 3, 'dense_layers': 3,
-                        'reduction': 1., 'model_key': 4, 'color': 'r', 'description': 'Liver',
+                        'reduction': 1., 'model_key': 4, 'color': 'r', 'description': 'Primary + Secondary + Liver',
                         'num_dense_connections': 256, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 3}
                   }
     for model_index in parameters:
@@ -214,7 +217,7 @@ if evaluate_model:
             plt.title('Receiver Operating Characteristic')
             desc = model_parameters['description']
             color = model_parameters['color']
-            plt.plot(fpr, tpr, color, label='AUC {} = %0.2f'.format(desc) % roc_auc)
+            plt.plot(fpr, tpr, color, label='{} AUC: %0.2f'.format(desc) % roc_auc)
             plt.legend(loc='lower right')
             plt.plot([0, 1], [0, 1], 'r--')
             plt.xlim([0, 1])

@@ -27,7 +27,9 @@ def run_2d_model(batch_size=24, model_type=3):
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)
                                       & (base_df['Optimizer'] == 'Adam') & (base_df['loss'] == 'CosineLoss')
-                                      & (base_df['run?'] == -6) & (base_df['Model_Type'] == model_type)
+                                      & (base_df['run?'] == -6)
+                                      #& (base_df['Model_Type'] == model_type)
+                                      & (base_df['step_factor'] >= 2000)
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
     np.random.shuffle(indexes_for_not_run)
