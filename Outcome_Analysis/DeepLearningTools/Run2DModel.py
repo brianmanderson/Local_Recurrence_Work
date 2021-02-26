@@ -28,11 +28,13 @@ def run_2d_model(batch_size=24, model_type=3):
     potentially_not_run = base_df.loc[pd.isnull(base_df.Iteration) & ~pd.isnull(base_df.min_lr)
                                       & (base_df['Optimizer'] == 'Adam') & (base_df['loss'] == 'CosineLoss')
                                       & (base_df['run?'] == -6)
-                                      #& (base_df['Model_Type'] == model_type)
-                                      & (base_df['step_factor'] >= 2000)
+                                      & (base_df['Model_Type'] == model_type)
+                                      & (base_df['step_factor'] > 2000)
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
     np.random.shuffle(indexes_for_not_run)
+    total = potentially_not_run.shape[0]
+    left = potentially_not_run.shape[0]
     for iteration in iterations:
         for index in indexes_for_not_run:
             run_df = base_df.loc[[index]]
@@ -53,6 +55,7 @@ def run_2d_model(batch_size=24, model_type=3):
             contained = is_df_within_another(data_frame=base_df, current_run_df=run_df, features_list=compare_list)
             if contained:
                 print("Already ran this one")
+                left -= 1
                 continue
             else:
                 base_df = pd.read_excel(excel_path, engine='openpyxl')

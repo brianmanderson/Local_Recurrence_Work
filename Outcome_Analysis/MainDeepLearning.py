@@ -80,7 +80,7 @@ if view_results_with_r:
     # df = df.dropna()
     df = df[
         (~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['loss'] == 'CosineLoss') & (df['run?'] == -6)
-        & (df['Model_Type'] == 5)
+        & (df['Model_Type'] == 5) & (df['Model_Index'] > 1000)
             ]
     # df.epoch_loss = np.where((df.epoch_AUC < .51), 1, df.epoch_loss)
     # df.epoch_loss = np.where((df.epoch_loss > .6), .6, df.epoch_loss)
