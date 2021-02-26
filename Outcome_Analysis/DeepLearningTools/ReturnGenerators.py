@@ -54,7 +54,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         validation_processors = [
             ExpandDimension(axis=-1, image_keys=expand_keys),
             # ArgMax(annotation_keys=('annotation',), axis=-1),
-            Cast_Data(key_type_dict={'primary_liver': 'float32'}),
+            Cast_Data(keys=('primary_liver',), dtypes=('float32',)),
         ]
         if mask_annotations is not None:
             validation_processors += mask_annotations
@@ -77,7 +77,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     train_processors_recurr = [
         ExpandDimension(axis=-1, image_keys=expand_keys),
         # ArgMax(annotation_keys=('annotation',), axis=-1),
-        Cast_Data(key_type_dict={'primary_liver': 'float32'})
+        Cast_Data(keys=('primary_liver',), dtypes=('float32',)),
     ]
     if mask_annotations is not None:
         train_processors_recurr += mask_annotations
@@ -97,7 +97,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     train_processors_non_recurr = [
         ExpandDimension(axis=-1, image_keys=expand_keys),
         # ArgMax(annotation_keys=('annotation',), axis=-1),
-        Cast_Data(key_type_dict={'primary_liver': 'float32'})
+        Cast_Data(keys=('primary_liver',), dtypes=('float32',)),
     ]
     if mask_annotations is not None:
         train_processors_non_recurr += mask_annotations
