@@ -22,7 +22,7 @@ output_file = os.path.join(base_data_path,'Post_treatment_and_Recurrence_info_ou
 status_path = os.path.join(base_data_path,'Status')
 if not os.path.exists(status_path):
     os.makedirs(status_path)
-data = pd.read_excel(output_file)
+data = pd.read_excel(output_file, engine='openpyxl')
 MRNs = data['MRN']
 ablation_volume = []
 ablation_recurrence_volume = []
