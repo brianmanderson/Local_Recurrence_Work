@@ -14,7 +14,7 @@ def add_metrics_to_excel():
     not_filled_df = df.loc[
         (~pd.isnull(df['min_lr'])) & (~pd.isnull(df['Iteration']))
         # & (pd.isnull(df['epoch_loss']))
-        & (df['run?'] == -6)
+        # & (df['run?'] == -6)
         ]
     for key in [3, 4, 5, 6]:
         df.set_index('Model_Index', inplace=True)
