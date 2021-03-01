@@ -34,6 +34,21 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         ]
     elif model_key == 6:
         build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')  # Liver and disease present
+
+    elif model_key == 7:  # If it's not pretrained, just pass 2 images
+        build_keys = ('primary_image', 'secondary_image')
+    elif model_key == 8:
+        build_keys = ('primary_image', 'secondary_image', 'primary_liver', 'secondary_liver')
+        mask_annotations = [
+            MaskKeys(key_tuple=('primary_liver',), from_values_tuple=(2,), to_values_tuple=(1,))  # Only show liver
+        ]
+    elif model_key == 9:
+        build_keys = ('primary_image', 'secondary_image', 'primary_liver')  # Only show disease
+        mask_annotations = [
+            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1))
+        ]
+    elif model_key == 10:
+        build_keys = ('primary_image', 'secondary_image', 'primary_liver', 'secondary_liver')  # Liver and disease present
     '''
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
     '''

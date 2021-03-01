@@ -86,9 +86,8 @@ def run_2d_model(batch_size=24, model_type=3):
                 model_key_base = model_key
             model_base = return_model(model_key=model_key)
             model_parameters = run_df.squeeze().to_dict()
-            model_parameters['channels'] = 2
-            if run_df.loc[index, 'Model_Type'] > 3:
-                model_parameters['channels'] = 3
+            channel_keys = {3: 2, 4: 3, 5: 3, 6: 3, 7: 2, 8: 4, 9: 3, 10: 4}
+            model_parameters['channels'] = channel_keys[run_df.loc[index, 'Model_Type']]
             for key in model_parameters.keys():
                 if type(model_parameters[key]) is np.int64:
                     model_parameters[key] = int(model_parameters[key])
