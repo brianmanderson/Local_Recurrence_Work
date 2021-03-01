@@ -20,8 +20,9 @@ def return_paths():
     except:
         base = find_raid_dir()
         base_path = os.path.join(base, 'Deeplearning_Recurrence_Work')
+        morfeus_drive = os.path.abspath(os.path.join(find_raid_dir(), '..'))
         morfeus_drive = os.path.abspath(
-            os.path.join(find_base_dir(), 'Morfeus', 'BMAnderson', 'Modular_Projects', 'Liver_Local_Recurrence_Work',
+            os.path.join(morfeus_drive, 'Morfeus', 'BMAnderson', 'Modular_Projects', 'Liver_Local_Recurrence_Work',
                          'Predicting_Recurrence'))
     excel_path = os.path.join(morfeus_drive, 'ModelParameters_No_CV.xlsx')
     return base_path, morfeus_drive, excel_path
