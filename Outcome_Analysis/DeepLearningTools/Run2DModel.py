@@ -41,13 +41,13 @@ def run_2d_model(batch_size=24, model_type=3):
             run_df.at[index, 'Iteration'] = iteration
             run_df.at[index, 'batch_size'] = batch_size
             model_key = run_df.loc[index, 'Model_Type']
-            compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'Optimizer', 'loss', 'batch_size')
+            compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration', 'Optimizer', 'loss', 'batch_size', 'run?')
             features_list = ('Model_Type', 'step_factor', 'Optimizer', 'min_lr', 'max_lr', 'loss')
             if model_key > 2:
                 compare_list = ('Model_Type', 'min_lr', 'max_lr', 'step_factor', 'Iteration',
                                 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                                 'filters', 'growth_rate', 'Dropout', 'global_max',
-                                'Optimizer', 'loss', 'reduction', 'batch_size')
+                                'Optimizer', 'loss', 'reduction', 'batch_size', 'run?')
                 features_list = ('Model_Type', 'step_factor', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers',
                                  'num_dense_connections', 'filters', 'growth_rate', 'Optimizer', 'min_lr', 'max_lr',
                                  'loss', 'Dropout', 'global_max')
