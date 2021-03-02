@@ -45,8 +45,9 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     elif model_key == 9:
         build_keys = ('primary_image', 'secondary_image', 'primary_liver', 'secondary_liver')
         expand_keys = (
-        'primary_image', 'secondary_image_deformed', 'primary_liver', 'secondary_liver', 'secondary_image')
+            'primary_image', 'secondary_image_deformed', 'primary_liver', 'secondary_liver', 'secondary_image')
         mask_annotations = [
+            Cast_Data(keys=('secondary_liver',), dtypes=('float32',)),
             MaskKeys(key_tuple=('primary_liver',), from_values_tuple=(2,), to_values_tuple=(1,))  # Only show liver
         ]
     elif model_key == 10:
@@ -59,7 +60,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         build_keys = ('primary_image', 'secondary_image', 'primary_liver', 'disease', 'secondary_liver')  # Liver and disease present
         mask_annotations = [
             CreateDiseaseKey(),
-            Cast_Data(keys=('disease',), dtypes=('float32',)),
+            Cast_Data(keys=('disease', 'secondary_liver'), dtypes=('float32', 'float32')),
             MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(2,), to_values_tuple=(1,))
         ]
     '''
@@ -177,7 +178,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=6,
+    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=9,
     #                                                                                     all_training=False, cache=False)
     # xxx = 1
     pass
