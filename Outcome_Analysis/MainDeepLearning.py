@@ -52,7 +52,7 @@ if add_lr and finished_lr:
                  save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key), 'Outputs'))
     added_lr = True
 
-run_the_2D_model = False
+run_the_2D_model = True
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_type=model_key)
@@ -143,15 +143,21 @@ if evaluate_model:
     from tensorflow.keras import metrics, optimizers
 
     aucs = []
-    parameters = {1431: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
-                        'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
-                        'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary + GTV'},
-                  # 961: {'Dropout': 0.5, 'blocks_in_dense': 5, 'dense_conv_blocks': 3, 'dense_layers': 1,
-                  #       'reduction': 0.5, 'model_key': 3,
-                  #       'num_dense_connections': 128, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 2},
-                  962: {'Dropout': 0, 'blocks_in_dense': 5, 'dense_conv_blocks': 3, 'dense_layers': 3,
-                        'reduction': 1., 'model_key': 4, 'color': 'r', 'description': 'Primary + Secondary + Liver',
-                        'num_dense_connections': 256, 'filters': 16, 'global_max': 0, 'growth_rate': 32, 'channels': 3}
+    parameters = {1662: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2,
+                         'reduction': 1., 'model_key': 3, 'color': 'black', 'description': 'Primary + Secondary',
+                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 2},
+                  1541: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2,
+                         'reduction': 1., 'model_key': 4, 'color': 'red', 'description': 'Primary + Secondary + Liver',
+                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3},
+                  1431: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
+                         'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary + GTV'},
+                  1673: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2, 'reduction': 1,
+                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 4,
+                         'model_key': 7, 'color': 'green', 'description': 'Primary + Secondary + GTV + Liver'},
+                  # 1318: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 1,
+                  #        'reduction': 1., 'model_key': 6, 'color': 'green', 'description': 'Primary + Secondary + Liver + GTV',
+                  #        'num_dense_connections': 64, 'filters': 16, 'global_max': 1, 'growth_rate': 32, 'channels': 3}
                   }
     for model_index in parameters:
         model_parameters = parameters[model_index]

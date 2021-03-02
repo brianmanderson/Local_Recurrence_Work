@@ -20,7 +20,7 @@ def run_2d_model(batch_size=24, model_type=3):
     train_generator, validation_generator = None, None
     epochs = 100001
     base_path, morfeus_drive, excel_path = return_paths()
-
+    channel_keys = {3: 2, 4: 3, 5: 3, 7: 4, 8: 2, 9: 4, 10: 3, 11: 4}
     iterations = [2, 3]
     model_key_base = -1
     base_df = pd.read_excel(excel_path, engine='openpyxl')
@@ -86,7 +86,6 @@ def run_2d_model(batch_size=24, model_type=3):
                 model_key_base = model_key
             model_base = return_model(model_key=model_key)
             model_parameters = run_df.squeeze().to_dict()
-            channel_keys = {3: 2, 4: 3, 5: 3, 6: 3, 7: 2, 8: 4, 9: 3, 10: 4}
             model_parameters['channels'] = channel_keys[run_df.loc[index, 'Model_Type']]
             for key in model_parameters.keys():
                 if type(model_parameters[key]) is np.int64:
