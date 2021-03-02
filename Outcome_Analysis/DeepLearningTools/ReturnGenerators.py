@@ -18,7 +18,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     """
     if cache:
         assert cache_add is not None, 'You need to pass something to cache_add if caching'
-    expand_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'secondary_liver', 'secondary_image')
+    expand_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'secondary_image')
     mask_annotations = None
     if model_key == 3:  # If it's not pretrained, just pass 2 images
         build_keys = ('primary_image', 'secondary_image_deformed')
@@ -44,6 +44,8 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         build_keys = ('primary_image', 'secondary_image')
     elif model_key == 9:
         build_keys = ('primary_image', 'secondary_image', 'primary_liver', 'secondary_liver')
+        expand_keys = (
+        'primary_image', 'secondary_image_deformed', 'primary_liver', 'secondary_liver', 'secondary_image')
         mask_annotations = [
             MaskKeys(key_tuple=('primary_liver',), from_values_tuple=(2,), to_values_tuple=(1,))  # Only show liver
         ]
