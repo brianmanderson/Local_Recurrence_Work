@@ -116,8 +116,9 @@ Contour_names = ['Retro_GTV', 'Retro_GTV_Recurred', 'Liver']
 write_records = True
 if write_records:
     from Local_Recurrence_Work.Outcome_Analysis.PreProcessingTools.Nifti_to_tfrecords import nifti_to_records, os
-    nifti_to_records(nifti_path=os.path.join(nifti_export_path, 'Train'))
-    nifti_to_records(nifti_path=os.path.join(nifti_export_path, 'Validation'))
+    # nifti_to_records(nifti_path=os.path.join(nifti_export_path, 'Train'))
+    # nifti_to_records(nifti_path=os.path.join(nifti_export_path, 'Validation'))
+    nifti_to_records(nifti_path=os.path.join(nifti_export_path, 'Test'))
 
 
 '''
