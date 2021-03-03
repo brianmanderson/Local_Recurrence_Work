@@ -25,19 +25,21 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     elif model_key == 4:
         build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')
         mask_annotations = [
-            MaskKeys(key_tuple=('primary_liver',), from_values_tuple=(2,), to_values_tuple=(1,))  # Only show liver
+            MaskKeys(key_tuple=('primary_liver',), from_values_tuple=(2,), to_values_tuple=(1,)),  # Only show liver
+            Cast_Data(keys=('primary_liver',), dtypes=('float32',))
         ]
     elif model_key == 5:
         build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')  # Only show disease
         mask_annotations = [
-            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1))
+            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1)),
+            Cast_Data(keys=('primary_liver',), dtypes=('float32',))
         ]
     elif model_key == 7:  # 6 was flawed, go off 7 now
         expand_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'disease')
         build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'disease')  # Liver and disease present
         mask_annotations = [
             CreateDiseaseKey(),
-            Cast_Data(keys=('disease',), dtypes=('float32',)),
+            Cast_Data(keys=('disease', 'primary_liver'), dtypes=('float32', 'float32')),
             MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(2,), to_values_tuple=(1,))
         ]
     elif model_key == 8:  # If it's not pretrained, just pass 2 images
