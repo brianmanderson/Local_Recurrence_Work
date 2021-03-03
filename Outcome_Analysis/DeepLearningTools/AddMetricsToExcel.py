@@ -13,7 +13,7 @@ def add_metrics_to_excel():
     df = pd.read_excel(excel_path, engine='openpyxl')
     not_filled_df = df.loc[
         (~pd.isnull(df['min_lr'])) & (~pd.isnull(df['Iteration']))
-        # & (pd.isnull(df['epoch_loss']))
+        & (pd.isnull(df['epoch_loss']))
         # & (df['run?'] == -8)
         ]
     for key in [8, 9, 10, 11]:
