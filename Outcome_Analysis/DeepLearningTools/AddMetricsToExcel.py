@@ -16,7 +16,7 @@ def add_metrics_to_excel():
         # & (pd.isnull(df['epoch_loss']))
         # & (df['run?'] == -8)
         ]
-    for key in [7]:
+    for key in [8, 9, 10, 11]:
         df.set_index('Model_Index', inplace=True)
         print(key)
         path_base = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(key))

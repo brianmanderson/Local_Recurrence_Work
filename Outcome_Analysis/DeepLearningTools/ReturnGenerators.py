@@ -178,7 +178,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=9,
+    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=11,
     #                                                                                     all_training=False, cache=False)
     # xxx = 1
     pass

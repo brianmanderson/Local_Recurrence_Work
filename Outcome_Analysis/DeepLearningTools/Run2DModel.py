@@ -20,7 +20,7 @@ def run_2d_model(batch_size=24, model_type=3):
     train_generator, validation_generator = None, None
     epochs = 100001
     base_path, morfeus_drive, excel_path = return_paths()
-    channel_keys = {3: 2, 4: 3, 5: 3, 7: 4, 8: 2, 9: 4, 10: 3, 11: 4}
+    channel_keys = {3: 2, 4: 3, 5: 3, 7: 4, 8: 2, 9: 4, 10: 3, 11: 5}
     iterations = [2, 3]
     model_key_base = -1
     base_df = pd.read_excel(excel_path, engine='openpyxl')
