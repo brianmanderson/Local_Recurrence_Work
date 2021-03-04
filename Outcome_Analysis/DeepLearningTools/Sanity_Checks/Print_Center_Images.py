@@ -36,7 +36,7 @@ def return_generators(batch_size=1, wanted_keys={'inputs': ('combined',), 'outpu
         validation_processors = [
             ExpandDimension(axis=-1, image_keys=build_keys),
             # ArgMax(annotation_keys=('annotation',), axis=-1),
-            Cast_Data(key_type_dict={'primary_liver': 'float32'})
+            Cast_Data(keys=('primary_liver',), dtypes=('float32',))
         ]
 
         validation_processors += [
@@ -53,7 +53,7 @@ def return_generators(batch_size=1, wanted_keys={'inputs': ('combined',), 'outpu
     train_processors_recurr = [
         ExpandDimension(axis=-1, image_keys=build_keys),
         # ArgMax(annotation_keys=('annotation',), axis=-1),
-        Cast_Data(key_type_dict={'primary_liver': 'float32'})
+        Cast_Data(keys=('primary_liver',), dtypes=('float32',))
     ]
     train_processors_recurr += [
         CombineKeys(image_keys=build_keys, output_key='combined'),
@@ -66,7 +66,7 @@ def return_generators(batch_size=1, wanted_keys={'inputs': ('combined',), 'outpu
     train_processors_non_recurr = [
         ExpandDimension(axis=-1, image_keys=build_keys),
         # ArgMax(annotation_keys=('annotation',), axis=-1),
-        Cast_Data(key_type_dict={'primary_liver': 'float32'})
+        Cast_Data(keys=('primary_liver',), dtypes=('float32',))
     ]
     train_processors_non_recurr += [
         CombineKeys(image_keys=build_keys, output_key='combined'),
@@ -83,8 +83,11 @@ def return_generators(batch_size=1, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 def print_center_images():
-    out_image_path = r'H:\Deeplearning_Recurrence_Work\Image_exports'
-    _, _, train_no_recurence_generator, train_recurrence_generator, validation_generator = return_generators(batch_size=1, wanted_keys={'inputs': ('combined', 'file_name'), 'outputs': ('annotation',)})
+    out_image_path = r'H:\Deeplearning_Recurrence_Work\Image_exports\Rigid'
+    build_keys = ('primary_image', 'secondary_image')
+    _, _, train_no_recurence_generator, train_recurrence_generator, validation_generator = return_generators(batch_size=1,
+                                                                                                             wanted_keys={'inputs': ('combined', 'file_name'), 'outputs': ('annotation',)},
+                                                                                                             build_keys=build_keys)
     spot_dict = {}
     for generator in [train_no_recurence_generator, train_recurrence_generator, validation_generator]:
         print(generator)
