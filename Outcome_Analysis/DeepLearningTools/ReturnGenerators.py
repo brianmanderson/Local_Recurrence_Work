@@ -31,15 +31,14 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     elif model_key == 5:
         build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')  # Only show disease
         mask_annotations = [
-            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1)),
-            Cast_Data(keys=('primary_liver',), dtypes=('float32',))
+            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1))
         ]
     elif model_key == 7:  # 6 was flawed, go off 7 now
         expand_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'disease')
         build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'disease')  # Liver and disease present
         mask_annotations = [
             CreateDiseaseKey(),
-            Cast_Data(keys=('disease', 'primary_liver'), dtypes=('float32', 'float32')),
+            Cast_Data(keys=('disease',), dtypes=('float32',)),
             MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(2,), to_values_tuple=(1,))
         ]
     elif model_key == 8:  # If it's not pretrained, just pass 2 images
@@ -49,8 +48,8 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         expand_keys = (
             'primary_image', 'secondary_image_deformed', 'primary_liver', 'secondary_liver', 'secondary_image')
         mask_annotations = [
+            MaskKeys(key_tuple=('primary_liver',), from_values_tuple=(2,), to_values_tuple=(1,)),  # Only show liver
             Cast_Data(keys=('secondary_liver',), dtypes=('float32',)),
-            MaskKeys(key_tuple=('primary_liver',), from_values_tuple=(2,), to_values_tuple=(1,))  # Only show liver
         ]
     elif model_key == 10:
         build_keys = ('primary_image', 'secondary_image', 'primary_liver')  # Only show disease
@@ -180,7 +179,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=11,
+    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=7,
     #                                                                                     all_training=False, cache=False)
     # xxx = 1
     pass
