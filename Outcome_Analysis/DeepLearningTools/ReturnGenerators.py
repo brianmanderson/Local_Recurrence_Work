@@ -2,13 +2,13 @@ __author__ = 'Brian M Anderson'
 # Created on 11/18/2020
 from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths, os
 from Deep_Learning.Base_Deeplearning_Code.Data_Generators.TFRecord_to_Dataset_Generator import DataGeneratorClass
-from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Module.Image_Processors_DataSet import *
+from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Module.src.Processors.TFDataSetProcessors import *
 
 
 def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outputs': ('annotation',)},
                       all_training=False, cache=False, evaluate=False, model_key=0, cache_add=None,
                       build_keys=('primary_image','secondary_image_deformed', 'primary_liver'),
-                      return_validation_generators=False):
+                      return_validation_generators=False, on_test=False):
     """
     :param batch_size:
     :param wanted_keys:
@@ -69,8 +69,11 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     '''
     base_path, morfeus_drive, excel_path = return_paths()
     train_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'Recurrence')]
-    validation_path = [os.path.join(base_path, 'Validation', 'Records', 'Recurrence'),
-                       os.path.join(base_path, 'Validation', 'Records', 'No_Recurrence')]
+    validation_key = 'Validation'
+    if on_test:
+        validation_key = 'Test'
+    validation_path = [os.path.join(base_path, validation_key, 'Records', 'Recurrence'),
+                       os.path.join(base_path, validation_key, 'Records', 'No_Recurrence')]
 
     train_no_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'No_Recurrence')]
     if all_training:
