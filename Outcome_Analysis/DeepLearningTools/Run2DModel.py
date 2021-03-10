@@ -75,7 +75,7 @@ def run_2d_model(batch_size=24, model_type=3):
             run_df.at[index, 'reference'] = run_df.loc[index, 'Model_Index']
             run_df.at[index, 'Model_Index'] = model_index
             base_df = base_df.append(run_df)
-            base_df.to_excel(excel_path, index=0)
+            # base_df.to_excel(excel_path, index=0)
             tensorboard_path = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(model_key),
                                             'Model_Index_{}'.format(model_index))
             os.makedirs(tensorboard_path)

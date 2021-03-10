@@ -1,9 +1,8 @@
 __author__ = 'Brian M Anderson'
 # Created on 11/18/2020
 
-from Local_Recurrence_Work.Outcome_Analysis.Make_Single_Images.Make_TFRecord_Class import write_tf_record
-from Local_Recurrence_Work.Outcome_Analysis.Make_Single_Images.Image_Processors_Module.Image_Processors_TFRecord \
-    import *
+from Deep_Learning.Base_Deeplearning_Code.Make_Single_Images.Make_TFRecord_Class import write_tf_record
+from Deep_Learning.Base_Deeplearning_Code.Make_Single_Images.Image_Processors_Module.Image_Processors_TFRecord import *
 
 
 def path_parser(niftii_path, **kwargs):
@@ -37,32 +36,32 @@ def nifti_to_records(nifti_path):
                                              'secondary_mask', 'secondary_image_deformed'),
                                    dtypes=('float32', 'float32', 'int8', 'int8', 'float32')),
         Resampler(resample_keys=('primary_image', 'secondary_image', 'secondary_image_deformed', 'primary_mask',
-                                 'secondary_mask'),
+                                 'secondary_mask'), verbose=False,
                   desired_output_spacing=(1., 1., 2.5),
                   resample_interpolators=('Linear', 'Linear', 'Linear', 'Nearest', 'Nearest')),
         Threshold_Images(image_key='primary_image', lower_bound=-200, upper_bound=200, divide=False),
         Threshold_Images(image_key='secondary_image', lower_bound=-200, upper_bound=200, divide=False),
         Threshold_Images(image_key='secondary_image_deformed', lower_bound=-200, upper_bound=200, divide=False),
-        Normalize_to_annotation(image_key='primary_image', annotation_key='primary_mask',
-                                annotation_value_list=[1, 2, 3], mirror_max=True),
-        Normalize_to_annotation(image_key='secondary_image', annotation_key='secondary_mask',
-                                annotation_value_list=[1], mirror_max=True),
-        Normalize_to_annotation(image_key='secondary_image_deformed', annotation_key='primary_mask',
-                                annotation_value_list=[1, 2, 3], mirror_max=True),
-        Threshold_Images(image_key='primary_image', lower_bound=-15, upper_bound=10, divide=False),
-        Threshold_Images(image_key='secondary_image', lower_bound=-15, upper_bound=10, divide=False),
-        Threshold_Images(image_key='secondary_image_deformed', lower_bound=-15, upper_bound=10, divide=False),
-        AddByValues(image_keys=('primary_image', 'secondary_image', 'secondary_image_deformed'),
-                    values=(2.5, 2.5, 2.5)),
-        DivideByValues(image_keys=('primary_image', 'secondary_image', 'secondary_image_deformed'),
-                       values=(12.5, 12.5, 12.5)),
+        # Normalize_to_annotation(image_key='primary_image', annotation_key='primary_mask',
+        #                         annotation_value_list=[1, 2, 3], mirror_max=True),
+        # Normalize_to_annotation(image_key='secondary_image', annotation_key='secondary_mask',
+        #                         annotation_value_list=[1], mirror_max=True),
+        # Normalize_to_annotation(image_key='secondary_image_deformed', annotation_key='primary_mask',
+        #                         annotation_value_list=[1, 2, 3], mirror_max=True),
+        # Threshold_Images(image_key='primary_image', lower_bound=-15, upper_bound=10, divide=False),
+        # Threshold_Images(image_key='secondary_image', lower_bound=-15, upper_bound=10, divide=False),
+        # Threshold_Images(image_key='secondary_image_deformed', lower_bound=-15, upper_bound=10, divide=False),
+        # AddByValues(image_keys=('primary_image', 'secondary_image', 'secondary_image_deformed'),
+        #             values=(2.5, 2.5, 2.5)),
+        # DivideByValues(image_keys=('primary_image', 'secondary_image', 'secondary_image_deformed'),
+        #                values=(12.5, 12.5, 12.5)),
         DistributeIntoRecurrenceCubes(images=32, rows=64, cols=64)
     ]
     write_tf_record(niftii_path=nifti_path, file_parser=path_parser, max_records=np.inf,
                     out_path=os.path.join(nifti_path, 'Records'),
                     recordwriter=RecordWriterRecurrence(out_path=os.path.join(nifti_path, 'Records'),
-                                                        file_name_key='file_name', rewrite=True),
-                    image_processors=base_normalizer, is_3D=True, thread_count=20, debug=False)
+                                                        file_name_key='file_name', rewrite=False),
+                    image_processors=base_normalizer, is_3D=True, thread_count=1, debug=True)
 
 
 if __name__ == '__main__':

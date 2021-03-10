@@ -10,7 +10,7 @@ if len(sys.argv) > 1:
     model_key = int(sys.argv[2])
 else:
     gpu = 0
-model_key = 5
+model_key = 12
 print('Running on {} for key {}'.format(gpu, model_key))
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
@@ -28,7 +28,7 @@ if sanity_check:
     xxx = 1
 
 batch_size = 32
-find_lr = False
+find_lr = True
 finished_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
@@ -52,7 +52,7 @@ if add_lr and finished_lr:
                  save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key), 'Outputs'))
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size, model_type=model_key)
@@ -111,20 +111,8 @@ growth_rate = 16, check 8
 """
 view_gradients = False
 if view_gradients:
-    from tensorflow.keras.models import load_model
-    import numpy as np
-    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators, plot_scroll_Image
-    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import return_model
-    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
-    from Deep_Learning.Base_Deeplearning_Code.Visualizing_Model.Visualize_Model import ModelVisualizationClass
-    model_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_Index_140\final_model.h5'
-    model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
-    _, _, train_generator, val_generator = return_generators(batch_size=8, cross_validation_id=0, model_key=model_key)
-    visualizer = ModelVisualizationClass(model=model, save_images=True,
-                                         out_path=r'H:\Deeplearning_Recurrence_Work\Activation_Images')
-    x, y = next(iter(val_generator.data_set))
-    visualizer.predict_on_tensor(x)
-    visualizer.plot_activations()
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGradients import view_gradients
+    view_gradients()
     xxx = 1
 """
 0: 2
@@ -137,102 +125,154 @@ evaluate_model = False
 if evaluate_model:
     from tensorflow.keras.models import load_model
     import numpy as np
-    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators
+    import pandas as pd
+    from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnGenerators import return_generators, \
+        return_paths, plot_scroll_Image
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnModels import mydensenet
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnCosineLoss import CosineLoss
     from tensorflow.keras import metrics, optimizers
+    from Deep_Learning.Base_Deeplearning_Code.Visualizing_Model.Visualize_Model import \
+        ModelVisualizationClass
 
-    aucs = []
-    parameters = {1662: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2,
-                         'reduction': 1., 'model_key': 3, 'color': 'black', 'description': 'Primary + Secondary',
-                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 2},
-                  1541: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2,
-                         'reduction': 1., 'model_key': 4, 'color': 'red', 'description': 'Primary + Secondary + Liver',
-                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3},
-                  1431: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
-                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
-                         'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary + GTV'},
-                  1673: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2, 'reduction': 1,
-                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 4,
-                         'model_key': 7, 'color': 'green', 'description': 'Primary + Secondary + GTV + Liver'},
-                  # 1318: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 1,
-                  #        'reduction': 1., 'model_key': 6, 'color': 'green', 'description': 'Primary + Secondary + Liver + GTV',
-                  #        'num_dense_connections': 64, 'filters': 16, 'global_max': 1, 'growth_rate': 32, 'channels': 3}
+    import matplotlib.pyplot as plt
+    from sklearn.metrics import roc_curve, auc
+    visualize = True
+    base_path, morfeus_drive, excel_path = return_paths()
+    on_test = True
+    if on_test:
+        excel_name = 'Out_metrics_test.xlsx'
+    else:
+        excel_name = 'Out_metrics.xlsx'
+    overall = {}
+    def_parameters = {
+        1662: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2,
+               'reduction': 1., 'color': 'black', 'description': 'Primary + Secondary Deform',
+               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16,
+               'model_key': 3, 'channels': 2},
+        1541: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2,
+               'reduction': 1., 'color': 'red', 'description': 'Primary + Secondary Deform + Liver',
+               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16,
+               'model_key': 4, 'channels': 3},
+        1431: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
+               'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary Deform + GTV'},
+        1673: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2, 'reduction': 1,
+               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 4,
+               'model_key': 7, 'color': 'green', 'description': 'Primary + Secondary Deform + GTV + Liver'}
+    }
+    rigid_parameters = {
+        1695: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 2,
+               'model_key': 8, 'color': 'black', 'description': 'Primary + Secondary Rigid'},
+        1710: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 4,
+               'model_key': 9, 'color': 'red', 'description': 'Primary + Secondary Rigid + Liver'},
+        1682: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
+               'model_key': 10, 'color': 'blue', 'description': 'Primary + Secondary Rigid + GTV'},
+        1685: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 5,
+               'model_key': 11, 'color': 'green', 'description': 'Primary + Secondary Rigid + GTV + Liver'}
                   }
-    for model_index in parameters:
-        model_parameters = parameters[model_index]
-        for key in model_parameters.keys():
-            if type(model_parameters[key]) is np.int64:
-                model_parameters[key] = int(model_parameters[key])
-            elif type(model_parameters[key]) is np.float64:
-                model_parameters[key] = float(model_parameters[key])
-        model_base_path = r'H:\Deeplearning_Recurrence_Work\Models\Model_Index_{}'.format(model_index)
-        pred_path = os.path.join(model_base_path, 'Predictions.npy')
-        truth_path = os.path.join(model_base_path, 'Truth.npy')
-        model_path = os.path.join(model_base_path, 'cp-best.cpkt')
-        # model_path = os.path.join(model_base_path, 'final_model.h5')
-        METRICS = [
-            metrics.TruePositives(name='TruePositive'),
-            metrics.FalsePositives(name='FalsePositive'),
-            metrics.TrueNegatives(name='TrueNegative'),
-            metrics.FalseNegatives(name='FalseNegative'),
-            metrics.BinaryAccuracy(name='Accuracy'),
-            metrics.Precision(name='Precision'),
-            metrics.Recall(name='Recall'),
-            metrics.AUC(name='AUC', multi_label=True),
-        ]
+    overall['Deformable'] = def_parameters
+    overall['Rigid'] = rigid_parameters
+    out_parameters = {'Model_Key': [], 'Model_Index': [], 'Description': [], 'Accuracy': [], '% Progression Correct': [],
+                      '% Non-Progression Correct': [], 'AUC': []}
+    performance_metrics = {}
+    for key in ['Rigid', 'Deformable']:
+        parameters = overall[key]
+        performance_metrics[key] = {}
+        for model_index in parameters:
+            model_parameters = parameters[model_index]
+            for key in model_parameters.keys():
+                if type(model_parameters[key]) is np.int64:
+                    model_parameters[key] = int(model_parameters[key])
+                elif type(model_parameters[key]) is np.float64:
+                    model_parameters[key] = float(model_parameters[key])
+            out_parameters['Model_Index'].append(model_index)
+            model_base_path = r'H:\Deeplearning_Recurrence_Work\Models\Model_Index_{}'.format(model_index)
+            pred_path = os.path.join(model_base_path, 'Predictions.npy')
+            truth_path = os.path.join(model_base_path, 'Truth.npy')
+            model_path = os.path.join(model_base_path, 'cp-best.cpkt')
+            # model_path = os.path.join(model_base_path, 'final_model.h5')
+            METRICS = [
+                metrics.TruePositives(name='TruePositive'),
+                metrics.FalsePositives(name='FalsePositive'),
+                metrics.TrueNegatives(name='TrueNegative'),
+                metrics.FalseNegatives(name='FalseNegative'),
+                metrics.BinaryAccuracy(name='Accuracy'),
+                metrics.Precision(name='Precision'),
+                metrics.Recall(name='Recall'),
+                metrics.AUC(name='AUC', multi_label=True),
+            ]
 
-        model = mydensenet(**model_parameters)
-        model.load_weights(model_path)
-        model.compile(optimizer=optimizers.Adam(), loss=CosineLoss(), metrics=METRICS)
-        # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
-        _, _, val_generator = return_generators(batch_size=8, return_validation_generators=True, model_key=model_parameters['model_key'])
-        truth = []
-        prediction = []
-        val_iter = val_generator.data_set.as_numpy_iterator()
-        for i in range(len(val_generator)):
-            print(i)
-            x, y = next(val_iter)
-            truth.append(np.argmax(y[0]))
-            pred = model.predict(x)
-            prediction.append(pred)
-        evaluation = model.evaluate(val_generator.data_set, steps=len(val_generator))
-        prediction = np.squeeze(np.asarray(prediction))
-        truth = np.squeeze(np.asarray(truth))
-        np.save(file=pred_path, arr=prediction)
-        np.save(file=truth_path, arr=truth)
+            model = mydensenet(**model_parameters)
+            model.load_weights(model_path)
+            model.compile(optimizer=optimizers.Adam(), loss=CosineLoss(), metrics=METRICS)
+            visualizer = ModelVisualizationClass(model=model, save_images=True,
+                                                 out_path=r'H:\Deeplearning_Recurrence_Work\Activation_Images_{}'.format(model_index))
+            all_layers = visualizer.all_layers
+            desired_layers = [i.name for i in all_layers if i.name.startswith('conv')]
+            visualizer.define_desired_layers(desired_layer_names=desired_layers)
+            # model = load_model(model_path, custom_objects={'CosineLoss': CosineLoss})
+            _, _, val_generator = return_generators(batch_size=8, return_validation_generators=True,
+                                                    model_key=model_parameters['model_key'], on_test=on_test)
+            out_parameters['Model_Key'].append(model_parameters['model_key'])
+            truth = []
+            prediction = []
+            val_iter = val_generator.data_set.as_numpy_iterator()
+            visualized = False
+            for i in range(len(val_generator)):
+                print(i)
+                x, y = next(val_iter)
+                if visualize and not visualized:
+                    visualizer.predict_on_tensor(x)
+                    visualizer.plot_activations()
+                    visualized = True
+                truth.append(np.argmax(y[0]))
+                pred = model.predict(x)
+                prediction.append(pred)
+            # evaluation = model.evaluate(val_generator.data_set, steps=len(val_generator))
+            prediction = np.squeeze(np.asarray(prediction))
+            truth = np.squeeze(np.asarray(truth))
+            np.save(file=pred_path, arr=prediction)
+            np.save(file=truth_path, arr=truth)
 
-        final_pred = np.asarray([np.argmax(i) for i in prediction])
-        truth = np.asarray(truth)
-        correct = np.sum(truth == final_pred)
-        total = len(truth)
-        missed = total - correct
-        accuracy = correct/total * 100
-        correct_recurred = np.sum(truth[truth == 1] == final_pred[truth == 1]) / np.sum(truth == 1) * 100
-        correct_non_recurred = np.sum(truth[truth == 0] == final_pred[truth == 0]) / np.sum(truth == 0) * 100
-        print('Guessed {}% correct'.format(accuracy))
-        print('Guessed {}% of the recurrence correct'.format(correct_recurred))
-        print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
-        plot_roc = True
-        if plot_roc:
-            import matplotlib.pyplot as plt
-            from sklearn.metrics import roc_curve, auc
+            final_pred = np.asarray([np.argmax(i) for i in prediction])
+            truth = np.asarray(truth)
+            correct = np.sum(truth == final_pred)
+            total = len(truth)
+            missed = total - correct
+            accuracy = correct/total * 100
+            correct_recurred = np.sum(truth[truth == 1] == final_pred[truth == 1]) / np.sum(truth == 1) * 100
+            correct_non_recurred = np.sum(truth[truth == 0] == final_pred[truth == 0]) / np.sum(truth == 0) * 100
+            print('Guessed {}% correct'.format(accuracy))
+            print('Guessed {}% of the recurrence correct'.format(correct_recurred))
+            print('Guessed {}% of the non-recurrence correct'.format(correct_non_recurred))
+            out_parameters['Accuracy'].append(accuracy)
+            out_parameters['% Progression Correct'].append(correct_recurred)
+            out_parameters['% Non-Progression Correct'].append(correct_non_recurred)
+            desc = model_parameters['description']
+            out_parameters['Description'].append(desc)
             fpr, tpr, threshold = roc_curve(truth, prediction[:, 1])
             roc_auc = auc(fpr, tpr)
-            aucs.append(roc_auc)
-            plt.title('Receiver Operating Characteristic')
-            desc = model_parameters['description']
-            color = model_parameters['color']
-            plt.plot(fpr, tpr, color, label='{} AUC: %0.2f'.format(desc) % roc_auc)
-            plt.legend(loc='lower right')
-            plt.plot([0, 1], [0, 1], 'r--')
-            plt.xlim([0, 1])
-            plt.ylim([0, 1])
-            plt.ylabel('True Positive Rate')
-            plt.xlabel('False Positive Rate')
-            plt.show()
-            xxx = 1
-            # plt.close()
+            out_parameters['AUC'].append(roc_auc)
+            plot_roc = False
+            if plot_roc:
+                plt.title('Receiver Operating Characteristic')
+                color = model_parameters['color']
+                plt.plot(fpr, tpr, color, label='{} AUC: %0.2f'.format(desc) % roc_auc)
+                plt.legend(loc='lower right')
+                plt.plot([0, 1], [0, 1], 'r--')
+                plt.xlim([0, 1])
+                plt.ylim([0, 1])
+                plt.ylabel('True Positive Rate')
+                plt.xlabel('False Positive Rate')
+                plt.show()
+                xxx = 1
+                # plt.close()
+    df = pd.DataFrame(out_parameters)
+    df.to_excel(os.path.join(morfeus_drive, excel_name), index=0)
 xxx = 1
 """
 3 blocks in dense

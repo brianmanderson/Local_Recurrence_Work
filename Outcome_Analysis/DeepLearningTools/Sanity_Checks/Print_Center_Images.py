@@ -4,6 +4,8 @@ from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import
 from Deep_Learning.Base_Deeplearning_Code.Data_Generators.TFRecord_to_Dataset_Generator import DataGeneratorClass
 from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Module.Image_Processors_DataSet import *
 from PIL import Image
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def return_generators(batch_size=1, wanted_keys={'inputs': ('combined',), 'outputs': ('annotation',)},
@@ -83,12 +85,15 @@ def return_generators(batch_size=1, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 def print_center_images():
-    out_image_path = r'H:\Deeplearning_Recurrence_Work\Image_exports\Rigid'
-    build_keys = ('primary_image', 'secondary_image')
+    out_image_path = r'H:\Deeplearning_Recurrence_Work\Image_exports\Def'
+    build_keys = ('primary_image', 'secondary_image_deformed', 'secondary_image')
     _, _, train_no_recurence_generator, train_recurrence_generator, validation_generator = return_generators(batch_size=1,
                                                                                                              wanted_keys={'inputs': ('combined', 'file_name'), 'outputs': ('annotation',)},
                                                                                                              build_keys=build_keys)
     spot_dict = {}
+    deformed_values = None
+    rigid_vales = None
+    difference = None
     for generator in [train_no_recurence_generator, train_recurrence_generator, validation_generator]:
         print(generator)
         iter_generator = generator.data_set.as_numpy_iterator()
@@ -96,12 +101,25 @@ def print_center_images():
             print(i)
             x, y = next(iter_generator)
             image = np.squeeze(x[0])
+            rigid = image[16, 32, :, 2].flatten()
+            deformed = image[16, 32, :, 1].flatten()
+            dif = np.abs(deformed - rigid)
+            if deformed_values is None:
+                deformed_values = deformed
+                rigid_vales = rigid
+                difference = dif
+            else:
+                deformed_values = np.concatenate([deformed_values, deformed])
+                rigid_vales = np.concatenate([rigid_vales, rigid])
+                difference = np.concatenate([dif, difference])
             path = x[1][0].decode()
             pat_id = path.split('.tfrecord')[0]
             if pat_id in spot_dict:
                 pat_index = spot_dict[pat_id] + 1
             else:
                 pat_index = 0
+            if pat_id == '32':
+                xxx = 1
             spot_dict[pat_id] = pat_index
             image_path = os.path.join(out_image_path, '{}_{}.png'.format(pat_id, pat_index))
             if os.path.exists(image_path):
@@ -115,7 +133,7 @@ def print_center_images():
             # image = np.repeat(image[..., None], 3, axis=-1)
             im = Image.fromarray(image).convert('L')
             im.save(image_path)
-
+    xxx = 1
 
 if __name__ == '__main__':
     pass

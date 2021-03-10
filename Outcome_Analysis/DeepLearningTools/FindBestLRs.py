@@ -20,30 +20,29 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
     compare_keys = ('blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'num_dense_connections',
                     'filters', 'growth_rate', 'step_factor', 'loss', 'Optimizer', 'reduction', 'Dropout', 'global_max')
     base_df = pd.read_excel(excel_path, engine='openpyxl')
-    loss = 'CosineLoss'
     global_max = 1
     channels = 2
     if model_type > 3:
         channels = 3
     for dropout in [0, 0.5]:
-        for step_factor in [2000, 10000]:
-            for blocks_in_dense in [1]:
+        for loss in ['CosineLoss', 'CategoricalCrossEntropy']:
+            for blocks_in_dense in [1, 2]:
                 for dense_conv_blocks in [1, 2]:
-                    for dense_layers in [1, 2]:
+                    for dense_layers in [0, 1, 2]:
                         for reduction in [1]:
                             for num_dense_connections in [128, 256]:
-                                if dense_layers == 0 and num_dense_connections > 32:
+                                if dense_layers == 0 and num_dense_connections > 128:
                                     continue
-                                for filters in [16, 32]:
-                                    for growth_rate in [16, 32]:
+                                for filters in [16]:
+                                    for growth_rate in [8, 16]:
                                         new_run = {'blocks_in_dense': [blocks_in_dense],
                                                    'global_max': [global_max],
                                                    'dense_conv_blocks': [dense_conv_blocks],
                                                    'dense_layers': [dense_layers],
                                                    'num_dense_connections': [num_dense_connections],
-                                                   'filters': [filters], 'growth_rate': [growth_rate], 'run?': [-6],
+                                                   'filters': [filters], 'growth_rate': [growth_rate], 'run?': [-10],
                                                    'reduction': [reduction],
-                                                   'step_factor': [step_factor], 'loss': [loss],
+                                                   'step_factor': [5000], 'loss': [loss],
                                                    'Optimizer': ['Adam'],
                                                    'Model_Type': [model_type], 'Dropout': [dropout]}
                                         current_run_df = pd.DataFrame(new_run)
@@ -80,24 +79,19 @@ def return_model_and_things(model_base, out_path, iteration, excel_path, model_t
                                                                dense_layers=dense_layers, dropout=dropout,
                                                                num_dense_connections=num_dense_connections, filters=filters,
                                                                growth_rate=growth_rate, reduction=reduction, Loss=loss)
-                                            return model, new_out_path
+                                            return model, new_out_path, new_run
                                         except:
                                             os.makedirs(new_out_path)
                                             print('Failed to make model')
                                             continue
 
-    return None, None
+    return None, None, None
 
 
 def find_best_lr(batch_size=24, model_key=0):
     tf.random.set_seed(3141)
     base_path, morfeus_drive, excel_path = return_paths()
-    min_lr = 1e-6
-    max_lr = 1e-1
     model_base = return_model(model_key=model_key)
-    # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
-    loss = CosineLoss()
-    # loss = SigmoidFocalCrossEntropy()
     features_list = ('Model_Type', 'Optimizer', 'step_factor')
     for iteration in [0]:
         for optimizer in ['Adam']:
@@ -128,10 +122,19 @@ def find_best_lr(batch_size=24, model_key=0):
                 if os.path.exists(out_path):
                     continue
             else:
-                model, out_path = return_model_and_things(model_base=model_base, out_path=out_path, iteration=iteration,
-                                                          excel_path=excel_path, model_type=model_key)
+                model, out_path, new_run = return_model_and_things(model_base=model_base, out_path=out_path,
+                                                                   iteration=iteration, excel_path=excel_path,
+                                                                   model_type=model_key)
                 if model is None:
                     continue
+                if new_run['loss'][0] == 'CosineLoss':
+                    loss = CosineLoss()
+                    min_lr = 1e-6
+                    max_lr = 1e-1
+                elif new_run['loss'][0] == 'CategoricalCrossEntropy':
+                    loss = tf.keras.losses.CategoricalCrossentropy()
+                    min_lr = 1e-10
+                    max_lr = 1e-3
             os.makedirs(out_path)
             _, _, train_generator, validation_generator = return_generators(batch_size=batch_size, model_key=model_key,
                                                                             all_training=True, cache=True,

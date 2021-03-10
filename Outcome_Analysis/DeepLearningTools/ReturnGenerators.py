@@ -35,11 +35,14 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         ]
     elif model_key == 7:  # 6 was flawed, go off 7 now
         expand_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'disease')
-        build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'disease')  # Liver and disease present
+        build_keys = ('primary_image', 'secondary_image_deformed', 'disease')  # Liver and disease present, primary_liver
         mask_annotations = [
             CreateDiseaseKey(),
             Cast_Data(keys=('disease',), dtypes=('float32',)),
-            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(2,), to_values_tuple=(1,))
+            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(2,), to_values_tuple=(1,)),
+            # MaskOneBasedOnOther(guiding_keys=('primary_liver', 'primary_liver'),
+            #                     changing_keys=('primary_image', 'secondary_image_deformed'), guiding_values=(0, 0),
+            #                     methods=('equal_to', 'equal_to'), mask_values=(1, 0)),
         ]
     elif model_key == 8:  # If it's not pretrained, just pass 2 images
         build_keys = ('primary_image', 'secondary_image')
@@ -63,6 +66,13 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
             CreateDiseaseKey(),
             Cast_Data(keys=('disease', 'secondary_liver'), dtypes=('float32', 'float32')),
             MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(2,), to_values_tuple=(1,))
+        ]
+    elif model_key == 12:
+        build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')  # Only show disease
+        mask_annotations = [
+            AddConstantToImages(keys=('primary_image', 'secondary_image_deformed'), values=(1, 1)),
+            MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5)),
+            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1))
         ]
     '''
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
@@ -130,7 +140,10 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     ]
     train_recurrence_generator.compile_data_set(image_processors=train_processors_recurr, debug=False)
 
-    train_processors_non_recurr = []
+    train_processors_non_recurr = [
+        AddConstantToImages(keys=('primary_image', 'secondary_image_deformed'), values=(1, 1)),
+        MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5))
+    ]
     if mask_annotations is not None:
         train_processors_non_recurr += mask_annotations
     train_processors_non_recurr += [
