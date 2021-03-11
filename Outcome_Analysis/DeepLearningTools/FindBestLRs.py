@@ -96,7 +96,7 @@ def find_best_lr(batch_size=24):
     #     create_excel_values(excel_path=excel_path)
     for iteration in [0]:
         out_path = os.path.join(morfeus_drive, 'Learning_Rates')
-        model_parameters, out_path = return_model_and_things(out_path=out_path, excel_path=excel_path,
+        model_parameters, out_path = return_model_parameters(out_path=out_path, excel_path=excel_path,
                                                              iteration=iteration)
         if model_parameters is None:
             continue
