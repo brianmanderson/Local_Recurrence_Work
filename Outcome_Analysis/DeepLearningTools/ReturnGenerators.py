@@ -140,10 +140,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     ]
     train_recurrence_generator.compile_data_set(image_processors=train_processors_recurr, debug=False)
 
-    train_processors_non_recurr = [
-        AddConstantToImages(keys=('primary_image', 'secondary_image_deformed'), values=(1, 1)),
-        MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5))
-    ]
+    train_processors_non_recurr = []
     if mask_annotations is not None:
         train_processors_non_recurr += mask_annotations
     train_processors_non_recurr += [
@@ -195,7 +192,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
 
 
 if __name__ == '__main__':
-    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=7,
+    # base_path, morfeus_drive, train_generator, validation_generator = return_generators(batch_size=8, model_key=12,
     #                                                                                     all_training=False, cache=False)
     # xxx = 1
     pass
