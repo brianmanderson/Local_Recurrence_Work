@@ -28,7 +28,7 @@ if sanity_check:
     xxx = 1
 
 batch_size = 32
-find_lr = True
+find_lr = False
 finished_lr = True
 if find_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.FindBestLRs import find_best_lr
@@ -41,10 +41,11 @@ if add_lr and finished_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.ReturnPaths import return_paths, os
     base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path, engine='openpyxl')
-    not_filled_df = df.loc[(pd.isnull(df['min_lr'])) & (df['Optimizer'] == 'Adam') & (df['loss'] == 'CosineLoss')
-                           & (df['Model_Type'] == model_key)]
+    not_filled_df = df.loc[(pd.isnull(df['min_lr']))
+                           & (df['run?'] == -10)]
     for index in not_filled_df.index.values:
         model_index = not_filled_df['Model_Index'][index]
+        model_key = not_filled_df['Model_Type'][index]
         print(model_index)
         path = os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key),
                             'Model_Index_{}'.format(model_index))
