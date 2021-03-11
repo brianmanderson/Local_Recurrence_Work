@@ -60,7 +60,7 @@ def create_excel_values(excel_path):
     return None
 
 
-def return_model_and_things(out_path, excel_path):
+def return_model_parameters(out_path, excel_path, iteration):
     base_df = pd.read_excel(excel_path, engine='openpyxl')
     base_df.set_index('Model_Index')
     channel_keys = {3: 2, 4: 3, 5: 3, 7: 4, 8: 2, 9: 4, 10: 3, 11: 5, 12: 3}
@@ -73,7 +73,8 @@ def return_model_and_things(out_path, excel_path):
         model_parameters = run_df.squeeze().to_dict()
         model_key = run_df.loc[index, 'Model_Type']
         model_index = run_df.loc[index, 'Model_Index']
-        model_out_path = os.path.join(out_path, 'Model_Key_{}'.format(model_key), 'Model_Index_{}'.format(model_index))
+        model_out_path = os.path.join(out_path, 'Model_Key_{}'.format(model_key), 'Model_Index_{}'.format(model_index),
+                                      '{}_Iteration'.format(iteration))
         if os.path.exists(model_out_path):
             continue
         os.makedirs(model_out_path)
@@ -95,7 +96,8 @@ def find_best_lr(batch_size=24):
     #     create_excel_values(excel_path=excel_path)
     for iteration in [0]:
         out_path = os.path.join(morfeus_drive, 'Learning_Rates')
-        model_parameters, out_path = return_model_and_things(out_path=out_path, excel_path=excel_path)
+        model_parameters, out_path = return_model_and_things(out_path=out_path, excel_path=excel_path,
+                                                             iteration=iteration)
         if model_parameters is None:
             continue
         model_key = model_parameters['Model_Type']
