@@ -23,7 +23,7 @@ def return_paths():
         morfeus_drive = os.path.abspath(
             os.path.join(find_base_dir(), 'Morfeus', 'BMAnderson', 'Modular_Projects', 'Liver_Local_Recurrence_Work',
                          'Predicting_Recurrence'))
-    excel_path = os.path.join(morfeus_drive, 'ModelParameters_No_CV.xlsx')
+    excel_path = os.path.join(morfeus_drive, 'ModelParameters_No_CV_New.xlsx')
     return base_path, morfeus_drive, excel_path
 
 
