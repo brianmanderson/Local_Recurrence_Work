@@ -80,9 +80,9 @@ if view_results_with_r:
     df = pd.read_excel(excel_path, engine='openpyxl')
     # df = df.dropna()
     df = df[
-        (~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['loss'] == 'CosineLoss') & (df['run?'] == -6)
-        & (df['Model_Type'] == 5) & (df['Model_Index'] > 1000)
+        (~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['run?'] == -10)
             ]
+    df['minusAUC'] = 1 - df['epoch_AUC']
     # df.epoch_loss = np.where((df.epoch_AUC < .51), 1, df.epoch_loss)
     # df.epoch_loss = np.where((df.epoch_loss > .6), .6, df.epoch_loss)
     xxx = 1
@@ -93,7 +93,7 @@ if view_results_with_r:
                                                                                                          high='red'))
 
     for variable in ['Dropout', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'reduction', 'step_factor',
-                     'num_dense_connections', 'filters', 'growth_rate']:
+                     'num_dense_connections', 'filters', 'growth_rate', 'loss']:
         xxx = 1
         (ggplot(df) + aes(x='{}'.format(variable), y='epoch_loss') + geom_point(mapping=aes(color='epoch_AUC')) +
          #facet_wrap('Model_Type', labeller='label_both') +

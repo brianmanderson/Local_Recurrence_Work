@@ -12,11 +12,11 @@ def add_metrics_to_excel():
     base_path, morfeus_drive, excel_path = return_paths()
     df = pd.read_excel(excel_path, engine='openpyxl')
     not_filled_df = df.loc[
-        (~pd.isnull(df['min_lr'])) & (~pd.isnull(df['Iteration']))
+        (~pd.isnull(df['Iteration']))
         & (pd.isnull(df['epoch_loss']))
-        # & (df['run?'] == -8)
+        & (df['run?'] == -10)
         ]
-    for key in range(3, 12):
+    for key in [12]:
         df.set_index('Model_Index', inplace=True)
         print(key)
         path_base = os.path.join(morfeus_drive, 'Tensorflow', 'Model_Key_{}'.format(key))

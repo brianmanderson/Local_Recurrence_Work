@@ -12,7 +12,7 @@ def run_model(model, train_generator, validation_generator, min_lr, max_lr, mode
               optimizer, hparams=None, step_factor=8, epochs=120,
               loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False)):
     checkpoint_path = os.path.join(model_path, 'cp-best.cpkt')
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, monitor='val_loss', mode='min', verbose=1,
+    checkpoint = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, monitor='val_AUC', mode='max', verbose=1,
                                                     save_freq='epoch', save_best_only=True, save_weights_only=True)
     tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tensorboard_path, profile_batch=0,
                                                  write_graph=True)  # profile_batch='300,401',
@@ -20,7 +20,7 @@ def run_model(model, train_generator, validation_generator, min_lr, max_lr, mode
     lrate = SGDRScheduler(min_lr=min_lr, max_lr=max_lr, steps_per_epoch=len(train_generator), cycle_length=step_factor,
                           lr_decay=0.5, mult_factor=1, gentle_start_epochs=0, gentle_fraction=1.0)
     add_lr = Add_Images_and_LR(log_dir=tensorboard_path, add_images=False)
-    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=300, verbose=True)
+    early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_AUC', patience=300, verbose=True, mode='max')
     callbacks = [tensorboard, lrate, add_lr]
     # if epochs < 9000:
     callbacks += [early_stop]

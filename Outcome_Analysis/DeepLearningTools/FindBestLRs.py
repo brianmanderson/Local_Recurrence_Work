@@ -24,7 +24,7 @@ def create_excel_values(excel_path):
     rewrite = False
     guess_index = 0
     for model_type in [12]:
-        for dropout in [0, 0.5]:
+        for dropout in [0]:
             for loss in ['CosineLoss', 'CategoricalCrossEntropy']:
                 for blocks_in_dense in [1, 2]:
                     for dense_conv_blocks in [1, 2]:
