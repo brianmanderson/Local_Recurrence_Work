@@ -22,10 +22,7 @@ loss = tf.keras.losses.CategoricalCrossentropy()
 model_key = 12
 tf.random.set_seed(3141)
 id = 55
-base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=32,
-                                                                                    cache=False,# cache_add='Playing',
-                                                                                    model_key=model_key)
-x, y = next(iter(validation_generator.data_set))
+
 model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_2{}'.format(id)
 model_path = os.path.join(model_path_dir, 'cp-best.cpkt')
 tf_path = r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Tensorflow\Test\Model_{}'.format(id)
@@ -34,6 +31,12 @@ keys = {'blocks_in_dense': 2, 'dense_conv_blocks': 3, 'dense_layers': 2, 'num_de
         'growth_rate': 8, 'reduction': 1., 'dropout': 0., 'channels': 3, 'global_max': True}
 if model_key > 2:
     model = model(**model_parameters)
+
+base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=32,
+                                                                                    cache=False,# cache_add='Playing',
+                                                                                    model_key=model_key)
+x, y = next(iter(validation_generator.data_set))
+
 optimizer = tf.keras.optimizers.Adam(lr=1e-7)
 checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor='val_loss', mode='min', save_best_only=True,
                                                 save_freq='epoch', save_weights_only=True, verbose=1)
