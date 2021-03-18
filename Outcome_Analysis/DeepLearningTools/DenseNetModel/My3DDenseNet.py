@@ -116,9 +116,11 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
         if dropout != 0.0:
             x = layers.Dropout(dropout)(x)
     activation = 'softmax'
+    out_channels = 2
     if loss == 'SigmoidFocal':
         activation = 'sigmoid'
-    x = layers.Dense(2, activation=activation, name='prediction', dtype='float32', bias_initializer=output_bias)(x)
+        out_channels = 1
+    x = layers.Dense(out_channels, activation=activation, name='prediction', dtype='float32', bias_initializer=output_bias)(x)
     model = Model(inputs=inputs, outputs=(x,), name='my_3d_densenet')
     return model
 
