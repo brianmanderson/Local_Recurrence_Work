@@ -96,8 +96,8 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
 
     x = layers.Conv3D(filters, (3, 7, 7), strides=2, use_bias=False, name='conv1/conv', padding='Same')(x)
     # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='conv1/bn')(x)
-    x = GroupNormalization(groups=2, axis=-1, name='conv1/gn')(x)
-    x = layers.Activation('selu', name='conv1/selu')(x)
+    # x = GroupNormalization(groups=2, axis=-1, name='conv1/gn')(x)
+    # x = layers.Activation('selu', name='conv1/selu')(x)
 
     for i in range(dense_conv_blocks):
         x = dense_block3d(x=x, growth_rate=growth_rate, blocks=blocks_in_dense, name='conv{}'.format(i))

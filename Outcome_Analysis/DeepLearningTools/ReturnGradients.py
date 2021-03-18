@@ -21,10 +21,10 @@ def return_model_parameters():
                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
                         'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary Deform + GTV',
                         'Model_Index': 1431}
-    model_parameters = {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
-                        'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
-                        'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary Deform + GTV',
-                        'Model_Index': 1749}
+    # model_parameters = {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+    #                     'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
+    #                     'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary Deform + GTV',
+    #                     'Model_Index': 1749}
     return model_parameters
 
 
@@ -36,7 +36,7 @@ def return_model(model_parameters):
             model_parameters[key] = float(model_parameters[key])
     model_base_path = r'H:\Deeplearning_Recurrence_Work\Models\Model_Index_{}'.format(model_parameters['Model_Index'])
     # model_base_path = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_252'
-    model_path = os.path.join(model_base_path, 'cp.cpkt')
+    model_path = os.path.join(model_base_path, 'cp-best.cpkt')
     # model_path = os.path.join(model_base_path, 'final_model.h5')
 
     model = mydensenet(**model_parameters)

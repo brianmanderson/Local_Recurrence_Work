@@ -80,7 +80,8 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
             AddConstantToImages(keys=('primary_image', 'secondary_image_deformed'), values=(1, 1)),
             MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5)),
             MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1)),
-            ArgMax(annotation_keys=('annotation',), axis=-1)
+            ArgMax(annotation_keys=('annotation',), axis=-1), ExpandDimension(axis=-1, image_keys=('annotation',)),
+            Cast_Data(keys=('annotation',), dtypes=('float32',))
         ]
     '''
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
