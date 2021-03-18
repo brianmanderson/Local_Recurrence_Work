@@ -16,28 +16,26 @@ import numpy as np
 model_parameters = {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
                     'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
                     'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary Deform + GTV',
-                    'Model_Index': 1431}
+                    'Model_Index': 1431, 'loss': 'SigmoidFocal'}
 # loss = CosineLoss()
 loss = tf.keras.losses.CategoricalCrossentropy()
-model_key = 12
+model_key = 13
 tf.random.set_seed(3141)
-id = 55
+id = 57
 
 model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_2{}'.format(id)
 model_path = os.path.join(model_path_dir, 'cp-best.cpkt')
 tf_path = r'K:\Morfeus\BMAnderson\Modular_Projects\Liver_Local_Recurrence_Work\Predicting_Recurrence\Tensorflow\Test\Model_{}'.format(id)
 model = return_model(model_key=model_key)
-keys = {'blocks_in_dense': 2, 'dense_conv_blocks': 3, 'dense_layers': 2, 'num_dense_connections': 128, 'filters': 16,
-        'growth_rate': 8, 'reduction': 1., 'dropout': 0., 'channels': 3, 'global_max': True}
 if model_key > 2:
     model = model(**model_parameters)
 
 base_path, morfeus_drive, train_generator, validation_generator = return_generators(evaluate=False, batch_size=32,
                                                                                     cache=False,# cache_add='Playing',
-                                                                                    model_key=model_key)
-x, y = next(iter(validation_generator.data_set))
+                                                                                    model_key=model_key, debug=False)
+x, y = next(iter(train_generator.data_set))
 
-optimizer = tf.keras.optimizers.Adam(lr=1e-7)
+optimizer = tf.keras.optimizers.Adam(lr=1e-4)
 checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor='val_loss', mode='min', save_best_only=True,
                                                 save_freq='epoch', save_weights_only=True, verbose=1)
 tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tf_path,# profile_batch='50,100',

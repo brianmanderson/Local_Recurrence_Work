@@ -8,7 +8,7 @@ from Deep_Learning.Base_Deeplearning_Code.Data_Generators.Image_Processors_Modul
 def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outputs': ('annotation',)},
                       all_training=False, cache=False, evaluate=False, model_key=0, cache_add=None,
                       build_keys=('primary_image','secondary_image_deformed', 'primary_liver'),
-                      return_validation_generators=False, on_test=False):
+                      return_validation_generators=False, on_test=False, debug=False):
     """
     :param batch_size:
     :param wanted_keys:
@@ -74,6 +74,14 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
             MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5)),
             MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1))
         ]
+    elif model_key == 13:
+        build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')  # Only show disease
+        mask_annotations = [
+            AddConstantToImages(keys=('primary_image', 'secondary_image_deformed'), values=(1, 1)),
+            MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5)),
+            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1)),
+            ArgMax(annotation_keys=('annotation',), axis=-1)
+        ]
     '''
     The keys within the dictionary are: 'primary_image', 'secondary_image', 'secondary_image_deformed'
     '''
@@ -88,8 +96,8 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     train_no_recurrence_path = [os.path.join(base_path, 'Train', 'Records', 'No_Recurrence')]
     if all_training:
         validation_path = None
-    train_recurrence_generator = DataGeneratorClass(record_paths=train_recurrence_path, debug=False)
-    train_no_recurence_generator = DataGeneratorClass(record_paths=train_no_recurrence_path, debug=False)
+    train_recurrence_generator = DataGeneratorClass(record_paths=train_recurrence_path, debug=debug)
+    train_no_recurence_generator = DataGeneratorClass(record_paths=train_no_recurrence_path, debug=debug)
 
     validation_generator = None
     if validation_path is not None:
@@ -114,7 +122,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         validation_processors += [{'batch': 1}]
         validation_processors += [{'repeat'}]
 
-        validation_generator.compile_data_set(image_processors=validation_processors, debug=False)
+        validation_generator.compile_data_set(image_processors=validation_processors, debug=debug)
         if return_validation_generators:
             return base_path, morfeus_drive, validation_generator
 
@@ -138,7 +146,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         {'batch': batch_size // 2},
         {'repeat'}
     ]
-    train_recurrence_generator.compile_data_set(image_processors=train_processors_recurr, debug=False)
+    train_recurrence_generator.compile_data_set(image_processors=train_processors_recurr, debug=debug)
 
     train_processors_non_recurr = []
     if mask_annotations is not None:
@@ -161,7 +169,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         {'batch': batch_size // 2},
         {'repeat'}
     ]
-    train_no_recurence_generator.compile_data_set(image_processors=train_processors_non_recurr, debug=False)
+    train_no_recurence_generator.compile_data_set(image_processors=train_processors_non_recurr, debug=debug)
     '''
     Now, we want to provide the model with examples of both recurrence and non_recurrence each time
     '''
