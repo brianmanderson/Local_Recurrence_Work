@@ -21,6 +21,10 @@ def return_model_parameters():
                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
                         'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary Deform + GTV',
                         'Model_Index': 1431}
+    model_parameters = {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+                        'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
+                        'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary Deform + GTV',
+                        'Model_Index': 1749}
     return model_parameters
 
 

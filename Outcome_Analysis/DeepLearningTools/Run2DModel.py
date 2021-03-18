@@ -56,14 +56,15 @@ def run_2d_model(batch_size=24):
     epochs = 100001
     base_path, morfeus_drive, excel_path = return_paths()
     iterations = [0, 1]
-    if base_path.startswith('H'):
-        write_to_excel(excel_path=excel_path, iterations=iterations, batch_size=batch_size)
+    # if base_path.startswith('H'):
+    #     write_to_excel(excel_path=excel_path, iterations=iterations, batch_size=batch_size)
     channel_keys = {3: 2, 4: 3, 5: 3, 7: 4, 8: 2, 9: 4, 10: 3, 11: 5, 12: 3}
     base_df = pd.read_excel(excel_path, engine='openpyxl')
     base_df.set_index('Model_Index')
     potentially_not_run = base_df.loc[~pd.isnull(base_df.Iteration)
                                       & (base_df['Optimizer'] == 'Adam')
                                       & (base_df['run?'] == -10)
+                                      & pd.isnull(base_df['epoch_loss'])
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
     np.random.shuffle(indexes_for_not_run)

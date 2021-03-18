@@ -21,7 +21,7 @@ model_parameters = {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1,
 loss = tf.keras.losses.CategoricalCrossentropy()
 model_key = 13
 tf.random.set_seed(3141)
-id = 57
+id = 58
 
 model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_2{}'.format(id)
 model_path = os.path.join(model_path_dir, 'cp-best.cpkt')
@@ -35,7 +35,7 @@ base_path, morfeus_drive, train_generator, validation_generator = return_generat
                                                                                     model_key=model_key, debug=False)
 x, y = next(iter(train_generator.data_set))
 
-optimizer = tf.keras.optimizers.Adam(lr=1e-4)
+optimizer = tf.keras.optimizers.Adam(lr=1e-7)
 checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor='val_loss', mode='min', save_best_only=True,
                                                 save_freq='epoch', save_weights_only=True, verbose=1)
 tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tf_path,# profile_batch='50,100',
