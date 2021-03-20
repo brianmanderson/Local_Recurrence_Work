@@ -18,14 +18,14 @@ def main():
     model_parameters = {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2, 'reduction': 1,
                         'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
                         'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary Deform + GTV',
-                        'Model_Index': 1431} #, 'loss': 'SigmoidFocal'
-    # loss = CosineLoss()
-    loss = tf.keras.losses.CategoricalCrossentropy()
-    loss = SigmoidFocalCrossEntropy(from_logits=False)
+                        'Model_Index': 1431, 'GN': 0} #, 'loss': 'SigmoidFocal'
+    loss = CosineLoss()
+    # loss = tf.keras.losses.CategoricalCrossentropy()
+    # loss = SigmoidFocalCrossEntropy(from_logits=False)
     # loss = tf.keras.losses.BinaryCrossentropy()
     model_key = 12
     tf.random.set_seed(3141)
-    id = 60
+    id = 61
 
     model_path_dir = r'H:\Deeplearning_Recurrence_Work\Nifti_Exports\Records\Models\Model_2{}'.format(id)
     model_path = os.path.join(model_path_dir, 'cp-best.cpkt')
@@ -48,10 +48,10 @@ def main():
                                                     save_freq='epoch', save_weights_only=True, verbose=1)
     tensorboard = tf.keras.callbacks.TensorBoard(log_dir=tf_path,# profile_batch='50,100',
                                                  write_graph=True)  # profile_batch='300,401',
-    lrate = SGDRScheduler(min_lr=1e-4, max_lr=1e-3, steps_per_epoch=len(train_generator), cycle_length=1000,
+    lrate = SGDRScheduler(min_lr=1e-5, max_lr=3e-4, steps_per_epoch=len(train_generator), cycle_length=1000,
                           lr_decay=0.5, mult_factor=1, gentle_start_epochs=0, gentle_fraction=1.0)
     add_lr = Add_Images_and_LR(log_dir=tf_path, add_images=False)
-    callbacks = [tensorboard, add_lr, checkpoint]
+    callbacks = [tensorboard, add_lr, checkpoint, lrate]
     METRICS = [
         metrics.Precision(name='Precision'),
         metrics.Recall(name='Recall'),

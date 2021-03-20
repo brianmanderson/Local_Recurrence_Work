@@ -22,16 +22,24 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
     mask_annotations = None
     if model_key == 3:  # If it's not pretrained, just pass 2 images
         build_keys = ('primary_image', 'secondary_image_deformed')
+        mask_annotations = [
+            AddConstantToImages(keys=('primary_image', 'secondary_image_deformed'), values=(1, 1)),
+            MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5))
+        ]
     elif model_key == 4:
         build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')
         mask_annotations = [
             MaskKeys(key_tuple=('primary_liver',), from_values_tuple=(2,), to_values_tuple=(1,)),  # Only show liver
-            Cast_Data(keys=('primary_liver',), dtypes=('float32',))
+            Cast_Data(keys=('primary_liver',), dtypes=('float32',)),
+            AddConstantToImages(keys=('primary_image', 'secondary_image_deformed'), values=(1, 1)),
+            MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5))
         ]
     elif model_key == 5:
         build_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver')  # Only show disease
         mask_annotations = [
-            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1))
+            MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(1, 2), to_values_tuple=(0, 1)),
+            AddConstantToImages(keys=('primary_image', 'secondary_image_deformed'), values=(1, 1)),
+            MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5))
         ]
     elif model_key == 7:  # 6 was flawed, go off 7 now
         expand_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'disease')
@@ -40,9 +48,8 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
             CreateDiseaseKey(),
             Cast_Data(keys=('disease',), dtypes=('float32',)),
             MaskKeys(key_tuple=('primary_liver', 'primary_liver'), from_values_tuple=(2,), to_values_tuple=(1,)),
-            # MaskOneBasedOnOther(guiding_keys=('primary_liver', 'primary_liver'),
-            #                     changing_keys=('primary_image', 'secondary_image_deformed'), guiding_values=(0, 0),
-            #                     methods=('equal_to', 'equal_to'), mask_values=(1, 0)),
+            AddConstantToImages(keys=('primary_image', 'secondary_image_deformed'), values=(1, 1)),
+            MultiplyImagesByConstant(keys=('primary_image', 'secondary_image_deformed'), values=(0.5, 0.5))
         ]
     elif model_key == 8:  # If it's not pretrained, just pass 2 images
         build_keys = ('primary_image', 'secondary_image')

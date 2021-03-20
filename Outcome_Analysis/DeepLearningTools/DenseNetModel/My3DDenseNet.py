@@ -7,7 +7,7 @@ from tensorflow.keras.models import Model
 from tensorflow_addons.layers import GroupNormalization
 
 
-def conv_block_3d(x, growth_rate, name):
+def conv_block_3d(x, growth_rate, name, GN=True):
     """A building block for a dense block.
 
     Arguments:
@@ -18,19 +18,25 @@ def conv_block_3d(x, growth_rate, name):
     Returns:
     Output tensor for the block.
     """
-    x1 = GroupNormalization(groups=2, axis=-1, name=name + '_0_gn')(x)
+    if GN:
+        x1 = GroupNormalization(groups=2, axis=-1, name=name + '_0_gn')(x)
+    else:
+        x1 = layers.BatchNormalization(name=name + '_0_bn')(x)
     # x1 = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_0_bn')(x)
     x1 = layers.Activation('selu', name=name + '_0_selu')(x1)
     x1 = layers.Conv3D(2 * growth_rate, 1, use_bias=False, name=name + '_1_conv', padding='same')(x1)
     # x1 = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_1_bn')(x1)
-    x1 = GroupNormalization(groups=2, axis=-1, name=name + '_1_gn')(x1)
+    if GN:
+        x1 = GroupNormalization(groups=2, axis=-1, name=name + '_1_gn')(x1)
+    else:
+        x1 = layers.BatchNormalization(name=name + '_1_bn')(x1)
     x1 = layers.Activation('selu', name=name + '_1_selu')(x1)
     x1 = layers.Conv3D(growth_rate, 3, padding='same', use_bias=False, name=name + '_2_conv')(x1)
     x = layers.Concatenate(axis=-1, name=name + '_concat')([x, x1])
     return x
 
 
-def dense_block3d(x, growth_rate, blocks, name):
+def dense_block3d(x, growth_rate, blocks, name, GN=True):
     """A dense block.
 
     Arguments:
@@ -43,11 +49,11 @@ def dense_block3d(x, growth_rate, blocks, name):
       Output tensor for the block.
     """
     for i in range(blocks):
-        x = conv_block_3d(x, growth_rate=growth_rate, name=name + '_block' + str(i + 1))
+        x = conv_block_3d(x, growth_rate=growth_rate, name=name + '_block' + str(i + 1), GN=GN)
     return x
 
 
-def transition_block(x, reduction, name, strides=(2, 2, 2)):
+def transition_block(x, reduction, name, strides=(2, 2, 2), GN=True):
     """A transition block.
 
     Arguments:
@@ -59,7 +65,10 @@ def transition_block(x, reduction, name, strides=(2, 2, 2)):
     output tensor for the block.
     """
     # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name=name + '_bn')(x)
-    x = GroupNormalization(groups=2, axis=-1, name=name + '_gn')(x)
+    if GN:
+        x = GroupNormalization(groups=2, axis=-1, name=name + '_gn')(x)
+    else:
+        x = layers.BatchNormalization(name=name + '_bn')(x)
     x = layers.Activation('selu', name=name + '_selu')(x)
     x = layers.Conv3D(int(x.shape[-1] * reduction), 1,
                       use_bias=False, padding='same', name=name + '_conv')(x)
@@ -68,7 +77,8 @@ def transition_block(x, reduction, name, strides=(2, 2, 2)):
 
 
 def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense_connections=256, filters=16,
-               growth_rate=16, reduction=0.5, dropout=0.5, output_bias=None, loss=None, channels=2, global_max=False, **kwargs):
+               growth_rate=16, reduction=0.5, dropout=0.5, output_bias=None, loss=None, channels=2, global_max=False,
+               GN=True, **kwargs):
     """
     :param blocks_in_dense: how many convolution blocks are in a single size layer
     :param dense_conv_blocks: how many dense blocks before a max pooling to occur
@@ -95,15 +105,15 @@ def mydensenet(blocks_in_dense=2, dense_conv_blocks=2, dense_layers=1, num_dense
     inputs = (img_input,)
 
     x = layers.Conv3D(filters, (3, 7, 7), strides=2, use_bias=False, name='conv1/conv', padding='Same')(x)
-    # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='conv1/bn')(x)
-    # x = GroupNormalization(groups=2, axis=-1, name='conv1/gn')(x)
-    # x = layers.Activation('selu', name='conv1/selu')(x)
 
     for i in range(dense_conv_blocks):
-        x = dense_block3d(x=x, growth_rate=growth_rate, blocks=blocks_in_dense, name='conv{}'.format(i))
-        x = transition_block(x=x, reduction=reduction, name='pool{}'.format(i))
+        x = dense_block3d(x=x, growth_rate=growth_rate, blocks=blocks_in_dense, name='conv{}'.format(i), GN=GN)
+        x = transition_block(x=x, reduction=reduction, name='pool{}'.format(i), GN=GN)
     # x = layers.BatchNormalization(axis=-1, epsilon=1.001e-5, name='bn')(x)
-    x = GroupNormalization(groups=2, axis=-1, name='gn')(x)
+    if GN:
+        x = GroupNormalization(groups=2, axis=-1, name='gn')(x)
+    else:
+        x = layers.BatchNormalization(name='bn')(x)
     x = layers.Activation('selu', name='selu')(x)
     if global_max:
         x = layers.GlobalMaxPooling3D()(x)
