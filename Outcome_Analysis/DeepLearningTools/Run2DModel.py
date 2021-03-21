@@ -64,7 +64,7 @@ def run_2d_model(batch_size=24):
     potentially_not_run = base_df.loc[~pd.isnull(base_df.Iteration)
                                       & (base_df['Optimizer'] == 'Adam')
                                       & (base_df['run?'] == -10)
-                                      & (base_df['Model_Type'] == 7)
+                                      #& (base_df['Model_Type'] == 7)
                                       & pd.isnull(base_df['epoch_loss'])
                                       ]
     indexes_for_not_run = potentially_not_run.index.values
