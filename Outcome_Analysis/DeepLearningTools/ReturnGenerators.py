@@ -43,7 +43,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         ]
     elif model_key == 7:  # 6 was flawed, go off 7 now
         expand_keys = ('primary_image', 'secondary_image_deformed', 'primary_liver', 'disease')
-        build_keys = ('primary_image', 'secondary_image_deformed', 'disease')  # Liver and disease present, primary_liver
+        build_keys = ('primary_image', 'secondary_image_deformed', 'disease', 'primary_liver')  # Liver and disease present, primary_liver
         mask_annotations = [
             CreateDiseaseKey(),
             Cast_Data(keys=('disease',), dtypes=('float32',)),
@@ -53,6 +53,7 @@ def return_generators(batch_size=5, wanted_keys={'inputs': ('combined',), 'outpu
         ]
     elif model_key == 8:  # If it's not pretrained, just pass 2 images
         build_keys = ('primary_image', 'secondary_image')
+        expand_keys = ('primary_image', 'secondary_image')
     elif model_key == 9:
         build_keys = ('primary_image', 'secondary_image', 'primary_liver', 'secondary_liver')
         expand_keys = (

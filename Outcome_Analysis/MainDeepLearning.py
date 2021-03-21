@@ -80,7 +80,9 @@ if view_results_with_r:
     df = pd.read_excel(excel_path, engine='openpyxl')
     # df = df.dropna()
     df = df[
-        (~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam') & (df['run?'] == -10)
+        (~pd.isnull(df['epoch_loss'])) & (df['Optimizer'] == 'Adam')
+        & (df['run?'] == -10)
+        & (df['fixed'] == 1)
             ]
     df['minusAUC'] = 1 - df['epoch_AUC']
     # df.epoch_loss = np.where((df.epoch_AUC < .51), 1, df.epoch_loss)
@@ -95,8 +97,8 @@ if view_results_with_r:
     for variable in ['Dropout', 'blocks_in_dense', 'dense_conv_blocks', 'dense_layers', 'reduction', 'step_factor',
                      'num_dense_connections', 'filters', 'growth_rate', 'loss']:
         xxx = 1
-        (ggplot(df) + aes(x='{}'.format(variable), y='epoch_loss') + geom_point(mapping=aes(color='epoch_AUC')) +
-         #facet_wrap('Model_Type', labeller='label_both') +
+        (ggplot(df) + aes(x='{}'.format(variable), y='minusAUC') + geom_point(mapping=aes(color='minusAUC'))
+         + facet_wrap('Model_Type', labeller='label_both') +
          xlab('{}'.format(variable)) + ylab('Validation Loss') + scale_y_log10()
          + scale_colour_gradient(low='blue', high='red'))
 """

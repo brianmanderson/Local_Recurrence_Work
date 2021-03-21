@@ -56,8 +56,8 @@ def run_2d_model(batch_size=24):
     epochs = 100001
     base_path, morfeus_drive, excel_path = return_paths()
     iterations = [0, 1]
-    # if base_path.startswith('H'):
-    #     write_to_excel(excel_path=excel_path, iterations=iterations, batch_size=batch_size)
+    if base_path.startswith('H'):
+        write_to_excel(excel_path=excel_path, iterations=iterations, batch_size=batch_size)
     channel_keys = {3: 2, 4: 3, 5: 3, 7: 4, 8: 2, 9: 4, 10: 3, 11: 5, 12: 3}
     base_df = pd.read_excel(excel_path, engine='openpyxl')
     base_df.set_index('Model_Index')
@@ -107,7 +107,8 @@ def run_2d_model(batch_size=24):
             model = model_base(**model_parameters)
         else:
             model = model_base
-        model_path = os.path.join(base_path, 'Models', 'Model_Index_{}'.format(model_index))
+        model_path = os.path.join(base_path, 'Models', 'Model_Type_{}'.format(model_key),
+                                  'Model_Index_{}'.format(model_index))
 
         print('Saving model to {}\ntensorboard at {}'.format(model_path, tensorboard_path))
         hparams = return_hparams(model_parameters, features_list=features_list, excluded_keys=[])
