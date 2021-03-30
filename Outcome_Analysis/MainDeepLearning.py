@@ -53,7 +53,7 @@ if add_lr and finished_lr:
                  save_path=os.path.join(morfeus_drive, 'Learning_Rates', 'Model_Key_{}'.format(model_key), 'Outputs'))
     added_lr = True
 
-run_the_2D_model = True
+run_the_2D_model = False
 if run_the_2D_model and added_lr:
     from Local_Recurrence_Work.Outcome_Analysis.DeepLearningTools.Run2DModel import run_2d_model
     run_2d_model(batch_size=batch_size)
@@ -124,7 +124,7 @@ if view_gradients:
 3: 69
 4:
 """
-evaluate_model = False
+evaluate_model = True
 if evaluate_model:
     from tensorflow.keras.models import load_model
     import numpy as np
@@ -141,40 +141,40 @@ if evaluate_model:
     from sklearn.metrics import roc_curve, auc
     visualize = True
     base_path, morfeus_drive, excel_path = return_paths()
-    on_test = True
+    on_test = False
     if on_test:
         excel_name = 'Out_metrics_test.xlsx'
     else:
         excel_name = 'Out_metrics.xlsx'
     overall = {}
     def_parameters = {
-        1662: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2,
+        2013: {'Dropout': 0, 'blocks_in_dense': 2, 'dense_conv_blocks': 1, 'dense_layers': 1,
                'reduction': 1., 'color': 'black', 'description': 'Primary + Secondary Deform',
-               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16,
+               'num_dense_connections': 128, 'filters': 16, 'global_max': 1, 'growth_rate': 16,
                'model_key': 3, 'channels': 2},
-        1541: {'Dropout': 0, 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2,
+        2131: {'Dropout': 0, 'blocks_in_dense': 2, 'dense_conv_blocks': 1, 'dense_layers': 1,
                'reduction': 1., 'color': 'red', 'description': 'Primary + Secondary Deform + Liver',
-               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16,
+               'num_dense_connections': 64, 'filters': 16, 'global_max': 1, 'growth_rate': 16,
                'model_key': 4, 'channels': 3},
-        1431: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
-               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
-               'model_key': 5, 'color': 'b', 'description': 'Primary + Secondary Deform + GTV'},
-        1673: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2, 'reduction': 1,
-               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 4,
-               'model_key': 7, 'color': 'green', 'description': 'Primary + Secondary Deform + GTV + Liver'}
+        2418: {'Dropout': 0., 'blocks_in_dense': 2, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+               'num_dense_connections': 32, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
+               'model_key': 12, 'color': 'blue', 'description': 'Primary + Secondary Deform + GTV'},
+        2290: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 2, 'reduction': 1,
+               'num_dense_connections': 64, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 4,
+               'model_key': 7, 'color': 'green', 'description': 'Primary + Secondary Deform + GTV + Liver'},
     }
     rigid_parameters = {
-        1695: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
-               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 2,
+        2078: {'Dropout': 0., 'blocks_in_dense': 2, 'dense_conv_blocks': 1, 'dense_layers': 1, 'reduction': 1,
+               'num_dense_connections': 128, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 2,
                'model_key': 8, 'color': 'black', 'description': 'Primary + Secondary Rigid'},
-        1710: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
-               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 4,
+        2276: {'Dropout': 0., 'blocks_in_dense': 2, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
+               'num_dense_connections': 64, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 4,
                'model_key': 9, 'color': 'red', 'description': 'Primary + Secondary Rigid + Liver'},
-        1682: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
-               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
+        2146: {'Dropout': 0., 'blocks_in_dense': 2, 'dense_conv_blocks': 1, 'dense_layers': 1, 'reduction': 1,
+               'num_dense_connections': 64, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 3,
                'model_key': 10, 'color': 'blue', 'description': 'Primary + Secondary Rigid + GTV'},
-        1685: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 1, 'dense_layers': 2, 'reduction': 1,
-               'num_dense_connections': 256, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 5,
+        2030: {'Dropout': 0., 'blocks_in_dense': 1, 'dense_conv_blocks': 2, 'dense_layers': 1, 'reduction': 1,
+               'num_dense_connections': 128, 'filters': 16, 'global_max': 1, 'growth_rate': 16, 'channels': 5,
                'model_key': 11, 'color': 'green', 'description': 'Primary + Secondary Rigid + GTV + Liver'}
                   }
     overall['Deformable'] = def_parameters
@@ -186,6 +186,7 @@ if evaluate_model:
         parameters = overall[key]
         performance_metrics[key] = {}
         for model_index in parameters:
+            print(model_index)
             model_parameters = parameters[model_index]
             for key in model_parameters.keys():
                 if type(model_parameters[key]) is np.int64:
