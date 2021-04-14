@@ -1,5 +1,6 @@
 __author__ = 'Brian M Anderson'
-# Created on 10/28/2020
+# Created on 4/8/2021
+
 import os
 from connect import *
 import time, getpass
@@ -7,7 +8,7 @@ import pandas as pd
 
 
 def return_MRN_dictionary(excel_path):
-    df = pd.read_excel(excel_path, sheet_name='Refined', engine='openpyxl')
+    df = pd.read_excel(excel_path, sheet_name='Refined') #, engine='openpyxl')
     MRN_list, GTV_List, Ablation_list = df['MRN'].values, df['PreExam'].values, df['Ablation_Exam'].values
     MRN_dictionary = {}
     for MRN, GTV, Ablation in zip(MRN_list, GTV_List, Ablation_list):
@@ -209,33 +210,25 @@ def main():
     excel_path = os.path.join(path, 'RetroAblation.xlsx')
     MRN_dictionary = return_MRN_dictionary(excel_path)
     class_struct = create_RT_Structure(roi_name='Liver_Disease_Ablation')
-    for export in [True, False]:
-        for MRN_key in MRN_dictionary.keys():
-            MRN = str(MRN_key)
-            while MRN[0] == '0':  # Drop the 0 from the front
-                MRN = MRN[1:]
-            print(MRN)
-            if not MRN_dictionary[MRN_key]:
-                continue
-            if os.path.exists(os.path.join(status_path, 'Finished_{}.txt'.format(MRN))):
-                continue
-            elif export and os.path.exists(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN))):
-                continue
-            elif not export and os.path.exists(os.path.join(status_path, 'Imported_Predictions_{}.txt'.format(MRN))):
-                continue
-            try:
-                class_struct.ChangePatient(MRN)
-            except:
-                continue
-            if class_struct.patient is None:
-                continue
-            for case in class_struct.patient.Cases:
-                class_struct.case = case
-                for exam_name in MRN_dictionary[MRN_key]:
-                    try:
-                        exam = case.Examinations[exam_name]
-                    except:
-                        break
+    for MRN_key in MRN_dictionary.keys():
+        MRN = str(MRN_key)
+        while MRN[0] == '0':  # Drop the 0 from the front
+            MRN = MRN[1:]
+        print(MRN)
+        if not MRN_dictionary[MRN_key]:
+            continue
+        if os.path.exists(os.path.join(status_path, 'Finished_{}.txt'.format(MRN))):
+            continue
+        try:
+            class_struct.ChangePatient(MRN)
+        except:
+            continue
+        if class_struct.patient is None:
+            continue
+        for case in class_struct.patient.Cases:
+            class_struct.case = case
+            for export in [True, False]:
+                for exam in case.Examinations:
                     if export:
                         if class_struct.export(exam):
                             fid = open(os.path.join(status_path, 'Exported_Images_{}.txt'.format(MRN)), 'w+')
@@ -246,9 +239,8 @@ def main():
                             class_struct.patient.Save()
                             fid = open(os.path.join(status_path, 'Imported_Predictions_{}.txt'.format(MRN)), 'w+')
                             fid.close()
-            if not export:
-                fid = open(os.path.join(status_path, 'Finished_{}.txt'.format(MRN)), 'w+')
-                fid.close()
+        fid = open(os.path.join(status_path, 'Finished_{}.txt'.format(MRN)), 'w+')
+        fid.close()
 
 
 if __name__ == "__main__":
